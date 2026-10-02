@@ -7,10 +7,9 @@ semantic-layers/
 ├── src/semantic_layers/   # the package and the semantic-layers command
 │   ├── layers.py          #   reading, verifying and searching layers
 │   ├── connect.py         #   synalog.toml, .env, tables from the database
-│   ├── install.py         #   add, list, update; the companion skill and AGENTS.md
+│   ├── install.py         #   add, list, update; the AGENTS.md / CLAUDE.md section
 │   ├── init.py            #   layer projects
-│   ├── cli.py, banner.py  #   the command
-│   └── companion/SKILL.md #   the Agent Skill installed beside the layers
+│   └── cli.py, banner.py  #   the command
 ├── layers/                # example layers (sales, support)
 ├── tests/                 # pytest, one file per module
 ├── docs/                  # this site (zensical)

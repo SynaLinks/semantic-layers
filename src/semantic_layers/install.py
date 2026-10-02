@@ -6,8 +6,8 @@ folders into the layers folder, ``.agents/layers/<layer>/``. A layer you already
 connected keeps its tables and its connection: only its concepts and rules
 are replaced, and the result must verify against your tables before
 anything is written. Every install is recorded in a lock file; agents are
-told about the layers through a companion Agent Skill and a section of
-``AGENTS.md``.
+told about the layers through a section of the project's ``AGENTS.md`` —
+and of ``CLAUDE.md`` for Claude Code, which reads that file instead.
 """
 
 from __future__ import annotations
@@ -18,7 +18,6 @@ import shutil
 import subprocess
 import tempfile
 from dataclasses import dataclass
-from importlib import resources
 from pathlib import Path
 
 from .connect import PROJECT_FILE, SECRET_FILES
@@ -31,12 +30,11 @@ _GITHUB = re.compile(r"^[\w.-]+/[\w.-]+$")
 #: What belongs to the layer's user, never to its source.
 _LOCAL_FILES = (*SECRET_FILES, ".gitignore")
 
-#: Agents whose skills folder we know, by name: project and global folders.
-AGENT_SKILL_DIRS = {
-    "claude-code": (".claude/skills", "~/.claude/skills"),
+#: Agents that read their own instruction file rather than AGENTS.md, by
+#: name: the file, and what in a project says the agent is used there.
+AGENT_FILES = {
+    "claude-code": ("CLAUDE.md", ".claude"),
 }
-#: The agent-neutral skills folder, always written.
-NEUTRAL_SKILL_DIR = (".agents/skills", "~/.agents/skills")
 
 
 class InstallError(Exception):
@@ -172,7 +170,7 @@ def add(
             lock["layers"][name] = {"source": source, "commit": commit, "sha256": SemanticLayer(name, target).digest}
 
     write_lock(scope, lock)
-    told = install_companion(scope, agents or [], all_agents)
+    told = tell_agents(scope, agents or [], all_agents)
     return {"installed": wanted, "agents": told}
 
 
@@ -236,69 +234,54 @@ def update(scope: Scope) -> dict:
 # -- telling the agents ----------------------------------------------------------------
 
 
-def _companion_text() -> str:
-    return resources.files("semantic_layers").joinpath("companion/SKILL.md").read_text()
-
-
 def _agents_section(scope: Scope) -> str:
     folder = scope.layers if scope.is_global else Path(*scope.layers.parts[len(scope.root.parts) :])
     return (
         f"{AGENTS_START}\n"
-        "## Semantic layer\n\n"
+        "## Semantic layers\n\n"
         f"This project's business definitions are semantic layers in `{folder}/`: one\n"
         "folder per layer, each with `tables/`, `concepts/` and `rules/` — one synalog\n"
         "`.l` file per predicate, described by its front matter (`name`,\n"
-        "`description`). Before answering a question about the data, search for the\n"
-        "definitions that fit (`uvx semantic-layers search '<regex from the question>'`),\n"
-        "read them, and answer by running them from\n"
-        "their layer's folder (`uvx synalog rules/<Name>.l run <Name>`: the folder's\n"
-        "`synalog.toml` names the database) — never by re-deriving a\n"
-        "definition. Write new concepts and rules in the same format, inside the layer\n"
-        "whose tables they use, and check them with synalog before saving them.\n"
+        "`description`).\n\n"
+        "- **Answer from them.** Before answering a question about the data, search\n"
+        "  the definitions that fit (`uvx semantic-layers search '<regex from the\n"
+        "  question>'`), read them, and run them from their layer's folder\n"
+        "  (`uvx synalog rules/<Name>.l run <Name>`: the folder's `synalog.toml`\n"
+        "  names the database). Never re-derive a definition or write ad-hoc SQL.\n"
+        "- **Write what is missing.** An entity or relationship goes in\n"
+        "  `concepts/<Name>.l`, a computation in `rules/<Name>.l`, inside the layer\n"
+        "  whose tables it uses: front matter with `name` (the predicate that runs)\n"
+        "  and `description`, one `import <folder>.<Name>.<Name>;` per predicate it\n"
+        "  uses, an `@OrderBy` (and `@Limit` for a ranking), then the rule.\n"
+        "- **Check before saving**: `uvx semantic-layers check <layer>`.\n"
         f"{AGENTS_END}\n"
     )
 
 
-def install_companion(scope: Scope, agents: list[str], all_agents: bool) -> list[str]:
-    """The companion Agent Skill (agent-neutral folder, plus each named or
-    detected agent's) and the ``AGENTS.md`` section. Returns where it went."""
-    told = []
-    targets = [NEUTRAL_SKILL_DIR]
-    names = set(AGENT_SKILL_DIRS) if all_agents else set(agents)
-    for name, dirs in AGENT_SKILL_DIRS.items():
-        detected = (
-            (scope.root / dirs[0].split("/")[0]).is_dir()
-            if not scope.is_global
-            else Path(dirs[1]).expanduser().parent.is_dir()
-        )
-        if name in names or detected:
-            targets.append(dirs)
-            told.append(name)
-    unknown = names - set(AGENT_SKILL_DIRS)
+def tell_agents(scope: Scope, agents: list[str], all_agents: bool) -> list[str]:
+    """Write the section into the project's ``AGENTS.md``, and into the
+    instruction file of each agent named or detected (``CLAUDE.md`` when
+    the project has a ``.claude/`` folder or a ``CLAUDE.md``). Returns the
+    files written; none for the user's layers, which have no project."""
+    names = set(AGENT_FILES) if all_agents else set(agents)
+    unknown = names - set(AGENT_FILES)
     if unknown:
-        raise InstallError(f"Unknown agent(s): {', '.join(sorted(unknown))}. Known: {', '.join(AGENT_SKILL_DIRS)}.")
-    for project_dir, global_dir in targets:
-        folder = (Path(global_dir).expanduser() if scope.is_global else scope.root / project_dir) / "semantic-layers"
-        folder.mkdir(parents=True, exist_ok=True)
-        (folder / "SKILL.md").write_text(_companion_text())
-    for name in told:  # the layers folder under each agent's own folder too
-        link = (
-            Path(AGENT_SKILL_DIRS[name][1]).expanduser().parent
-            if scope.is_global
-            else scope.root / AGENT_SKILL_DIRS[name][0].split("/")[0]
-        ) / "layers"
-        if not link.exists() and not link.is_symlink():
-            link.symlink_to(scope.layers, target_is_directory=True)
-    if not scope.is_global:
-        _write_agents_md(scope)
-        told.append("AGENTS.md")
-    return told
+        raise InstallError(f"Unknown agent(s): {', '.join(sorted(unknown))}. Known: {', '.join(AGENT_FILES)}.")
+    if scope.is_global:
+        return []
+    files = ["AGENTS.md"]
+    for name, (file, marker) in AGENT_FILES.items():
+        if name in names or (scope.root / marker).exists() or (scope.root / file).exists():
+            files.append(file)
+    for file in files:
+        _write_section(scope.root / file, _agents_section(scope))
+    return files
 
 
-def _write_agents_md(scope: Scope) -> None:
-    path = scope.root / "AGENTS.md"
+def _write_section(path: Path, section: str) -> None:
+    """Put ``section`` in the file at ``path``: replacing the previous one,
+    else at the end, keeping everything else."""
     text = path.read_text() if path.exists() else ""
-    section = _agents_section(scope)
     if AGENTS_START in text and AGENTS_END in text:
         before, rest = text.split(AGENTS_START, 1)
         after = rest.split(AGENTS_END, 1)[1].lstrip("\n")

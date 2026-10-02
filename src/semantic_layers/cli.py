@@ -93,7 +93,7 @@ def cmd_add(args) -> int:
         args.source, _scope(args), args.layer or None, force=args.force, agents=args.agent or [], all_agents=args.all
     )
     print(f"Installed {len(result['installed'])} layer(s): {', '.join(result['installed'])}")
-    print(f"Agents told: {', '.join(result['agents'])}")
+    print(f"Agents told in: {', '.join(result['agents'])}")
     return 0
 
 
@@ -170,8 +170,10 @@ def main(argv: list[str] | None = None) -> int:
     p.add_argument("--layer", action="append", help="a layer folder to install (repeatable; default: all)")
     p.add_argument("--list", action="store_true", help="list the source's layers, install nothing")
     p.add_argument("--force", action="store_true", help="replace layers you wrote or changed")
-    p.add_argument("--agent", action="append", help="also tell this agent (repeatable), e.g. claude-code")
-    p.add_argument("--all", action="store_true", help="tell every supported agent")
+    p.add_argument(
+        "--agent", action="append", help="also write the section into this agent's file (repeatable): claude-code"
+    )
+    p.add_argument("--all", action="store_true", help="write it into every known agent's file")
     _folder_options(p)
     p.set_defaults(func=cmd_add)
 

@@ -68,9 +68,9 @@ footprint.
 ## Where to use them
 
 - **Any coding agent**: `semantic-layers add` installs layers into
-  `.agents/layers/` and tells the agent how to use them — through a companion
-  Agent Skill and a section of `AGENTS.md` — so Claude Code, and every agent
-  that reads Agent Skills or `AGENTS.md`, runs them with the synalog CLI.
+  `.agents/layers/` and tells the agent how to use them — a section of
+  `AGENTS.md`, and of `CLAUDE.md` for Claude Code — so every coding agent
+  searches and runs them with the synalog CLI.
 - **[Lemma](https://github.com/SynaLinks/lemma)**: a workspace is a
   set of semantic layers — its own, plus layers installed from repositories,
   each on its own database — versioned with git, searched and run by its

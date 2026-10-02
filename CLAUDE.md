@@ -26,8 +26,9 @@ documentation (`docs/`, a zensical site), the `semantic-layers` command
   staged, verified, then copied; a connected layer keeps its tables,
   `synalog.toml`, `.env` and `.gitignore`. `semantic-layers-lock.json`
   records sources and digests.
-- **Agents are told through files**: the companion skill
-  (`companion/SKILL.md`) and a section of `AGENTS.md` (`_agents_section`).
+- **Agents are told through their instruction file**: a section of
+  `AGENTS.md`, and of `CLAUDE.md` for Claude Code (`_agents_section`,
+  `tell_agents`; `docs/agents-section.md` is its rendered copy, tested).
   The logo (`banner.py`) is for people only — never shown to an agent or a
   pipe.
 - **The examples in `layers/` are tested** (`tests/test_examples.py`) and

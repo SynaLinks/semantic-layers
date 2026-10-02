@@ -14,7 +14,8 @@ uvx semantic-layers connect sales psql host=db.example.com database=sales user=a
 ```
 
 `add` copied the layer into `.agents/layers/sales/`, verified it, and told
-your coding agent about it (a companion skill and a section of `AGENTS.md`).
+your coding agent about it (a section of `AGENTS.md`, and of `CLAUDE.md` for
+Claude Code).
 `connect` wrote the layer's `synalog.toml` — the database, as plain fields —
 and its `.env` — the password, kept out of git — then generated `tables/`
 from your database and checked every definition against it.

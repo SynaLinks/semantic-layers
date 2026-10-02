@@ -3,6 +3,7 @@
 import json
 import subprocess
 import sys
+from pathlib import Path
 
 if sys.version_info >= (3, 11):
     import tomllib
@@ -12,7 +13,7 @@ else:
 import pytest
 from samples import ORDERS, SALES, SUPPORT, connected_sales, layer, scope, write
 
-from semantic_layers.install import AGENTS_START, InstallError, add, installed, update
+from semantic_layers.install import AGENTS_START, InstallError, Scope, _agents_section, add, installed, update
 from semantic_layers.layers import verify_layers
 
 
@@ -24,8 +25,9 @@ def test_add_everything(source, project):
     assert verify_layers(layer(project)) == []
     lock = json.loads((project / "semantic-layers-lock.json").read_text())
     assert set(lock["layers"]) == {"sales", "support"} and lock["layers"]["sales"]["source"] == str(source)
-    assert (project / ".agents" / "skills" / "semantic-layers" / "SKILL.md").exists()
+    assert result["agents"] == ["AGENTS.md"]
     assert AGENTS_START in (project / "AGENTS.md").read_text()
+    assert not (project / ".agents" / "skills").exists() and not (project / "CLAUDE.md").exists()
 
 
 def test_add_one_layer_folder(source, project):
@@ -98,12 +100,24 @@ def test_agents_md_section_is_not_duplicated(source, project):
     assert text.count(AGENTS_START) == 1 and "Keep this." in text
 
 
-def test_claude_code_is_detected(source, project):
+def test_claude_code_gets_the_section_in_claude_md(source, project):
     (project / ".claude").mkdir()
     result = add(str(source), scope(project))
-    assert "claude-code" in result["agents"]
-    assert (project / ".claude" / "skills" / "semantic-layers" / "SKILL.md").exists()
-    assert (project / ".claude" / "layers").resolve() == layer(project).resolve()
+    assert result["agents"] == ["AGENTS.md", "CLAUDE.md"]
+    assert AGENTS_START in (project / "CLAUDE.md").read_text()
+    assert not (project / ".claude" / "skills").exists()
+
+
+def test_an_agent_can_be_named(source, project):
+    assert add(str(source), scope(project), agents=["claude-code"])["agents"] == ["AGENTS.md", "CLAUDE.md"]
+    with pytest.raises(InstallError, match="Unknown agent"):
+        add(str(source), scope(project), agents=["nope"], force=True)
+
+
+def test_the_users_layers_tell_no_project(source, project, monkeypatch):
+    monkeypatch.setenv("HOME", str(project))
+    assert add(str(source), Scope.resolve(project, is_global=True))["agents"] == []
+    assert not (project / "AGENTS.md").exists()
 
 
 def test_git_source_records_its_commit(source, project):
@@ -116,3 +130,8 @@ def test_git_source_records_its_commit(source, project):
     add(str(source), scope(project))
     commit = json.loads((project / "semantic-layers-lock.json").read_text())["layers"]["sales"]["commit"]
     assert commit and len(commit) == 40
+
+
+def test_the_docs_show_the_section_agents_get(tmp_path):
+    shown = (Path(__file__).resolve().parents[1] / "docs" / "agents-section.md").read_text()
+    assert shown == _agents_section(Scope.resolve(tmp_path))

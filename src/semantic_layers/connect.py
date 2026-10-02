@@ -27,7 +27,7 @@ PROJECT_FILE = project.PROJECT_FILE
 #: Engines synalog connects to; duckdb and sqlite run in memory.
 REMOTE_ENGINES = tuple(project.ENGINES)
 #: What never reaches git: the secrets, and BigQuery's key file.
-SECRET_FILES = (".env", "bigquery-credentials.json")
+SECRET_FILES = project.SECRET_FILES
 _CONNECTION_HELP = """\
 # The database this layer runs on. Run `semantic-layers connect <engine> key=value ...`
 # in this folder to write it, or fill it in by hand:
@@ -60,39 +60,20 @@ _DECLARATION = re.compile(r"^(?P<name>\w+)\((?P<args>[^)]*)\) :- (?P<physical>[\
 
 
 def write_connection(layer: Path, engine: str, details: dict) -> None:
-    """Write the layer's ``synalog.toml`` from connection ``details`` (its
-    fields, secrets included), and the secrets into its ``.env``."""
+    """Connect the layer: synalog writes the connection (``synalog.toml``'s
+    ``[connection]``, the secrets in ``.env``, ``.gitignore``); the layer's
+    ``[project]`` is written first when the file has none."""
     if engine not in REMOTE_ENGINES:
         raise ValueError(
             f"'{engine}' has no connection: synalog runs it in memory "
             f"(load files with --load). Engines to connect: {', '.join(REMOTE_ENGINES)}."
         )
-    fields = {f.key for f in project.ENGINES[engine].fields}
-    unknown = sorted(set(details) - fields)
-    if unknown:
-        raise ValueError(f"{engine} has no field {', '.join(unknown)} (fields: {', '.join(sorted(fields))})")
-    layer.mkdir(parents=True, exist_ok=True)
     path = layer / PROJECT_FILE
-    about = read_project(layer)
-    path.write_text(
-        project_section(str(about.get("name") or layer.name), str(about.get("description") or ""))
-        + "\n"
-        + project.dumps(engine, details)
-    )
-    project.connection(path)  # every required field given
-    write_env(layer, project.secrets(engine, details))
-    ensure_gitignore(layer)
-
-
-def write_env(layer: Path, values: dict[str, str]) -> None:
-    """Set ``values`` in the layer's ``.env``, keeping its other lines; the
-    file is owner-only."""
-    path = layer / ".env"
-    lines = path.read_text().splitlines() if path.exists() else []
-    kept = [line for line in lines if line.partition("=")[0].strip().removeprefix("export ").strip() not in values]
-    # Quoted: synalog strips exactly one pair, so a value keeps its own quotes.
-    path.write_text("".join(f"{line}\n" for line in [*kept, *(f'{k}="{v}"' for k, v in values.items())]))
-    os.chmod(path, 0o600)
+    if not read_project(layer):
+        layer.mkdir(parents=True, exist_ok=True)
+        rest = path.read_text() if path.exists() else ""
+        path.write_text(project_section(layer.name) + ("\n" + rest if rest.strip() else ""))
+    project.write(layer, engine, details)
 
 
 def layer_dsn(layer: Path) -> tuple[str, str]:
@@ -107,17 +88,6 @@ def layer_dsn(layer: Path) -> tuple[str, str]:
     env_file = layer / ".env"
     env = dict(parse_dotenv(env_file.read_text())) if env_file.exists() else {}
     return conn["engine"], project.dsn(conn["engine"], project.details(conn, {**env, **os.environ}))
-
-
-def ensure_gitignore(layer: Path) -> bool:
-    """Add the secret files to the layer's ``.gitignore``, keeping its other
-    lines. Returns whether it changed."""
-    path = layer / ".gitignore"
-    lines = path.read_text().splitlines() if path.exists() else []
-    missing = [name for name in SECRET_FILES if name not in lines]
-    if missing:
-        path.write_text("".join(f"{line}\n" for line in [*lines, *missing]))
-    return bool(missing)
 
 
 def table_declarations(introspected: str) -> dict[str, str]:

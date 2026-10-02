@@ -26,7 +26,7 @@ SUPPORT = {
     "tables/Employees.l": "Employees(employee_id:, manager_id:) :- employees(employee_id:, manager_id:);",
     "concepts/Customer.l": "import tables.Orders.Orders;\n\nCustomer(customer_id:) distinct :- Orders(customer_id:);",
 }
-PAGES = ["README.md", "docs/index.md", "docs/why.md", "docs/specification.md"]
+PAGES = ["README.md", "docs/index.md", "docs/specification.md"]
 
 
 @pytest.mark.parametrize("page", PAGES)

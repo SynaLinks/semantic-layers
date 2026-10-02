@@ -66,7 +66,7 @@ uvx synalog rules/ActiveCustomer.l run ActiveCustomer
 Start a layer project with `init`:
 
 ```shell
-uvx semantic-layers init sales      # or, in an empty repository: uvx semantic-layers init
+uvx semantic-layers init sales --description "Orders and customers"   # or, in an empty repository: uvx semantic-layers init --description "..."
 ```
 
 ```
@@ -81,7 +81,7 @@ sales/
 
 It also runs `git init` when the folder isn't in a repository yet, and never
 overwrites a file that exists. The name is the folder's: lowercase letters,
-numbers and hyphens; `--description` says what the layer is about. Both go
+numbers and hyphens; `--description`, required, says what the layer is about. Both go
 in `synalog.toml`'s `[project]`, which `add --list` and `list` show. Inside
 the project, connect it with `semantic-layers connect psql host=... user=...`
 and check it with `semantic-layers check .`.

@@ -17,7 +17,6 @@ tables included. Installed layers sit side by side in a layers folder
 from __future__ import annotations
 
 import hashlib
-import json
 import re
 import sys
 from dataclasses import dataclass, field
@@ -35,10 +34,6 @@ FOLDERS = {"table": "tables", "concept": "concepts", "rule": "rules"}
 KINDS = {folder: kind for kind, folder in FOLDERS.items()}
 
 _IMPORT = re.compile(r"^import\s+(tables|concepts|rules)\.(\w+)\.(\w+)\s*;", re.MULTILINE)
-#: synalog's rewrite of a predicate with several aggregating or distinct
-#: bodies — every recursive one — is one ``<Name>_MultBodyAggAux`` rule per body.
-_AUX = "_MultBodyAggAux"
-_IMPORT_LINE = re.compile(r"^import\s+[\w.]+\s*;[ \t]*$", re.MULTILINE)
 _DECLARATION = re.compile(r"^\s*(?P<name>\w+)\((?P<args>[^)]*)\)\s*:-\s*(?P<physical>[\w.]+)\(", re.MULTILINE)
 
 
@@ -133,28 +128,6 @@ def front_matter(text: str) -> dict:
     return meta if isinstance(meta, dict) else {}
 
 
-def defined(text: str) -> list[str]:
-    """The predicates a file defines itself — not its imports', not its
-    ``@`` directives. Empty when it does not parse (``check`` says why)."""
-    try:
-        ast = json.loads(synalog.parse(_IMPORT_LINE.sub("", text)))
-    except ValueError:
-        return []
-    return list(dict.fromkeys(name for rule in ast.get("rule", []) if (name := _defines(rule))))
-
-
-def _defines(rule: dict) -> str | None:
-    """The predicate a parsed rule defines: its head, or — for a functor,
-    ``New := Generic(...)``, parsed as an ``@Make`` directive — the new
-    predicate. ``None`` for every other directive."""
-    head = rule["head"]
-    if head["predicate_name"] == "@Make":
-        first = head["record"]["field_value"][0]["value"]["expression"]["literal"]
-        return first["the_predicate"]["predicate_name"]
-    name = head["predicate_name"].removesuffix(_AUX)
-    return None if name.startswith("@") else name
-
-
 def read_predicates(layer: Path) -> dict[str, Predicate]:
     """Every predicate of the layer folder ``layer``, by name (empty if absent)."""
     found: dict[str, Predicate] = {}
@@ -199,31 +172,32 @@ def verify(layer: Path) -> list[str]:
             problems = synalog.check(p.text, import_root=[str(layer)])
         except ValueError as exc:
             problems = [str(exc).strip().splitlines()[-1]]
-        if not problems:
-            own = defined(p.text)
-            if "name" not in p.meta:
-                problems = [f"its front matter has no name: the predicate that runs, one of {', '.join(own)}"]
-            elif p.meta["name"] not in own:
-                problems = [f"its front matter names '{p.meta['name']}', which it does not define ({', '.join(own)})"]
+        # synalog checks that the name is a predicate the file defines; a
+        # layer also requires one.
+        if not problems and "name" not in p.meta:
+            problems = ["its front matter has no name: the predicate that runs"]
         errors.extend(f"{p.relative}: {problem}" for problem in problems)
     return errors + _check_project_file(layer)
 
 
 def _check_project_file(layer: Path) -> list[str]:
-    """``synalog.toml`` reads as TOML, and its ``[project]`` name — when it
-    gives one — is the layer's folder name."""
+    """Every layer has a ``synalog.toml`` whose ``[project]`` describes it; its
+    name, when it gives one, is the layer's folder name."""
     path = layer / "synalog.toml"
     if not path.is_file():
-        return []
+        return ["synalog.toml is missing: a layer says what it is in its [project] (name, description)"]
     try:
         data = tomllib.loads(path.read_text())
     except tomllib.TOMLDecodeError as exc:
         return [f"synalog.toml: {exc}"]
-    named = (data.get("project") or {}).get("name") if isinstance(data.get("project"), dict) else None
-    folder = layer.resolve().name
+    about = data.get("project") if isinstance(data.get("project"), dict) else {}
+    problems = []
+    if not str(about.get("description") or "").strip():
+        problems.append("synalog.toml: [project] has no description — say what the layer is about")
+    named, folder = about.get("name"), layer.resolve().name
     if named and named != folder:
-        return [f"synalog.toml: names the layer '{named}', but its folder is '{folder}' — they must match"]
-    return []
+        problems.append(f"synalog.toml: names the layer '{named}', but its folder is '{folder}' — they must match")
+    return problems
 
 
 def verify_layers(folder: Path) -> list[str]:

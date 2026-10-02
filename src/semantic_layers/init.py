@@ -13,7 +13,9 @@ import re
 import subprocess
 from pathlib import Path
 
-from .connect import PROJECT_FILE, SECRET_FILES, ensure_gitignore, project_template
+from synalog import project
+
+from .connect import PROJECT_FILE, SECRET_FILES, project_template
 from .layers import FOLDERS
 
 #: Layer names: lowercase letters, numbers and single hyphens, as Agent Skills'.
@@ -56,6 +58,8 @@ def init(target: Path, name: str | None = None, description: str = "") -> dict:
     """Set up the layer project ``target`` (created if missing). Never
     overwrites a file that exists. Returns what was ``created``."""
     name = name or target.resolve().name
+    if not description.strip():
+        raise ValueError("a layer needs a description: what it is about, for whoever installs it.")
     if not _NAME.match(name):
         raise ValueError(
             f"'{name}' is not a layer name: use lowercase letters, numbers and hyphens "
@@ -76,8 +80,9 @@ def init(target: Path, name: str | None = None, description: str = "") -> dict:
         if not path.exists():
             path.write_text(text)
             created.append(relative)
-    if ensure_gitignore(target):
+    if not (target / ".gitignore").exists():
         created.append(".gitignore")
+    project.ensure_gitignore(target)
     if not _in_git_repo(target):
         subprocess.run(["git", "init", "-q", str(target)], check=False, capture_output=True)
         if _in_git_repo(target):

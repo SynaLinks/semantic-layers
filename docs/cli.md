@@ -41,16 +41,9 @@ uvx semantic-layers update
 ```
 
 `connect` takes the engine's fields as `key=value`; the secret ones
-(`password`, `access_token`) go to the layer's `.env`, the others to its
-`synalog.toml`. The fields of each engine:
-
-| Engine | Fields (secret in bold) |
-|---|---|
-| `psql` | `host`, `port` (5432), `database`, `user`, **`password`**, `sslmode` (prefer), `schema` (public) |
-| `trino` | `host`, `port` (8080), `scheme` (http), `catalog`, `schema`, `user`, `auth` (none, password, jwt), **`password`** |
-| `presto` | `host`, `port` (8080), `scheme` (http), `catalog`, `schema`, `user`, `auth` (none, password), **`password`** |
-| `databricks` | `server_hostname`, `http_path`, **`access_token`**, `catalog` (main), `schema` |
-| `bigquery` | `project`, `dataset`, **`credentials`** (`GOOGLE_APPLICATION_CREDENTIALS`, a key file's path), `location` |
+(`password`, `access_token`, `credentials`) go to the layer's `.env`, the
+others to its `synalog.toml`. `semantic-layers connect --help` lists every
+engine's fields — they are synalog's (`synalog.project.ENGINES`).
 
 ## Exit status
 

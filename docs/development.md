@@ -38,6 +38,19 @@ Tests run synalog for real on temporary layers; nothing reaches a database
 ./shell/format.sh
 ```
 
+## The skill's synalog references
+
+`skills/semantic-layers/references/synalog.md` and `errors.md` are generated
+from synalog's own skill, so the language and its error messages are written
+once, in synalog. After synalog's skill changes:
+
+```shell
+uv run python shell/sync_skill.py
+```
+
+The layer-specific parts are in `shell/skill/`; a test fails while the
+generated files are stale.
+
 ## Documentation
 
 ```shell

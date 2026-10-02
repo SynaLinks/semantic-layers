@@ -29,7 +29,7 @@ def _layer_folder(args) -> Path:
 
 def cmd_init(args) -> int:
     target = Path(args.name).expanduser() if args.name else Path.cwd()
-    result = init(target, None if args.name is None else Path(args.name).name, args.description or "")
+    result = init(target, None if args.name is None else Path(args.name).name, args.description)
     where = "." if not args.name else args.name
     print(f"Layer project {result['name']} in {result['path']}")
     for item in result["created"]:
@@ -146,6 +146,17 @@ def _folder_options(parser: argparse.ArgumentParser) -> None:
     parser.add_argument("--layers", help="another layers folder (default: .agents/layers)")
 
 
+def _engine_fields() -> str:
+    """Each engine's connection fields, from synalog (secrets marked *)."""
+    from synalog import project
+
+    lines = ["engines and their fields (* secret: written to .env, never to synalog.toml):"]
+    for name, spec in project.ENGINES.items():
+        fields = ", ".join(f.key + ("*" if f.secret else "") for f in spec.fields)
+        lines.append(f"  {name:<11} {fields}")
+    return "\n".join(lines)
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(prog="semantic-layers", description="Install and connect semantic layers.")
     parser.add_argument("--version", action="version", version=__version__)
@@ -153,11 +164,14 @@ def main(argv: list[str] | None = None) -> int:
 
     p = commands.add_parser("init", help="set up a semantic layer project")
     p.add_argument("name", nargs="?", help="the layer's folder to create (default: the current folder)")
-    p.add_argument("--description", help="what the layer is about, written in its synalog.toml")
+    p.add_argument("--description", required=True, help="what the layer is about, written in its synalog.toml")
     p.set_defaults(func=cmd_init)
 
     p = commands.add_parser(
-        "connect", help="connect the layer in this folder (it has a synalog.toml) to a database, generate its tables"
+        "connect",
+        help="connect the layer in this folder (it has a synalog.toml) to a database, generate its tables",
+        epilog=_engine_fields(),
+        formatter_class=argparse.RawDescriptionHelpFormatter,
     )
     p.add_argument(
         "engine",

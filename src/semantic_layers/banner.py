@@ -46,7 +46,7 @@ COMMANDS = (
     ("list", "List installed layers"),
     ("update", "Update installed layers"),
     ("check", "Verify every definition"),
-    ("init [name]", "Create a new layer"),
+    ("init <name> --description ...", "Create a new layer"),
 )
 
 

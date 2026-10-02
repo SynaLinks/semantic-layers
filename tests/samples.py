@@ -42,6 +42,10 @@ SUPPORT = {
 
 
 def write(root: Path, files: dict[str, str]) -> Path:
+    """Write ``files`` under ``root``. A layer (files under tables/, concepts/
+    or rules/) gets the synalog.toml every layer has, unless one is given."""
+    if any(k.split("/")[0] in ("tables", "concepts", "rules") for k in files) and "synalog.toml" not in files:
+        files = {**files, "synalog.toml": f'[project]\nname = "{root.name}"\ndescription = "A test layer."\n'}
     for relative, text in files.items():
         path = root / relative
         path.parent.mkdir(parents=True, exist_ok=True)

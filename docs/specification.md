@@ -207,10 +207,7 @@ database's.
 ## Connection
 
 A layer's `synalog.toml`, at its root and committed with it, says what the
-layer is and which database it runs on. `[project]` names and describes the
-layer — its `name` must be the folder's, and `check` reports a mismatch;
-`[connection]` is synalog's: the engine and its connection details as plain
-fields.
+layer is and which database it runs on.
 
 ```toml
 [project]
@@ -220,29 +217,22 @@ description = "Orders and customers: revenue, active customers, countries."
 [connection]
 engine = "psql"
 host = "db.example.com"
-port = 5432
 database = "sales"
 user = "analyst"
-schema = "public"
 ```
 
-Secrets are never in it — synalog refuses a secret field there. They live in
-the layer's `.env`, owner-readable only and listed in its `.gitignore`, as
-`SYNALOG_<ENGINE>_<FIELD>`: `SYNALOG_PSQL_PASSWORD`,
-`SYNALOG_DATABRICKS_ACCESS_TOKEN`, or `GOOGLE_APPLICATION_CREDENTIALS` (a
-path to BigQuery's key file). synalog run anywhere inside the layer finds
-`synalog.toml`, loads the `.env` and targets that database — no `--engine`,
-no connection string. The fields of each engine are synalog's
-(`synalog.project.ENGINES`). `SYNALOG_<ENGINE>_DSN` (e.g. `SYNALOG_PSQL_DSN`)
-takes precedence, for CI.
+- `[project]` is the layer's, and every layer has one. Its `description`
+  is **required**: what the layer is about, shown by `list` and
+  `add --list` — a layer without one does not check, and does not install.
+  Its `name`, when given, must be the folder's.
+- `[connection]` is synalog's [project file](https://github.com/SynaLinks/synalog#projects-synalogtoml):
+  the engine and its fields, the secrets in the git-ignored `.env`, found by
+  synalog run anywhere in the layer. `semantic-layers connect` writes both
+  through synalog.
 
-A layer published with its `synalog.toml` says which database it was written
+A layer published with a `[connection]` says which database it was written
 for: whoever installs it only adds the secrets — or connects it to another
-database. A layer meant for anyone's data is published without a `[connection]`.
-
-Engines with a connection: `psql`, `trino`, `presto`, `databricks`,
-`bigquery`. DuckDB and SQLite have none: synalog runs them in memory, loading
-files with `--load`.
+database. A layer meant for anyone's data is published without one.
 
 ## Layers folder
 

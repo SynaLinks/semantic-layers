@@ -148,3 +148,12 @@ def test_a_single_layer_source_is_named_by_its_project(tmp_path, project):
     (single / "synalog.toml").write_text('[project]\nname = "support"\ndescription = "Tickets."\n')
     assert add(str(single), scope(project))["installed"] == ["support"]
     assert installed(scope(project))[0]["description"] == "Tickets."
+
+
+def test_an_undescribed_layer_is_not_installed(tmp_path, project):
+    source = write(
+        tmp_path / "bare", {"rules/X.l": '---\nname: X\n---\n@OrderBy(X, "a");\nX(a: 1);\n', "synalog.toml": ""}
+    )
+    (source / "synalog.toml").unlink()
+    with pytest.raises(InstallError, match="no description"):
+        add(str(source), scope(project))

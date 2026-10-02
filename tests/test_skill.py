@@ -6,6 +6,7 @@ import subprocess
 import sys
 from pathlib import Path
 
+import pytest
 import yaml
 from samples import write
 
@@ -67,3 +68,15 @@ def test_links_resolve():
     for page in SKILL.rglob("*.md"):
         for target in re.findall(r"\]\(([^)#:]+)(?:#[^)]*)?\)", page.read_text()):
             assert (page.parent / target).exists(), f"{page.relative_to(ROOT)} links to missing {target}"
+
+
+def test_references_follow_synalogs_skill():
+    """references/synalog.md and errors.md are generated from synalog's
+    skill: rerun shell/sync_skill.py when this fails."""
+    sys.path.insert(0, str(ROOT / "shell"))
+    import sync_skill
+
+    if not sync_skill.SYNALOG_SKILL.exists():
+        pytest.skip("synalog is not checked out beside this repository")
+    for path, text in sync_skill.build().items():
+        assert path.read_text() == text, f"{path.name} is stale: run uv run python shell/sync_skill.py"

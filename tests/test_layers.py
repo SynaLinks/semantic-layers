@@ -26,7 +26,7 @@ def test_name_is_the_predicate_that_runs(source):
     assert verify(source / "sales") == []
     (rules / "RepeatBuyer.l").write_text("---\nname: Nope\n---\n" + helper)
     assert verify(source / "sales") == [
-        "rules/RepeatBuyer.l: its front matter names 'Nope', which it does not define (Delivered, RepeatBuyer)"
+        "rules/RepeatBuyer.l: [ Error ] Front matter names 'Nope', which this file does not define (Delivered, RepeatBuyer)."
     ]
     (rules / "RepeatBuyer.l").write_text("---\ndescription: x\n---\n" + helper)
     assert "has no name" in verify(source / "sales")[0]
@@ -53,7 +53,7 @@ def test_recursive_intermediate_rule(tmp_path):
     path = layer / "rules" / "TeamSize.l"
     path.write_text(path.read_text().replace("name: TeamSize", "name: Team"))
     assert verify(layer) == [
-        "rules/TeamSize.l: its front matter names 'Team', which it does not define (Manages, TeamSize)"
+        "rules/TeamSize.l: [ Error ] Front matter names 'Team', which this file does not define (Manages, TeamSize)."
     ]
 
 
@@ -83,7 +83,15 @@ def test_a_functor_defines_its_predicate(tmp_path):
 
 def test_the_project_name_must_be_the_folder_name(tmp_path):
     layer = write(tmp_path / "shop", {"rules/X.l": '---\nname: X\n---\n@OrderBy(X, "a");\nX(a: 1);\n'})
-    (layer / "synalog.toml").write_text('[project]\nname = "store"\n')
+    (layer / "synalog.toml").write_text('[project]\nname = "store"\ndescription = "A shop."\n')
     assert verify(layer) == ["synalog.toml: names the layer 'store', but its folder is 'shop' — they must match"]
-    (layer / "synalog.toml").write_text('[project]\nname = "shop"\n')
+    (layer / "synalog.toml").write_text('[project]\nname = "shop"\ndescription = "A shop."\n')
     assert verify(layer) == []
+
+
+def test_a_layer_must_describe_itself(tmp_path):
+    layer = write(tmp_path / "shop", {"rules/X.l": '---\nname: X\n---\n@OrderBy(X, "a");\nX(a: 1);\n'})
+    (layer / "synalog.toml").write_text('[project]\nname = "shop"\n')
+    assert verify(layer) == ["synalog.toml: [project] has no description — say what the layer is about"]
+    (layer / "synalog.toml").unlink()
+    assert verify(layer) == ["synalog.toml is missing: a layer says what it is in its [project] (name, description)"]

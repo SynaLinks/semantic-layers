@@ -142,11 +142,8 @@ uvx semantic-layers connect          # again, from the connection already in syn
 
 It writes the connection into `synalog.toml` (`[connection]`), the secret
 fields into `.env` (git-ignored), then generates `tables/` from the
-database and checks every definition against it. Fields per engine:
-`psql` host, port, database, user, password, sslmode, schema; `trino` and
-`presto` host, port, scheme, catalog, schema, user, auth, password;
-`databricks` server_hostname, http_path, access_token, catalog, schema;
-`bigquery` project, dataset, credentials (a key file), location. The user
+database and checks every definition against it. `uvx semantic-layers connect --help`
+lists each engine's fields. The user
 gives the credentials — never guess or invent them.
 
 ## Writing synalog

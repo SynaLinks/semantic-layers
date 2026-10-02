@@ -67,7 +67,7 @@ def test_connect_refuses_local_engines(tmp_path):
 def test_connect_keeps_the_gitignore(tmp_path):
     from semantic_layers.init import init
 
-    init(tmp_path / "shop")
+    init(tmp_path / "shop", description="Orders of the shop.")
     (tmp_path / "shop" / ".gitignore").write_text("*.csv\n")
     connect.write_connection(tmp_path / "shop", "psql", PG)
     assert (tmp_path / "shop" / ".gitignore").read_text() == "*.csv\n.env\nbigquery-credentials.json\n"

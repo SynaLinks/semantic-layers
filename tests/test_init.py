@@ -18,7 +18,7 @@ from semantic_layers.layers import verify
 def test_init_sets_up_a_layer_project(tmp_path):
     from semantic_layers.init import init
 
-    result = init(tmp_path / "sales")
+    result = init(tmp_path / "sales", description="Orders and customers.")
     layer = tmp_path / "sales"
     assert result["name"] == "sales"
     assert {"tables/", "concepts/", "rules/", "synalog.toml", "README.md", ".gitignore", ".git/"} <= set(
@@ -28,15 +28,17 @@ def test_init_sets_up_a_layer_project(tmp_path):
     assert ".env" in (layer / ".gitignore").read_text().splitlines()
     assert "semantic-layers add <owner>/sales" in (layer / "README.md").read_text()
     (layer / "README.md").write_text("mine\n")
-    assert init(layer)["created"] == []  # nothing overwritten
+    assert init(layer, description="Orders and customers.")["created"] == []  # nothing overwritten
     assert (layer / "README.md").read_text() == "mine\n"
     with pytest.raises(ValueError, match="not a layer name"):
-        init(tmp_path / "Bad_Name")
+        init(tmp_path / "Bad_Name", description="x")
+    with pytest.raises(ValueError, match="needs a description"):
+        init(tmp_path / "undescribed")
 
 
 def test_init_then_publish_then_add(tmp_path, project, monkeypatch, capsys):
     monkeypatch.chdir(tmp_path)
-    assert main(["init", "sales"]) == 0
+    assert main(["init", "sales", "--description", "Orders and customers."]) == 0
     assert "cd sales" in capsys.readouterr().out
     write(tmp_path / "sales", {k: v for k, v in SALES.items()})
     monkeypatch.chdir(tmp_path / "sales")

@@ -61,13 +61,18 @@ stays in that predicate's file.
 
 ### Instant knowledge graphs from your tables
 
-A handful of concepts turn relational tables into a knowledge graph. Nodes
-are entities and categorical values, `distinct` projections of the tables;
-edges are relationships between nodes — typed, weighted, symmetric, inverse
-— and traversals compose them. In a layer, nodes and edges are concepts and
-traversals are rules. The graph is virtual: no ETL, no graph database, no
-data moved — it compiles to SQL over the tables you already have, the moment
-the concepts are written.
+A handful of concepts turn relational tables into a knowledge graph — no
+ETL, no graph database, no data moved: it compiles to SQL over the tables
+you already have, the moment the concepts are written. Nodes are
+`distinct` projections of the tables; edges are typed relationships between
+nodes, weighted when the data says how much; recursive edges follow them to
+any depth; traversals compose them. In a layer, nodes and edges are concepts
+and traversals are rules.
+
+Take a supply chain — suppliers, parts, and a bill of materials saying which
+assembly contains which component. *If a supplier fails, which of our
+assemblies stop?* The answer runs through every level of the bill of
+materials: the bolt is in the wheel, the wheel is in the bike.
 
 `concepts/Supplier.l`
 
@@ -79,33 +84,20 @@ description: A supplier, as a node.
 import tables.Suppliers.Suppliers;
 
 @OrderBy(Supplier, "supplier_id");
-Supplier(supplier_id:, name:) distinct :- Suppliers(supplier_id:, name:);
+Supplier(supplier_id:, name:, country:) distinct :- Suppliers(supplier_id:, name:, country:);
 ```
 
-`concepts/Product.l`
+`concepts/Part.l`
 
 ```prolog
 ---
-name: Product
-description: A product, as a node.
+name: Part
+description: A part, bought or assembled in house, as a node.
 ---
-import tables.Products.Products;
+import tables.Parts.Parts;
 
-@OrderBy(Product, "product_id");
-Product(product_id:, name:) distinct :- Products(product_id:, name:);
-```
-
-`concepts/Category.l`
-
-```prolog
----
-name: Category
-description: A product category, a categorical column turned into a node.
----
-import tables.Products.Products;
-
-@OrderBy(Category, "category");
-Category(category:) distinct :- Products(category:);
+@OrderBy(Part, "part_id");
+Part(part_id:, name:) distinct :- Parts(part_id:, name:);
 ```
 
 `concepts/Supplies.l`
@@ -113,31 +105,47 @@ Category(category:) distinct :- Products(category:);
 ```prolog
 ---
 name: Supplies
-description: The edge from a supplier to each product it supplies.
+description: The edge from a supplier to each part it supplies.
 ---
 import concepts.Supplier.Supplier;
-import concepts.Product.Product;
-import tables.Purchases.Purchases;
+import concepts.Part.Part;
+import tables.Parts.Parts;
 
-@OrderBy(Supplies, "supplier_id", "product_id");
-Supplies(supplier_id:, product_id:) distinct :-
-  Supplier(supplier_id:), Product(product_id:), Purchases(supplier_id:, product_id:);
+@OrderBy(Supplies, "supplier_id", "part_id");
+Supplies(supplier_id:, part_id:) distinct :-
+  Supplier(supplier_id:), Part(part_id:), Parts(part_id:, supplier_id:);
 ```
 
-`concepts/InCategory.l`
+`concepts/Contains.l`
 
 ```prolog
 ---
-name: InCategory
-description: The edge from a product to its category.
+name: Contains
+description: The edge from an assembly to each component it contains, weighted by quantity.
 ---
-import concepts.Product.Product;
-import concepts.Category.Category;
-import tables.Products.Products;
+import concepts.Part.Part;
+import tables.BillOfMaterials.BillOfMaterials;
 
-@OrderBy(InCategory, "product_id");
-InCategory(product_id:, category:) distinct :-
-  Product(product_id:), Category(category:), Products(product_id:, category:);
+@OrderBy(Contains, "assembly_id", "component_id");
+Contains(assembly_id:, component_id:, quantity:) distinct :-
+  Part(part_id: assembly_id), Part(part_id: component_id),
+  BillOfMaterials(assembly_id:, component_id:, quantity:);
+```
+
+`concepts/Requires.l`
+
+```prolog
+---
+name: Requires
+description: An assembly requires a component, directly or inside a sub-assembly, at any depth.
+---
+import concepts.Contains.Contains;
+
+@Recursive(Requires, 20);
+@OrderBy(Requires, "assembly_id", "component_id");
+Requires(assembly_id:, component_id:) distinct :- Contains(assembly_id:, component_id:);
+Requires(assembly_id:, component_id:) distinct :-
+  Requires(assembly_id:, component_id: middle), Contains(assembly_id: middle, component_id:);
 ```
 
 `rules/SupplierExposure.l`
@@ -145,14 +153,14 @@ InCategory(product_id:, category:) distinct :-
 ```prolog
 ---
 name: SupplierExposure
-description: The categories that depend on each supplier, two hops away.
+description: The assemblies that stop if a supplier fails, through every level of the bill of materials.
 ---
 import concepts.Supplies.Supplies;
-import concepts.InCategory.InCategory;
+import concepts.Requires.Requires;
 
-@OrderBy(SupplierExposure, "supplier_id", "category");
-SupplierExposure(supplier_id:, category:) distinct :-
-  Supplies(supplier_id:, product_id:), InCategory(product_id:, category:);
+@OrderBy(SupplierExposure, "supplier_id", "assembly_id");
+SupplierExposure(supplier_id:, assembly_id:) distinct :-
+  Supplies(supplier_id:, part_id: component), Requires(assembly_id:, component_id: component);
 ```
 
 ### Temporal knowledge graphs

@@ -14,9 +14,11 @@ ROOT = Path(__file__).resolve().parents[1]
 _FILE = re.compile(r"^`((?:concepts|rules|tables)/\w+\.l)`\n\n```prolog\n(.*?)```", re.M | re.S)
 #: What the examples build on without showing it.
 SUPPORT = {
-    "tables/Suppliers.l": "Suppliers(supplier_id:, name:) :- suppliers(supplier_id:, name:);",
-    "tables/Products.l": "Products(product_id:, name:, category:) :- products(product_id:, name:, category:);",
-    "tables/Purchases.l": "Purchases(supplier_id:, product_id:) :- purchases(supplier_id:, product_id:);",
+    "tables/Suppliers.l": "Suppliers(supplier_id:, name:, country:) :- suppliers(supplier_id:, name:, country:);",
+    "tables/Parts.l": "Parts(part_id:, name:, supplier_id:) :- parts(part_id:, name:, supplier_id:);",
+    "tables/BillOfMaterials.l": (
+        "BillOfMaterials(assembly_id:, component_id:, quantity:) :- bill_of_materials(assembly_id:, component_id:, quantity:);"
+    ),
     "tables/Assignments.l": "Assignments(person_id:, team_id:, changed_at:) :- assignments(person_id:, team_id:, changed_at:);",
     "tables/Routes.l": "Routes(origin:, destination:, cost:) :- routes(origin:, destination:, cost:);",
     "tables/Customers.l": "Customers(customer_id:, email:, phone:, tier:) :- customers(customer_id:, email:, phone:, tier:);",

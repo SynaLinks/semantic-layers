@@ -28,39 +28,60 @@ and it reaches the questions that plain SQL makes hard to get right.
 
 ### Instant knowledge graphs from your tables
 
-A handful of concepts turn relational tables into a knowledge graph: entities
-are `distinct` projections, categorical columns become nodes, relationships
-become edges — typed, weighted, symmetric, inverse, composed. The graph is
-virtual: no ETL, no graph database, no data moved. It compiles to SQL over
-the tables you already have, the moment the concepts exist.
+A handful of concepts turn relational tables into a knowledge graph. Nodes
+are entities and categorical values, `distinct` projections of the tables;
+edges are relationships between nodes — typed, weighted, symmetric, inverse
+— and traversals compose them. In a layer, nodes and edges are concepts and
+traversals are rules. The graph is virtual: no ETL, no graph database, no
+data moved — it compiles to SQL over the tables you already have, the moment
+the concepts are written.
 
 ```prolog
+# Nodes: entities and categorical values, straight from the tables.
+Supplier(supplier_id:, name:) distinct :- Suppliers(supplier_id:, name:);
 Product(product_id:, name:) distinct :- Products(product_id:, name:);
 Category(category:) distinct :- Products(category:);
-BelongsTo(product_id:, category:) distinct :- Products(product_id:, category:);
-Supplies(supplier_id:, product_id:) distinct :- Purchases(supplier_id:, product_id:);
+
+# Edges between nodes.
+Supplies(supplier_id:, product_id:) distinct :-
+  Supplier(supplier_id:), Product(product_id:), Purchases(supplier_id:, product_id:);
+InCategory(product_id:, category:) distinct :-
+  Product(product_id:), Category(category:), Products(product_id:, category:);
+
+# A traversal: the categories that depend on each supplier, two hops away.
+SupplierExposure(supplier_id:, category:) distinct :-
+  Supplies(supplier_id:, product_id:), InCategory(product_id:, category:);
 ```
 
 ### Temporal knowledge graphs
 
-Edges carry the period they were true, so the graph answers *when*, not just
-*what*: an event log of changes becomes periods (each state lasts until the
-next transition), `Today` gives what holds now, two periods overlap or not,
-and "what did this look like in March" is a point-in-time filter rather than
-a bespoke query.
+Edges can carry the period they were true, so the graph answers *when*, not
+just *what*. Source systems usually log changes only: a period lasts until
+the next change, and the latest one is still open. From there, what holds
+today, what held on any date, and whether two periods overlap are plain
+filters — not a bespoke query each time.
 
 ```prolog
+# Each change lasts until the next one for the same person...
 NextChange(person_id:, changed_at:, next? Min= later) distinct :-
   Assignments(person_id:, changed_at:), Assignments(person_id:, changed_at: later),
   later > changed_at;
 
+# ...so the log becomes a temporal edge, the latest period still open.
 MemberOf(person_id:, team_id:, valid_from:, valid_to:) distinct :-
   Assignments(person_id:, team_id:, changed_at: valid_from),
   NextChange(person_id:, changed_at: valid_from, next: valid_to);
+MemberOf(person_id:, team_id:, valid_from:, valid_to:) distinct :-
+  Assignments(person_id:, team_id:, changed_at: valid_from),
+  ~NextChange(person_id:, changed_at: valid_from), valid_to == "9999-12-31";
 
-ActiveMember(person_id:, team_id:) distinct :-
+# The graph today, and as it was on any date.
+MemberToday(person_id:, team_id:) distinct :-
   MemberOf(person_id:, team_id:, valid_from:, valid_to:),
   Today(date:), valid_from <= date, date < valid_to;
+MemberOn(person_id:, team_id:, date:) distinct :-
+  MemberOf(person_id:, team_id:, valid_from:, valid_to:),
+  date == "2026-01-15", valid_from <= date, date < valid_to;
 ```
 
 ### Recursion: transitive closure, paths, shortest paths, cycles

@@ -1,0 +1,49 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="240" height="240" viewBox="0 0 200 200" role="img" aria-label="Semantic Layers">
+  <defs>
+    <linearGradient id="bulb" x1="0.2" y1="0" x2="0.8" y2="1">
+      <stop offset="0%" stop-color="#F4E4FA"/>
+      <stop offset="55%" stop-color="#D9AEEC"/>
+      <stop offset="100%" stop-color="#B57AD6"/>
+    </linearGradient>
+    <linearGradient id="leaf" x1="0" y1="1" x2="0" y2="0">
+      <stop offset="0%" stop-color="#5FAE63"/>
+      <stop offset="100%" stop-color="#A6DE8E"/>
+    </linearGradient>
+    <clipPath id="inside">
+      <path d="M100 44 C 116 66, 166 84, 166 132 C 166 168, 136 184, 100 184 C 64 184, 34 168, 34 132 C 34 84, 84 66, 100 44 Z"/>
+    </clipPath>
+  </defs>
+
+  <!-- sprouts -->
+  <path d="M100 48 C 92 32, 78 22, 64 22 C 74 30, 86 40, 96 52 Z" fill="url(#leaf)" stroke="#EBD9F7" stroke-width="3" stroke-linejoin="round"/>
+  <path d="M100 50 C 104 30, 116 14, 132 10 C 124 22, 112 36, 104 54 Z" fill="url(#leaf)" stroke="#EBD9F7" stroke-width="3" stroke-linejoin="round"/>
+
+  <!-- roots -->
+  <g fill="none" stroke="#EBD9F7" stroke-width="3" stroke-linecap="round">
+    <path d="M92 184 q -3 7 -9 9"/>
+    <path d="M100 185 q 0 7 1 11"/>
+    <path d="M108 184 q 3 7 9 9"/>
+  </g>
+
+  <!-- bulb -->
+  <path d="M100 44 C 116 66, 166 84, 166 132 C 166 168, 136 184, 100 184 C 64 184, 34 168, 34 132 C 34 84, 84 66, 100 44 Z" fill="url(#bulb)"/>
+
+  <!-- the layers -->
+  <g clip-path="url(#inside)" fill="none" stroke="#8E52B8" stroke-width="2.5" stroke-linecap="round" opacity="0.75">
+    <path d="M100 46 C 74 78, 54 112, 62 186"/>
+    <path d="M100 46 C 126 78, 146 112, 138 186"/>
+    <path d="M100 46 C 86 84, 80 124, 86 186"/>
+    <path d="M100 46 C 114 84, 120 124, 114 186"/>
+  </g>
+
+  <path d="M100 44 C 116 66, 166 84, 166 132 C 166 168, 136 184, 100 184 C 64 184, 34 168, 34 132 C 34 84, 84 66, 100 44 Z" fill="none" stroke="#EBD9F7" stroke-width="3.5" stroke-linejoin="round"/>
+
+  <!-- face -->
+  <ellipse cx="80" cy="134" rx="6.5" ry="8" fill="#3A2150"/>
+  <ellipse cx="120" cy="134" rx="6.5" ry="8" fill="#3A2150"/>
+  <circle cx="82.5" cy="131" r="2.4" fill="#FFFFFF"/>
+  <circle cx="122.5" cy="131" r="2.4" fill="#FFFFFF"/>
+  <ellipse cx="68" cy="150" rx="8" ry="4.5" fill="#F48FB1" opacity="0.7"/>
+  <ellipse cx="132" cy="150" rx="8" ry="4.5" fill="#F48FB1" opacity="0.7"/>
+  <path d="M92 150 Q 100 158 108 150" fill="none" stroke="#3A2150" stroke-width="3" stroke-linecap="round"/>
+</svg>

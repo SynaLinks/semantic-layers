@@ -106,13 +106,6 @@ The secrets never travel: `.gitignore` keeps `.env` out. `synalog.toml`
 does, so a team shares one database by name; the tables do too, and that is the point — they tell whoever installs the layer which
 data it expects.
 
-In [Lemma](https://github.com/SynaLinks/lemma), a workspace's own
-layer — its database, one folder named after the workspace,
-`layer/<workspace>/` — is already a git repository with every change
-committed. Push it, and the workspace's definitions can be installed in any
-project. The other way round, a Lemma workspace installs layers from
-repositories beside its own, each connected to its own database.
-
 ## Keeping up
 
 ```shell

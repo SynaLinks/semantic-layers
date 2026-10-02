@@ -73,10 +73,6 @@ footprint.
   `.agents/layers/` and tells the agent how to use them — a section of
   `AGENTS.md`, and of `CLAUDE.md` for Claude Code — so every coding agent
   searches and runs them with the synalog CLI.
-- **[Lemma](https://github.com/SynaLinks/lemma)**: a workspace is a
-  set of semantic layers — its own, plus layers installed from repositories,
-  each on its own database — versioned with git, searched and run by its
-  analyst and, over MCP and A2A, by any agent.
 - **The [synalog](https://github.com/SynaLinks/synalog) CLI**: runs any
   definition from its layer's folder.
 

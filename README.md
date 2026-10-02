@@ -163,10 +163,6 @@ footprint.
   definitions that are missing — with the synalog it needs, modelling
   patterns, every error message and a runnable example layer:
   `npx skills add SynaLinks/semantic-layers`.
-- **[Lemma](https://github.com/SynaLinks/lemma)**: a workspace is a
-  set of semantic layers — its own, plus layers installed from repositories,
-  each on its own database — versioned with git, searched and run by its
-  analyst and, over MCP and A2A, by any agent.
 - **The [synalog](https://github.com/SynaLinks/synalog) CLI**: runs any
   definition from its layer's folder.
 
@@ -214,7 +210,7 @@ with `semantic-layers add <owner>/sales`.
 ## Open development
 
 Semantic Layers were developed by [Synalinks](https://github.com/SynaLinks)
-for Lemma, its commercial agent harness, and are released as an open format.
+and are released as an open format.
 
 Several questions remain open — merging upstream changes into a modified
 layer, binding a shared layer to tables whose names or columns differ, and

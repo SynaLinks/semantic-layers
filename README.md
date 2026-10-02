@@ -1,12 +1,12 @@
 # Semantic Layers
 
-A standardized way to give AI agents reasoning and meaning over your data.
+A standardized way to give AI agents reasoning and meaning over of your data.
 
 ## What are Semantic Layers?
 
 Semantic Layers are a lightweight, open format for giving AI agents your
 business definitions — *an active customer*, *revenue*, *a late order* — as
-verified, executable code instead of prose, unlocking reasoning and meaning.
+verified, composable and executable code instead of prose, unlocking reasoning and meaning at scale.
 
 At its core, a semantic layer is a folder holding three folders: `tables/`,
 `concepts/` and `rules/`. Each holds one [synalog](https://github.com/SynaLinks/synalog)
@@ -14,7 +14,7 @@ At its core, a semantic layer is a folder holding three folders: `tables/`,
 at minimum) followed by the definition, which compiles to SQL and runs on your
 database.
 
-```shell
+```
 my-layer/
 ├── tables/           # The data: one file per table, generated from the database
 ├── concepts/         # What the data is about: entities, relationships, clean views
@@ -23,7 +23,7 @@ my-layer/
 └── .env              # The password or token (local, never committed)
 ```
 
-Here is an example of a predicate, the atomic structure of a semantic layer.
+Here is an example of a predicate, the atomic definition of a semantic layer.
 
 ```synalog
 ---
@@ -38,10 +38,60 @@ ActiveCustomer(customer_id:) distinct :-
 ```
 
 Where an [Agent Skill](https://agentskills.io) is a `SKILL.md` the agent
-reads and follows, a semantic layer is a set of **formally verified** definitions 
-the agent **runs**: it never paraphrases a definition, it executes it on your data, 
-removing interpretation mistakes and offering error-free composability. A
-project's layers sit side by side in `.agents/layers/`.
+reads and follows (hopefully), a Semantic Layer is a set of 
+**deterministic & formally verified** predicates the agent **runs**. 
+It **never** make mistakes interpreting them, and can 
+**reuses and combines** them over time without any loss. 
+
+A project's layers sit side by side in `.agents/layers/`.
+
+## Powered by synalog
+
+Definitions are written in [synalog](https://github.com/SynaLinks/synalog), a
+logic programming language from the Datalog family that compiles to optimized
+SQL. A semantic layer is a folder; synalog is what makes the folder *run* —
+and what makes it worth more than a set of saved queries:
+
+- **Definitions compose.** A predicate builds on other predicates by name
+  (`import concepts.Customer.Customer;`), so knowledge accumulates instead of
+  being re-derived: `Revenue` builds on `DeliveredOrder`, which builds on
+  `Orders`. A complex question becomes a few small named predicates an agent
+  can read, reuse and combine — and the imports are the layer's dependency
+  graph, so every answer traces back, rule by rule, to the source tables.
+- **Recursion is a base case and a recursive case.** Org charts, taxonomies,
+  bills of materials, referral chains, approval paths — the questions that
+  are notoriously wrong in hand-written SQL — are a few lines, and synalog
+  guarantees they terminate:
+
+  ```prolog
+  @Recursive(Manages, 10);
+  Manages(manager_id:, employee_id:) distinct :- Employees(employee_id:, manager_id:);
+  Manages(manager_id:, employee_id:) distinct :-
+    Manages(manager_id:, employee_id: middle), Employees(employee_id:, manager_id: middle);
+
+  TeamSize(manager_id:, team_size? += 1) distinct :- Manages(manager_id:);
+  ```
+
+- **Your tables become a knowledge graph — without moving them.** A few
+  concepts for entities and relationships (`Supplies`, `ReportsTo`,
+  `WorksIn`) turn relational tables into a graph an agent traverses —
+  composition, inverse, recursive chains — with no ETL and no graph database:
+  the graph compiles to SQL over the tables you already have.
+- **Time is first-class.** Validity windows, "active today", overlaps and
+  point-in-time joins answer *what did this look like in March* — the
+  reasoning that is most error-prone to express directly in SQL.
+- **Nothing unsound runs.** synalog's verifier checks every definition
+  before any SQL is generated — arity, safety, stratification, unknown
+  references, termination — so a definition an agent writes that parses but
+  is wrong is rejected up front, never discovered in a board meeting. This is
+  what *formally verified* means here.
+- **One definition, every warehouse.** The same `.l` file compiles to the
+  dialect of DuckDB, SQLite, PostgreSQL, Trino, Presto, Databricks or
+  BigQuery and runs where the data is, at warehouse scale: a layer written
+  against one database installs on another.
+- **Fast enough for the agent's inner loop.** synalog's engine is written in
+  Rust: checking and compiling a definition takes milliseconds, so an agent
+  can validate every rule it writes, every step.
 
 ## Why Semantic Layers?
 
@@ -103,7 +153,7 @@ footprint.
 ## Getting started
 
 ```shell
-uvx semantic-layers add SynaLinks/semantic-layers --layer sales
+uvx semantic-layers add SynaLinks/semantic-layers-examples --layer sales
 uvx semantic-layers connect sales psql host=db.example.com database=sales user=analyst password=...
 ```
 
@@ -121,30 +171,20 @@ Write your definitions in `concepts/` and `rules/`, check them with
 `semantic-layers check .`, and push the repository: it installs with
 `semantic-layers add <owner>/sales`.
 
-The documentation is at **[synalinks.github.io/semantic-layers](https://synalinks.github.io/semantic-layers/)**:
-
-- **[Getting started](docs/getting-started.md)** — Install a layer, connect it, write your own
-- **[Specification](docs/specification.md)** — The format, file by file
-- **[Sharing](docs/sharing.md)** — Installing, connecting, publishing and updating layers
-- **[Agents](docs/agents.md)** — How coding agents are told about the layers
-- **[CLI](docs/cli.md)** — Every `semantic-layers` command
-- **[Examples](layers/)** — The `sales` and `support` example layers
+- **[Specification](docs/specification.md)** — Format details
+- **[Sharing](docs/sharing.md)** — Installing, connecting, publishing and updating layers with the `semantic-layers` command
 - **[Agent Skills](https://agentskills.io)** — The format semantic layers are modeled on
 
 ## Open development
 
 Semantic Layers were developed by [Synalinks](https://github.com/SynaLinks)
-for Lemma, and are released as an open format. Open questions — merging
-upstream changes into a modified layer, binding a shared layer to tables
-whose names or columns differ, letting one layer import another's
-definitions — are listed in the [specification](docs/specification.md#open-questions);
+for Lemma, its proprietary harness, and are released as an open format. 
+
+Open question, merging pstream changes into a modified layer, binding a 
+shared layer to tables whose names or columns differ, letting one layer
+import another's definitions are listed in the [specification](docs/specification.md#open-questions);
 contributions are welcome.
-
-## Contributing
-
-See [Development](docs/development.md): `./shell/test.sh`, `./shell/lint.sh`,
-`./shell/doc.sh`.
 
 ## License
 
-Apache 2.0 — see [LICENSE](LICENSE).
+Apache 2.0.

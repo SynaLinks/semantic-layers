@@ -492,6 +492,25 @@ footprint.
 - **The [synalog](https://github.com/SynaLinks/synalog) CLI**: runs any
   definition from its layer's folder.
 
+## Supported engines
+
+A layer runs on the database its `synalog.toml` names; synalog compiles every
+definition to that engine's SQL dialect and runs it there.
+
+| Engine | `engine` | Connection fields | Driver |
+|---|---|---|---|
+| DuckDB | `duckdb` | none: runs in memory, data files loaded with `--load` | included |
+| SQLite | `sqlite` | none: runs in memory, data files loaded with `--load` | standard library |
+| PostgreSQL | `psql` | `host`, `port`, `database`, `user`, `password`\*, `sslmode`, `schema` | `psycopg` |
+| Trino | `trino` | `host`, `port`, `scheme`, `catalog`, `schema`, `user`, `auth`, `password`\* | `trino` |
+| Presto | `presto` | `host`, `port`, `scheme`, `catalog`, `schema`, `user`, `auth`, `password`\* | `presto-python-client` |
+| Databricks | `databricks` | `server_hostname`, `http_path`, `access_token`\*, `catalog`, `schema` | `databricks-sql-connector` |
+| BigQuery | `bigquery` | `project`, `dataset`, `credentials`\*, `location` | `google-cloud-bigquery` |
+
+\* Secrets never go in `synalog.toml`: `semantic-layers connect` writes them to
+the layer's git-ignored `.env`. Run synalog with the engine's driver
+alongside, e.g. `uvx --with psycopg synalog rules/Revenue.l run Revenue`.
+
 ## Getting started
 
 ```shell

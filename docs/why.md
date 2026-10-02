@@ -24,47 +24,109 @@ themselves into portable, version-controlled folders. This gives agents:
 Definitions are written in [synalog](https://github.com/SynaLinks/synalog), a
 logic programming language from the Datalog family that compiles to optimized
 SQL. A semantic layer is a folder; synalog is what makes the folder *run* —
-and what makes it worth more than a set of saved queries:
+and it reaches the questions that plain SQL makes hard to get right.
 
-- **Definitions compose.** A predicate builds on other predicates by name
-  (`import concepts.Customer.Customer;`), so knowledge accumulates instead of
-  being re-derived: `Revenue` builds on `DeliveredOrder`, which builds on
-  `Orders`. A complex question becomes a few small named predicates an agent
-  can read, reuse and combine — and the imports are the layer's dependency
-  graph, so every answer traces back, rule by rule, to the source tables.
-- **Recursion is a base case and a recursive case.** Org charts, taxonomies,
-  bills of materials, referral chains, approval paths — the questions that
-  are notoriously wrong in hand-written SQL — are a few lines, and synalog
-  guarantees they terminate:
+### Instant knowledge graphs from your tables
 
-  ```prolog
-  @Recursive(Manages, 10);
-  Manages(manager_id:, employee_id:) distinct :- Employees(employee_id:, manager_id:);
-  Manages(manager_id:, employee_id:) distinct :-
-    Manages(manager_id:, employee_id: middle), Employees(employee_id:, manager_id: middle);
+A handful of concepts turn relational tables into a knowledge graph: entities
+are `distinct` projections, categorical columns become nodes, relationships
+become edges — typed, weighted, symmetric, inverse, composed. The graph is
+virtual: no ETL, no graph database, no data moved. It compiles to SQL over
+the tables you already have, the moment the concepts exist.
 
-  TeamSize(manager_id:, team_size? += 1) distinct :- Manages(manager_id:);
-  ```
+```prolog
+Product(product_id:, name:) distinct :- Products(product_id:, name:);
+Category(category:) distinct :- Products(category:);
+BelongsTo(product_id:, category:) distinct :- Products(product_id:, category:);
+Supplies(supplier_id:, product_id:) distinct :- Purchases(supplier_id:, product_id:);
+```
 
-- **Your tables become a knowledge graph — without moving them.** A few
-  concepts for entities and relationships (`Supplies`, `ReportsTo`,
-  `WorksIn`) turn relational tables into a graph an agent traverses —
-  composition, inverse, recursive chains — with no ETL and no graph database:
-  the graph compiles to SQL over the tables you already have.
-- **Time is first-class.** Validity windows, "active today", overlaps and
-  point-in-time joins answer *what did this look like in March* — the
-  reasoning that is most error-prone to express directly in SQL.
-- **Nothing unsound runs.** synalog's verifier checks every definition
-  before any SQL is generated — arity, safety, stratification, unknown
-  references, termination — so a definition an agent writes that parses but
-  is wrong is rejected up front, never discovered in a board meeting. This is
-  what *formally verified* means here.
-- **One definition, every warehouse.** The same `.l` file compiles to the
-  dialect of DuckDB, SQLite, PostgreSQL, Trino, Presto, Databricks or
-  BigQuery and runs where the data is, at warehouse scale: a layer written
-  against one database installs on another.
-- **Fast enough for the agent's inner loop.** synalog's engine is written in
-  Rust: checking and compiling a definition takes milliseconds, so an agent
-  can validate every rule it writes, every step.
+### Temporal knowledge graphs
+
+Edges carry the period they were true, so the graph answers *when*, not just
+*what*: an event log of changes becomes periods (each state lasts until the
+next transition), `Today` gives what holds now, two periods overlap or not,
+and "what did this look like in March" is a point-in-time filter rather than
+a bespoke query.
+
+```prolog
+NextChange(person_id:, changed_at:, next? Min= later) distinct :-
+  Assignments(person_id:, changed_at:), Assignments(person_id:, changed_at: later),
+  later > changed_at;
+
+MemberOf(person_id:, team_id:, valid_from:, valid_to:) distinct :-
+  Assignments(person_id:, team_id:, changed_at: valid_from),
+  NextChange(person_id:, changed_at: valid_from, next: valid_to);
+
+ActiveMember(person_id:, team_id:) distinct :-
+  MemberOf(person_id:, team_id:, valid_from:, valid_to:),
+  Today(date:), valid_from <= date, date < valid_to;
+```
+
+### Recursion: transitive closure, paths, shortest paths, cycles
+
+A base case and a recursive case give the transitive closure — org charts,
+taxonomies, bills of materials, referral and approval chains — and, from
+there, the route itself, the cheapest path (`Min=`), or the cycles in a
+hierarchy. `@Recursive` bounds the depth, and the verifier guarantees
+termination.
+
+```prolog
+@Recursive(RouteCost, 10);
+RouteCost(destination:, cost:) :- Routes(origin: "warehouse", destination:, cost:);
+RouteCost(destination:, cost: total) :-
+  RouteCost(destination: hub, cost: hub_cost), Routes(origin: hub, destination:, cost:),
+  total == hub_cost + cost;
+
+ShortestCost(destination:, cost? Min= cost) distinct :- RouteCost(destination:, cost:);
+```
+
+### Negation, unions and aggregation
+
+`~` says what is *not* there — customers who never ordered, edges pointing
+to nothing, the period still open — checked for safe negation and
+stratification. `|` and multiple bodies union alternatives. Aggregations go
+beyond sums and counts: `Min=`, `Max=`, `Avg=`, `List=`, `Set=`, `ArgMax=`,
+`ArgMin=`, top-k.
+
+```prolog
+Dormant(customer_id:) :- Customers(customer_id:), ~Orders(customer_id:);
+Contactable(customer_id:, channel:) distinct :-
+  Customers(customer_id:, email:), email is not null, channel == "email" |
+  Customers(customer_id:, phone:), phone is not null, channel == "phone";
+TopProduct(product_id? ArgMax= product_id -> amount) distinct :- Orders(product_id:, amount:);
+```
+
+### Composition and reuse
+
+A predicate builds on others by name — `import concepts.Customer.Customer;`
+— so knowledge accumulates instead of being re-derived: `Revenue` builds on
+`DeliveredOrder`, which builds on `Orders`. Functors instantiate a generic
+rule for another input (`EnterpriseRevenue := SegmentRevenue(Segment:
+EnterpriseCustomers)`). The imports are the layer's dependency graph: every
+answer traces back, rule by rule, to the source tables.
+
+### Verified before it runs
+
+synalog checks every definition before any SQL is generated — this is what
+*formally verified* means here. A definition an agent writes that parses but
+is wrong is rejected up front, never discovered in a board meeting:
+
+| Check | Rejects |
+|---|---|
+| Safety | a result variable bound by nothing |
+| Safe negation and aggregation | a negated or aggregated variable with no positive occurrence |
+| Stratification | negation through recursion |
+| Arity | a predicate used with inconsistent arguments |
+| Recursion | a missing base case, a trivial loop, unbounded recursion |
+| Unknown references | a predicate or table that does not exist |
+
+### One definition, every warehouse — in milliseconds
+
+The same `.l` file compiles to the dialect of DuckDB, SQLite, PostgreSQL,
+Trino, Presto, Databricks or BigQuery and runs where the data is, at
+warehouse scale: a layer written against one database installs on another.
+The engine is written in Rust — checking and compiling take milliseconds —
+so an agent can validate every rule it writes, at every step.
 
 The [synalog documentation](https://synalinks.github.io/synalog/) covers each in depth: [knowledge graphs](https://synalinks.github.io/synalog/knowledge-graphs/), [recursion](https://synalinks.github.io/synalog/language/recursion/), [temporal data](https://synalinks.github.io/synalog/language/temporal/), [verification](https://synalinks.github.io/synalog/verification/), [supported engines](https://synalinks.github.io/synalog/engines/).

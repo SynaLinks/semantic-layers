@@ -1,6 +1,31 @@
-# Semantic Layers
+<div align="center">
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="img/synalinks-dark.svg">
+  <img height="200" alt="Synalinks" src="img/synalinks-light.svg">
+</picture>
+</div>
 
-A standardized way to give AI agents reasoning and meaning over of your data.
+<div align="center">
+
+![Alpha](https://img.shields.io/badge/Release-Alpha-orange.svg)
+[![Tests](https://github.com/synalinks/semantic-layers/actions/workflows/tests.yml/badge.svg)](https://github.com/synalinks/semantic-layers/actions/workflows/tests.yml)
+[![Documentation](https://github.com/synalinks/semantic-layers/actions/workflows/docs.yml/badge.svg)](https://synalinks.github.io/semantic-layers/)
+[![Discord](https://img.shields.io/discord/1118241178723291219?logo=discord&logoColor=white&label=Discord&cacheSeconds=3600)](https://discord.gg/82nt97uXcM)
+[![License: Apache-2.0](https://img.shields.io/badge/License-Apache_2.0-green.svg)](https://opensource.org/license/apache-2-0)
+[![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/synalinks/semantic-layers)
+
+</div>
+
+# Semantic Layers
+## A standardized way to give AI agents reasoning and meaning over your data
+
+Semantic Layers are built on [synalog](https://github.com/SynaLinks/synalog), by
+[Synalinks](https://github.com/SynaLinks). New here? [Why semantic
+layers](https://synalinks.github.io/semantic-layers/why/) makes the case;
+[Getting started](https://synalinks.github.io/semantic-layers/getting-started/)
+installs one in two commands.
+
+Full documentation: **<https://synalinks.github.io/semantic-layers/>**
 
 ## What are Semantic Layers?
 

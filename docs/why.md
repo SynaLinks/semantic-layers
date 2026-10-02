@@ -301,12 +301,29 @@ A predicate builds on others by name — `import concepts.Customer.Customer;`
 — so knowledge accumulates instead of being re-derived: `Revenue` builds on
 `DeliveredOrder`, which builds on `Orders`. The imports are the layer's
 dependency graph: every answer traces back, rule by rule, to the source
-tables. Within a file, a functor instantiates a generic rule for another
-input — here the revenue of a segment, applied to enterprise customers:
+tables. A functor instantiates a generic rule for another input: write the
+generic rule once — here the revenue of a segment, every customer by
+default — and apply it wherever a segment needs it:
+
+`rules/SegmentRevenue.l`
+
+```
+---
+name: SegmentRevenue
+description: Revenue of a segment of customers; every customer unless a functor swaps the segment.
+---
+import tables.Customers.Customers;
+import tables.Orders.Orders;
+
+Segment(customer_id:) distinct :- Customers(customer_id:);
+
+@OrderBy(SegmentRevenue, "revenue");
+SegmentRevenue(revenue? += amount) distinct :- Segment(customer_id:), Orders(customer_id:, amount:);
+```
 
 `concepts/EnterpriseCustomer.l`
 
-```prolog
+```
 ---
 name: EnterpriseCustomer
 description: Customers on the enterprise tier.
@@ -319,20 +336,14 @@ EnterpriseCustomer(customer_id:) distinct :- Customers(customer_id:, tier: "ente
 
 `rules/EnterpriseRevenue.l`
 
-```prolog
+```
 ---
 name: EnterpriseRevenue
 description: Revenue of enterprise customers.
 ---
 import concepts.EnterpriseCustomer.EnterpriseCustomer;
-import tables.Customers.Customers;
-import tables.Orders.Orders;
+import rules.SegmentRevenue.SegmentRevenue;
 
-# A generic rule: the revenue of a segment, every customer by default...
-Segment(customer_id:) distinct :- Customers(customer_id:);
-SegmentRevenue(revenue? += amount) distinct :- Segment(customer_id:), Orders(customer_id:, amount:);
-
-# ...instantiated for one segment.
 @OrderBy(EnterpriseRevenue, "revenue");
 EnterpriseRevenue := SegmentRevenue(Segment: EnterpriseCustomer);
 ```

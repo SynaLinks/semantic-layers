@@ -322,7 +322,25 @@ MonthlyRevenue(month:, revenue? += amount) distinct :-
 
 Build on what exists — `MonthlyRevenue` above builds on `DeliveredOrder`
 instead of filtering `Orders` again. For the same computation over different
-inputs, a functor instantiates a generic rule, in the same file:
+inputs, write the generic rule once, with a default input, and instantiate it
+with a functor wherever it is needed:
+
+`rules/SegmentRevenue.l`
+
+```
+---
+name: SegmentRevenue
+description: Delivered revenue of a segment of customers; every customer unless a functor swaps the segment.
+keywords: [segment, revenue, cohort]
+---
+import concepts.Customer.Customer;
+import concepts.DeliveredOrder.DeliveredOrder;
+
+Segment(customer_id:) distinct :- Customer(customer_id:);
+
+@OrderBy(SegmentRevenue, "revenue");
+SegmentRevenue(revenue? += amount) distinct :- Segment(customer_id:), DeliveredOrder(customer_id:, amount:);
+```
 
 `rules/EnterpriseRevenue.l`
 
@@ -333,10 +351,8 @@ description: Delivered revenue of enterprise customers.
 keywords: [enterprise, segment, revenue]
 ---
 import concepts.Customer.Customer;
-import concepts.DeliveredOrder.DeliveredOrder;
+import rules.SegmentRevenue.SegmentRevenue;
 
-Segment(customer_id:) distinct :- Customer(customer_id:);
-SegmentRevenue(revenue? += amount) distinct :- Segment(customer_id:), DeliveredOrder(customer_id:, amount:);
 Enterprise(customer_id:) distinct :- Customer(customer_id:, tier: "enterprise");
 
 @OrderBy(EnterpriseRevenue, "revenue");

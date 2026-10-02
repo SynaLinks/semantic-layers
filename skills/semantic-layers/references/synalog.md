@@ -125,9 +125,12 @@ ReportsTo(employee_id:, manager_id:) distinct :-
 ## Functors
 
 `New := Generic(Dependency: Replacement);` makes a copy of `Generic` with one
-of the predicates it uses replaced. In a layer, write the generic rule and
-its instances **in the same file**: applied to a predicate imported from
-another file, a functor has no effect.
+of the predicates it uses replaced. The generic rule can live in its own file:
+import it, and name the dependency by its plain name — the file
+`rules/SegmentRevenue.l` defines `Segment` and `SegmentRevenue`, and
+`EnterpriseRevenue := SegmentRevenue(Segment: Enterprise);` works from any file
+that imports `SegmentRevenue`. An argument naming nothing the generic rule
+depends on is an error.
 
 ## Imports
 

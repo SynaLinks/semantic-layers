@@ -1,48 +1,63 @@
-<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="240" height="240" viewBox="0 0 200 210" role="img" aria-label="Semantic Layers">
+<svg xmlns="http://www.w3.org/2000/svg" width="240" height="240" viewBox="-6 -26 212 236" role="img" aria-label="Semantic Layers">
   <defs>
-    <path id="cut" d="M93 58 C 93 66, 84 74, 64 86 C 40 100, 28 120, 30 146 C 32 172, 60 190, 100 190 C 140 190, 168 172, 170 146 C 172 120, 160 100, 136 86 C 116 74, 107 66, 107 58 Z"/>
-    <linearGradient id="skin" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0%" stop-color="#C58BE3"/>
-      <stop offset="100%" stop-color="#8E4FB8"/>
-    </linearGradient>
+    <radialGradient id="bulb" cx="0.36" cy="0.25" r="0.9">
+      <stop offset="0%" stop-color="#F7E6FD"/>
+      <stop offset="45%" stop-color="#D7A8EE"/>
+      <stop offset="100%" stop-color="#A363CC"/>
+    </radialGradient>
     <linearGradient id="leaf" x1="0" y1="1" x2="0.3" y2="0">
       <stop offset="0%" stop-color="#4FA65A"/>
       <stop offset="100%" stop-color="#9BE07F"/>
     </linearGradient>
   </defs>
 
-  <!-- sprouts -->
-  <path d="M96 60 C 86 48, 72 34, 74 14 C 90 22, 100 38, 101 58 Z" fill="url(#leaf)" stroke="#43255C" stroke-width="3.5" stroke-linejoin="round"/>
-  <path d="M104 60 C 108 42, 120 26, 140 20 C 138 38, 124 52, 106 62 Z" fill="url(#leaf)" stroke="#43255C" stroke-width="3.5" stroke-linejoin="round"/>
-
   <!-- roots -->
   <g fill="none" stroke="#43255C" stroke-width="3.5" stroke-linecap="round">
-    <path d="M90 184 c -1 10, -8 12, -13 10"/>
-    <path d="M100 185 c 0 8, 3 12, 0 17"/>
-    <path d="M110 184 c 1 10, 8 12, 13 10"/>
+    <path d="M90 188 c -1 10, -8 12, -13 10"/>
+    <path d="M100 189 c 0 8, 3 12, 0 16"/>
+    <path d="M110 188 c 1 10, 8 12, 13 10"/>
   </g>
 
-  <!-- the skin -->
-  <use href="#cut" fill="url(#skin)"/>
+  <!-- the bottom half -->
+  <path d="M32 122 C 28 160, 58 192, 100 192 C 142 192, 172 160, 168 122 Z" fill="url(#bulb)" stroke="#43255C" stroke-width="4" stroke-linejoin="round"/>
 
-  <!-- the cut: every layer, nested toward the root, the face in the heart -->
-  <g>
-    <use href="#cut" transform="translate(100 190) scale(0.84) translate(-100 -190)" fill="#FBF2FE" stroke="#C595DE" stroke-width="3.57"/>
-    <use href="#cut" transform="translate(100 190) scale(0.68) translate(-100 -190)" fill="#F2DDF9" stroke="#C595DE" stroke-width="4.41"/>
-    <use href="#cut" transform="translate(100 190) scale(0.53) translate(-100 -190)" fill="#FDF7FF" stroke="#C595DE" stroke-width="5.66"/>
+  <!-- its cut: the layers, ring inside ring -->
+  <ellipse cx="100" cy="122" rx="68" ry="18.4" fill="#FDF7FF" stroke="#43255C" stroke-width="4"/>
+  <ellipse cx="100" cy="122" rx="56" ry="15.1" fill="#F3DDFA" stroke="#C595DE" stroke-width="2.4"/>
+  <ellipse cx="100" cy="122" rx="44" ry="11.9" fill="#FBF2FE" stroke="#C595DE" stroke-width="2.4"/>
+  <ellipse cx="100" cy="122" rx="32" ry="8.6" fill="#F3DDFA" stroke="#C595DE" stroke-width="2.4"/>
+  <ellipse cx="100" cy="122" rx="20" ry="5.4" fill="#FBF2FE" stroke="#C595DE" stroke-width="2.4"/>
+  <ellipse cx="100" cy="122" rx="8" ry="2.2" fill="#E9C6F6" stroke="#C595DE" stroke-width="2.4"/>
+
+  <!-- the lid, lifted and tipped back -->
+  <g transform="translate(0 -30) rotate(-9 100 122)">
+    <path d="M97 62 C 88 50, 76 38, 78 20 C 92 28, 101 42, 101 60 Z" fill="url(#leaf)" stroke="#43255C" stroke-width="3.5" stroke-linejoin="round"/>
+    <path d="M103 62 C 106 46, 117 32, 134 26 C 133 42, 121 54, 105 62 Z" fill="url(#leaf)" stroke="#43255C" stroke-width="3.5" stroke-linejoin="round"/>
+    <!-- its underside: the same layers -->
+    <ellipse cx="100" cy="122" rx="68" ry="18.4" fill="#FDF7FF" stroke="#43255C" stroke-width="4"/>
+    <ellipse cx="100" cy="122" rx="54" ry="14.6" fill="#F3DDFA" stroke="#C595DE" stroke-width="2.4"/>
+    <ellipse cx="100" cy="122" rx="40" ry="10.8" fill="#FBF2FE" stroke="#C595DE" stroke-width="2.4"/>
+    <path d="M32 122 C 32 104, 50 92, 68 85 C 85 78, 94 70, 94 60 L 106 60 C 106 70, 115 78, 132 85 C 150 92, 168 104, 168 122 C 140 134, 60 134, 32 122 Z" fill="url(#bulb)" stroke="#43255C" stroke-width="4" stroke-linejoin="round"/>
+    <ellipse cx="66" cy="100" rx="5" ry="11" transform="rotate(50 66 100)" fill="#FFFFFF" opacity="0.7"/>
   </g>
 
-  <use href="#cut" fill="none" stroke="#43255C" stroke-width="4" stroke-linejoin="round"/>
-
-  <g transform="translate(100 162) scale(0.78) translate(-100 -147)">
-  <ellipse cx="82" cy="140" rx="7.5" ry="9.5" fill="#33193F"/>
-  <ellipse cx="118" cy="140" rx="7.5" ry="9.5" fill="#33193F"/>
-  <circle cx="85" cy="136" r="3" fill="#FFFFFF"/>
-  <circle cx="121" cy="136" r="3" fill="#FFFFFF"/>
-  <circle cx="80" cy="144" r="1.4" fill="#FFFFFF" opacity="0.8"/>
-  <circle cx="116" cy="144" r="1.4" fill="#FFFFFF" opacity="0.8"/>
-  <ellipse cx="67" cy="158" rx="9" ry="5" fill="#FF8FB8" opacity="0.7"/>
-  <ellipse cx="133" cy="158" rx="9" ry="5" fill="#FF8FB8" opacity="0.7"/>
-  <path d="M93 156 Q 100 164 107 156" fill="#7A2E52" stroke="#33193F" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+  <!-- sparkles: look inside -->
+  <g fill="#F6C543">
+    <path d="M182 104 l 3 7 7 3 -7 3 -3 7 -3 -7 -7 -3 7 -3 Z"/>
+    <path d="M14 96 l 2 5 5 2 -5 2 -2 5 -2 -5 -5 -2 5 -2 Z"/>
   </g>
+
+  <!-- shine on the bottom half -->
+  <ellipse cx="48" cy="150" rx="5" ry="12" transform="rotate(20 48 150)" fill="#FFFFFF" opacity="0.55"/>
+
+  <!-- face, looking up at its layers -->
+  <ellipse cx="82" cy="156" rx="7.5" ry="9.5" fill="#33193F"/>
+  <ellipse cx="118" cy="156" rx="7.5" ry="9.5" fill="#33193F"/>
+  <circle cx="84" cy="151" r="3.2" fill="#FFFFFF"/>
+  <circle cx="120" cy="151" r="3.2" fill="#FFFFFF"/>
+  <circle cx="80" cy="160" r="1.4" fill="#FFFFFF" opacity="0.8"/>
+  <circle cx="116" cy="160" r="1.4" fill="#FFFFFF" opacity="0.8"/>
+  <ellipse cx="66" cy="172" rx="9" ry="5" fill="#FF8FB8" opacity="0.7"/>
+  <ellipse cx="134" cy="172" rx="9" ry="5" fill="#FF8FB8" opacity="0.7"/>
+  <path d="M94 170 Q 100 178 106 170 Z" fill="#7A2E52" stroke="#33193F" stroke-width="3" stroke-linejoin="round"/>
 </svg>

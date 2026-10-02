@@ -5,6 +5,8 @@
 </picture>
 </div>
 
+<br>
+
 <div align="center">
 
 ![Alpha](https://img.shields.io/badge/Release-Alpha-orange.svg)
@@ -15,6 +17,8 @@
 [![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/synalinks/semantic-layers)
 
 </div>
+
+<br>
 
 # Semantic Layers
 ## A standardized way to give AI agents reasoning and meaning over your data

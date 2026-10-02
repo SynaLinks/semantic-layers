@@ -1,6 +1,4 @@
-"""The logo and the welcome screen: the onion of the project's logo (sliced,
-its lid lifted, its rings in view) beside the wordmark, in the logo's
-lilac-to-purple.
+"""The wordmark and the welcome screen, in the logo's purple.
 
 Shown to people only: never when an agent runs the command (its output is
 read, not looked at), nor when the output is piped. ``NO_COLOR`` drops the
@@ -20,20 +18,8 @@ LOGO = (
     "███████╗██║  ██║   ██║   ███████╗██║  ██║███████║",
     "╚══════╝╚═╝  ╚═╝   ╚═╝   ╚══════╝╚═╝  ╚═╝╚══════╝",
 )
-#: The logo's lilac to purple, one per wordmark line (256-color codes).
-_PURPLES = (225, 219, 183, 177, 141, 135)
-
-#: The onion, line by line: (text, color) segments, color None for the
-#: terminal's own. Sprouts, the lifted lid, the slice of rings, the face.
-_SPROUT, _SKIN, _RINGS, _FACE = 114, 177, 225, 183
-MASCOT = (
-    (("     \\ /    ", _SPROUT),),
-    (("   .-'^'-.  ", _SKIN),),
-    (("  (_______) ", _SKIN),),
-    (("  ( ", _SKIN), ("((@))", _RINGS), (" ) ", _SKIN)),
-    (("  ( ", _SKIN), ("◕ ‿ ◕", _FACE), (" ) ", _SKIN)),
-    (("  `-.___.-' ", _SKIN),),
-)
+#: The logo's purple (#A866CF), as a 256-color code.
+_PURPLE = 134
 
 #: Set by the coding agents that run commands (the list the Agent Skills CLI
 #: checks, through @vercel/detect-agent).
@@ -72,16 +58,12 @@ def _color(code: str, text: str) -> str:
     return text if os.environ.get("NO_COLOR") else f"\x1b[{code}m{text}\x1b[0m"
 
 
-def _mascot_line(segments) -> str:
-    return "".join(_color(f"38;5;{color}", text) if color else text for text, color in segments)
-
-
 def show_logo() -> None:
     if not for_people():
         return
     print()
-    for segments, line, shade in zip(MASCOT, LOGO, _PURPLES, strict=True):
-        print(f"{_mascot_line(segments)}  {_color(f'38;5;{shade}', line)}")
+    for line in LOGO:
+        print(_color(f"38;5;{_PURPLE}", line))
     print()
 
 

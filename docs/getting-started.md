@@ -38,6 +38,8 @@ uvx semantic-layers connect . psql host=db.example.com database=sales user=analy
 Write each definition as one `.l` file — concepts in `concepts/`, rules in
 `rules/` — with front matter naming the predicate that runs:
 
+`rules/RevenueByCountry.l`
+
 ```prolog
 --8<-- "layers/sales/rules/RevenueByCountry.l"
 ```

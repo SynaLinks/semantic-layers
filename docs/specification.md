@@ -92,7 +92,9 @@ The required `name` field:
 Here `Manages` is a transitive, recursive intermediate rule and `TeamSize`
 the definition:
 
-```
+`rules/TeamSize.l`
+
+```prolog
 ---
 name: TeamSize
 description: Number of people under each manager, directly or through their reports.
@@ -139,7 +141,9 @@ description: Active customers.
 After the front matter come the `import` lines, one per definition the file
 builds on, then the synalog definition with its directives:
 
-```
+`rules/ActiveCustomer.l`
+
+```prolog
 ---
 name: ActiveCustomer
 description: Customers with at least one delivered order.
@@ -173,7 +177,9 @@ Table files are not written by hand: they are generated from the database's
 schema when the layer is connected, one per table, named schema + table
 (`synalog introspect`):
 
-```
+`tables/PublicOrders.l`
+
+```prolog
 ---
 name: PublicOrders
 description: One row per order.

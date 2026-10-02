@@ -1,9 +1,10 @@
-"""The README's examples are a layer's files: written out with the tables
-they use, every one verifies."""
+"""The examples of the README and the docs are a layer's files: written out
+with the tables they use, every one verifies."""
 
 import re
 from pathlib import Path
 
+import pytest
 from samples import write
 
 from semantic_layers.layers import verify
@@ -11,20 +12,35 @@ from semantic_layers.layers import verify
 ROOT = Path(__file__).resolve().parents[1]
 #: "`concepts/X.l`", a blank line, then the file in a code block.
 _FILE = re.compile(r"^`((?:concepts|rules|tables)/\w+\.l)`\n\n```prolog\n(.*?)```", re.M | re.S)
-TABLES = {
+#: What the examples build on without showing it.
+SUPPORT = {
     "tables/Suppliers.l": "Suppliers(supplier_id:, name:) :- suppliers(supplier_id:, name:);",
     "tables/Products.l": "Products(product_id:, name:, category:) :- products(product_id:, name:, category:);",
     "tables/Purchases.l": "Purchases(supplier_id:, product_id:) :- purchases(supplier_id:, product_id:);",
     "tables/Assignments.l": "Assignments(person_id:, team_id:, changed_at:) :- assignments(person_id:, team_id:, changed_at:);",
     "tables/Routes.l": "Routes(origin:, destination:, cost:) :- routes(origin:, destination:, cost:);",
-    "tables/Customers.l": "Customers(customer_id:, email:, phone:) :- customers(customer_id:, email:, phone:);",
-    "tables/Orders.l": "Orders(customer_id:, product_id:, amount:) :- orders(customer_id:, product_id:, amount:);",
+    "tables/Customers.l": "Customers(customer_id:, email:, phone:, tier:) :- customers(customer_id:, email:, phone:, tier:);",
+    "tables/Orders.l": "Orders(customer_id:, product_id:, amount:, status:) :- orders(customer_id:, product_id:, amount:, status:);",
+    "tables/Employees.l": "Employees(employee_id:, manager_id:) :- employees(employee_id:, manager_id:);",
+    "concepts/Customer.l": "import tables.Orders.Orders;\n\nCustomer(customer_id:) distinct :- Orders(customer_id:);",
 }
+PAGES = ["README.md", "docs/index.md", "docs/why.md", "docs/specification.md"]
 
 
-def test_readme_examples_verify(tmp_path):
-    files = dict(_FILE.findall((ROOT / "README.md").read_text()))
-    assert len(files) >= 10, "the README's example files were not found"
-    tables = {path: f"---\nname: {Path(path).stem}\n---\n{decl}\n" for path, decl in TABLES.items()}
-    layer = write(tmp_path / "readme", {**tables, **files})
+@pytest.mark.parametrize("page", PAGES)
+def test_examples_verify(page, tmp_path):
+    files = dict(_FILE.findall((ROOT / page).read_text()))
+    assert files, f"no example file found in {page}"
+    support = {path: f"---\nname: {Path(path).stem}\n---\n{text}\n" for path, text in SUPPORT.items()}
+    layer = write(tmp_path / "examples", {**support, **files})
     assert verify(layer) == []
+
+
+def test_every_example_is_a_file():
+    """No synalog example without its path and front matter."""
+    for page in [*PAGES, "docs/getting-started.md"]:
+        text = (ROOT / page).read_text()
+        for block in re.finditer(r"```prolog\n(.*?)```", text, re.S):
+            caption = text[: block.start()].rstrip().splitlines()[-1]
+            assert re.fullmatch(r"`[\w/]+\.l`", caption), f"{page}: an example has no file path above it"
+            assert block.group(1).startswith(("---\n", "--8<--")), f"{page}: an example has no front matter"

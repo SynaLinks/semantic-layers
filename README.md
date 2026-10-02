@@ -25,7 +25,9 @@ my-layer/
 
 Here is an example of a predicate, the atomic definition of a semantic layer.
 
-```
+`rules/ActiveCustomer.l`
+
+```prolog
 ---
 name: ActiveCustomer
 description: Customers with at least one delivered order.
@@ -283,10 +285,41 @@ TopProduct(product_id? ArgMax= product_id -> amount) distinct :- Orders(product_
 
 A predicate builds on others by name — `import concepts.Customer.Customer;`
 — so knowledge accumulates instead of being re-derived: `Revenue` builds on
-`DeliveredOrder`, which builds on `Orders`. Functors instantiate a generic
-rule for another input (`EnterpriseRevenue := SegmentRevenue(Segment:
-EnterpriseCustomers)`). The imports are the layer's dependency graph: every
-answer traces back, rule by rule, to the source tables.
+`DeliveredOrder`, which builds on `Orders`. The imports are the layer's
+dependency graph: every answer traces back, rule by rule, to the source
+tables. Within a file, a functor instantiates a generic rule for another
+input — here the revenue of a segment, applied to enterprise customers:
+
+`concepts/EnterpriseCustomer.l`
+
+```prolog
+---
+name: EnterpriseCustomer
+description: Customers on the enterprise tier.
+---
+import tables.Customers.Customers;
+
+EnterpriseCustomer(customer_id:) distinct :- Customers(customer_id:, tier: "enterprise");
+```
+
+`rules/EnterpriseRevenue.l`
+
+```prolog
+---
+name: EnterpriseRevenue
+description: Revenue of enterprise customers.
+---
+import concepts.EnterpriseCustomer.EnterpriseCustomer;
+import tables.Customers.Customers;
+import tables.Orders.Orders;
+
+# A generic rule: the revenue of a segment, every customer by default...
+Segment(customer_id:) distinct :- Customers(customer_id:);
+SegmentRevenue(revenue? += amount) distinct :- Segment(customer_id:), Orders(customer_id:, amount:);
+
+# ...instantiated for one segment.
+EnterpriseRevenue := SegmentRevenue(Segment: EnterpriseCustomer);
+```
 
 ### Verified before it runs
 

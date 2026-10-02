@@ -21,6 +21,8 @@ my-layer/
 
 Here is an example of a predicate, the atomic structure of a semantic layer.
 
+`rules/ActiveCustomer.l`
+
 ```prolog
 ---
 name: ActiveCustomer

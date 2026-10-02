@@ -123,8 +123,19 @@ def defined(text: str) -> list[str]:
         ast = json.loads(synalog.parse(_IMPORT_LINE.sub("", text)))
     except ValueError:
         return []
-    names = (rule["head"]["predicate_name"].removesuffix(_AUX) for rule in ast.get("rule", []))
-    return list(dict.fromkeys(n for n in names if not n.startswith("@")))
+    return list(dict.fromkeys(name for rule in ast.get("rule", []) if (name := _defines(rule))))
+
+
+def _defines(rule: dict) -> str | None:
+    """The predicate a parsed rule defines: its head, or — for a functor,
+    ``New := Generic(...)``, parsed as an ``@Make`` directive — the new
+    predicate. ``None`` for every other directive."""
+    head = rule["head"]
+    if head["predicate_name"] == "@Make":
+        first = head["record"]["field_value"][0]["value"]["expression"]["literal"]
+        return first["the_predicate"]["predicate_name"]
+    name = head["predicate_name"].removesuffix(_AUX)
+    return None if name.startswith("@") else name
 
 
 def read_predicates(layer: Path) -> dict[str, Predicate]:

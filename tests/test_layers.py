@@ -62,3 +62,20 @@ def test_invalid_front_matter_is_reported_not_raised(tmp_path):
     assert verify(layer) == [
         "rules/X.l: [ Error ] Invalid front matter YAML: mapping values are not allowed in this context."
     ]
+
+
+def test_a_functor_defines_its_predicate(tmp_path):
+    layer = write(
+        tmp_path / "shop",
+        {
+            "tables/Orders.l": "---\nname: Orders\n---\nOrders(customer_id:, amount:) :- orders(customer_id:, amount:);\n",
+            "rules/BigRevenue.l": (
+                "---\nname: BigRevenue\n---\nimport tables.Orders.Orders;\n\n"
+                "Segment(customer_id:) distinct :- Orders(customer_id:);\n"
+                "Big(customer_id:) distinct :- Orders(customer_id:, amount:), amount > 100;\n"
+                "SegmentRevenue(revenue? += amount) distinct :- Segment(customer_id:), Orders(customer_id:, amount:);\n"
+                "BigRevenue := SegmentRevenue(Segment: Big);\n"
+            ),
+        },
+    )
+    assert verify(layer) == []

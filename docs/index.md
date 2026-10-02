@@ -36,11 +36,13 @@ ActiveCustomer(customer_id:) distinct :-
   Customer(customer_id:), Orders(customer_id:, status: "delivered");
 ```
 
-Where an [Agent Skill](https://agentskills.io) is a `SKILL.md` the agent
-reads and follows, a semantic layer is a set of **formally verified** definitions 
-the agent **runs**: it never paraphrases a definition, it executes it on your data, 
-removing interpretation mistakes and offering error-free composability. A
-project's layers sit side by side in `.agents/layers/`.
+Where an [Agent Skill](https://agentskills.io) is a set of instructions an
+agent reads and interprets, a semantic layer is a set of **deterministic,
+formally verified** predicates the agent **runs**. A definition is executed,
+not paraphrased, so every agent computes the same result from it — and
+definitions compose: new ones build on existing ones without losing meaning.
+
+A project's layers live side by side in `.agents/layers/`.
 
 ## How they work
 

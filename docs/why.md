@@ -258,7 +258,7 @@ import tables.Customers.Customers;
 @OrderBy(Contactable, "customer_id");
 Contactable(customer_id:, channel:) distinct :-
   Customers(customer_id:, email:), email is not null, channel == "email" |
-  Customers(customer_id:, phone:), phone is not null, channel == "phone";
+  Customers(customer_id:, email:, phone:), email is null, phone is not null, channel == "phone";
 ```
 
 `rules/TopProduct.l`

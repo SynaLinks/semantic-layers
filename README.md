@@ -31,7 +31,7 @@ Full documentation: **<https://synalinks.github.io/semantic-layers/>**
 
 Semantic Layers are a lightweight, open format for giving AI agents your
 business definitions — *an active customer*, *revenue*, *a late order* — as
-verified, composable and executable code instead of prose, unlocking reasoning and meaning at scale.
+verified, composable and executable code instead of prose.
 
 At its core, a semantic layer is a folder holding three folders: `tables/`,
 `concepts/` and `rules/`. Each holds one [synalog](https://github.com/SynaLinks/synalog)
@@ -65,13 +65,13 @@ ActiveCustomer(customer_id:) distinct :-
   Customer(customer_id:), Orders(customer_id:, status: "delivered");
 ```
 
-Where an [Agent Skill](https://agentskills.io) is a `SKILL.md` the agent
-reads and follows (hopefully), a Semantic Layer is a set of 
-**deterministic & formally verified** predicates the agent **runs**. 
-It **never** make mistakes interpreting them, and can 
-**reuses and combines** them over time without any loss. 
+Where an [Agent Skill](https://agentskills.io) is a set of instructions an
+agent reads and interprets, a semantic layer is a set of **deterministic,
+formally verified** predicates the agent **runs**. A definition is executed,
+not paraphrased, so every agent computes the same result from it — and
+definitions compose: new ones build on existing ones without losing meaning.
 
-A project's layers sit side by side in `.agents/layers/`.
+A project's layers live side by side in `.agents/layers/`.
 
 ## Powered by synalog
 
@@ -312,7 +312,7 @@ import tables.Customers.Customers;
 @OrderBy(Contactable, "customer_id");
 Contactable(customer_id:, channel:) distinct :-
   Customers(customer_id:, email:), email is not null, channel == "email" |
-  Customers(customer_id:, phone:), phone is not null, channel == "phone";
+  Customers(customer_id:, email:, phone:), email is null, phone is not null, channel == "phone";
 ```
 
 `rules/TopProduct.l`
@@ -352,8 +352,9 @@ TopCustomers(customer_id:, spent? += amount) distinct :- Orders(customer_id:, am
 ### Composition and reuse
 
 A predicate builds on others by name — `import concepts.Customer.Customer;`
-— so knowledge accumulates instead of being re-derived: `Revenue` builds on
-`DeliveredOrder`, which builds on `Orders`. The imports are the layer's
+— so knowledge accumulates instead of being re-derived: in the
+[`sales` example layer](layers/sales/), `Revenue` builds on `DeliveredOrder`,
+which builds on `Orders`. The imports are the layer's
 dependency graph: every answer traces back, rule by rule, to the source
 tables. Within a file, a functor instantiates a generic rule for another
 input — here the revenue of a segment, applied to enterprise customers:
@@ -474,11 +475,13 @@ footprint.
 ## Getting started
 
 ```shell
-uvx semantic-layers add SynaLinks/semantic-layers-examples --layer sales
+uvx semantic-layers add SynaLinks/semantic-layers --layer sales
 uvx semantic-layers connect sales psql host=db.example.com database=sales user=analyst password=...
 ```
 
-Then ask your coding agent about your sales.
+This installs the example `sales` layer into `.agents/layers/`, connects it
+to your database and generates its tables. Then ask your coding agent about
+your sales.
 
 To write your own layer, start a layer project:
 
@@ -489,23 +492,31 @@ uvx semantic-layers connect . psql host=db.example.com database=sales user=analy
 ```
 
 Write your definitions in `concepts/` and `rules/`, check them with
-`semantic-layers check .`, and push the repository: it installs with
-`semantic-layers add <owner>/sales`.
+`semantic-layers check .`, and push the repository: anyone can then install it
+with `semantic-layers add <owner>/sales`.
 
-- **[Specification](docs/specification.md)** — Format details
-- **[Sharing](docs/sharing.md)** — Installing, connecting, publishing and updating layers with the `semantic-layers` command
+## Documentation
+
+- **[Getting started](docs/getting-started.md)** — Install a layer, connect it, write your own
+- **[Specification](docs/specification.md)** — The format, file by file
+- **[Sharing](docs/sharing.md)** — Installing, connecting, publishing and updating layers
+- **[Agents](docs/agents.md)** — How coding agents are told about the layers
+- **[CLI](docs/cli.md)** — Every `semantic-layers` command
+- **[Examples](layers/)** — The `sales` and `support` example layers
 - **[Agent Skills](https://agentskills.io)** — The format semantic layers are modeled on
 
 ## Open development
 
 Semantic Layers were developed by [Synalinks](https://github.com/SynaLinks)
-for Lemma, its proprietary harness, and are released as an open format. 
+for Lemma, its commercial agent harness, and are released as an open format.
 
-Open question, merging pstream changes into a modified layer, binding a 
-shared layer to tables whose names or columns differ, letting one layer
-import another's definitions are listed in the [specification](docs/specification.md#open-questions);
-contributions are welcome.
+Several questions remain open — merging upstream changes into a modified
+layer, binding a shared layer to tables whose names or columns differ, and
+letting one layer import another's definitions. They are listed in the
+[specification](docs/specification.md#open-questions). Contributions are
+welcome: see [Development](docs/development.md) to run the tests, the linter
+and the documentation locally.
 
 ## License
 
-Apache 2.0.
+Apache 2.0 — see [LICENSE](LICENSE).

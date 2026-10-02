@@ -95,3 +95,12 @@ def test_a_layer_must_describe_itself(tmp_path):
     assert verify(layer) == ["synalog.toml: [project] has no description — say what the layer is about"]
     (layer / "synalog.toml").unlink()
     assert verify(layer) == ["synalog.toml is missing: a layer says what it is in its [project] (name, description)"]
+
+
+def test_parse_splits_front_matter_and_body():
+    from semantic_layers.layers import parse
+
+    meta, body = parse("---\nname: X\ndescription: An x.\n---\nimport tables.T.T;\n\nX(a:) :- T(a:);\n")
+    assert meta == {"name": "X", "description": "An x."}
+    assert body == "import tables.T.T;\n\nX(a:) :- T(a:);\n"
+    assert parse("X(a: 1);\n") == ({}, "X(a: 1);\n")

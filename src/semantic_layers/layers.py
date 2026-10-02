@@ -56,6 +56,11 @@ class Predicate:
         return str(self.meta.get("description") or "").strip()
 
     @property
+    def body(self) -> str:
+        """The file after its front matter: imports, then synalog."""
+        return parse(self.text)[1]
+
+    @property
     def imports(self) -> list[tuple[str, str]]:
         """``(kind, name)`` of every predicate this one imports."""
         return [(KINDS[folder], name) for folder, _module, name in _IMPORT.findall(self.text)]
@@ -115,6 +120,17 @@ def read_project(folder: Path) -> dict:
     ``description`` (``{}`` without one)."""
     table = _project_file(folder).get("project")
     return table if isinstance(table, dict) else {}
+
+
+def parse(text: str) -> tuple[dict, str]:
+    """``(front matter, body)`` of a layer file: the front matter's fields
+    (``{}`` without valid ones) and the file after it."""
+    raw = synalog.front_matter(text)
+    if raw is None:
+        return {}, text
+    # The block is the opening line, the YAML, the closing line.
+    body = "".join(text.splitlines(keepends=True)[raw.count("\n") + 2 :])
+    return front_matter(text), body
 
 
 def front_matter(text: str) -> dict:

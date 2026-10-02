@@ -83,3 +83,13 @@ def test_connect_keeps_other_env_lines(tmp_path):
 def test_a_secret_keeps_its_quotes(tmp_path):
     connect.write_connection(tmp_path, "psql", {**PG, "password": '"quoted"'})
     assert connect.layer_dsn(tmp_path)[1].startswith("postgresql://u:%22quoted%22@h")
+
+
+def test_connect_keeps_the_project_table(tmp_path):
+    from semantic_layers.init import init
+
+    init(tmp_path / "shop", description="Orders of the shop.")
+    connect.write_connection(tmp_path / "shop", "psql", PG)
+    data = tomllib.loads((tmp_path / "shop" / "synalog.toml").read_text())
+    assert data["project"] == {"name": "shop", "description": "Orders of the shop."}
+    assert data["connection"]["host"] == "h"

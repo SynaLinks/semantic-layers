@@ -52,7 +52,7 @@ Here is an example of a predicate, the atomic definition of a semantic layer.
 
 `rules/ActiveCustomer.l`
 
-```prolog
+```
 ---
 name: ActiveCustomer
 description: Customers with at least one delivered order.
@@ -101,7 +101,7 @@ materials: the bolt is in the wheel, the wheel is in the bike.
 
 `concepts/Supplier.l`
 
-```prolog
+```
 ---
 name: Supplier
 description: A supplier, as a node.
@@ -114,7 +114,7 @@ Supplier(supplier_id:, name:, country:) distinct :- Suppliers(supplier_id:, name
 
 `concepts/Part.l`
 
-```prolog
+```
 ---
 name: Part
 description: A part, bought or assembled in house, as a node.
@@ -127,7 +127,7 @@ Part(part_id:, name:) distinct :- Parts(part_id:, name:);
 
 `concepts/Supplies.l`
 
-```prolog
+```
 ---
 name: Supplies
 description: The edge from a supplier to each part it supplies.
@@ -143,7 +143,7 @@ Supplies(supplier_id:, part_id:) distinct :-
 
 `concepts/Contains.l`
 
-```prolog
+```
 ---
 name: Contains
 description: The edge from an assembly to each component it contains, weighted by quantity.
@@ -159,7 +159,7 @@ Contains(assembly_id:, component_id:, quantity:) distinct :-
 
 `concepts/Requires.l`
 
-```prolog
+```
 ---
 name: Requires
 description: An assembly requires a component, directly or inside a sub-assembly, at any depth.
@@ -175,7 +175,7 @@ Requires(assembly_id:, component_id:) distinct :-
 
 `rules/SupplierExposure.l`
 
-```prolog
+```
 ---
 name: SupplierExposure
 description: The assemblies that stop if a supplier fails, through every level of the bill of materials.
@@ -198,7 +198,7 @@ filters — not a bespoke query each time.
 
 `concepts/MemberOf.l`
 
-```prolog
+```
 ---
 name: MemberOf
 description: The edge from a person to their team, valid from valid_from until valid_to (9999-12-31 while it lasts).
@@ -222,7 +222,7 @@ MemberOf(person_id:, team_id:, valid_from:, valid_to:) distinct :-
 
 `rules/MemberToday.l`
 
-```prolog
+```
 ---
 name: MemberToday
 description: Who is in which team today.
@@ -237,7 +237,7 @@ MemberToday(person_id:, team_id:) distinct :-
 
 `rules/MemberOn.l`
 
-```prolog
+```
 ---
 name: MemberOn
 description: Who was in which team on 15 January 2026.
@@ -260,7 +260,7 @@ termination.
 
 `rules/ShortestCost.l`
 
-```prolog
+```
 ---
 name: ShortestCost
 description: The cheapest shipping cost from the warehouse to each destination.
@@ -288,7 +288,7 @@ beyond sums and counts: `Min=`, `Max=`, `Avg=`, `List=`, `Set=`, `ArgMax=`,
 
 `rules/Dormant.l`
 
-```prolog
+```
 ---
 name: Dormant
 description: Customers who never ordered.
@@ -302,7 +302,7 @@ Dormant(customer_id:) :- Customers(customer_id:), ~Orders(customer_id:);
 
 `rules/Contactable.l`
 
-```prolog
+```
 ---
 name: Contactable
 description: How to reach each customer, by email when there is one, else by phone.
@@ -317,7 +317,7 @@ Contactable(customer_id:, channel:) distinct :-
 
 `rules/TopProduct.l`
 
-```prolog
+```
 ---
 name: TopProduct
 description: The product with the largest single order.
@@ -337,7 +337,7 @@ database sorts and stops, not the agent:
 
 `rules/TopCustomers.l`
 
-```prolog
+```
 ---
 name: TopCustomers
 description: The ten customers who spent the most.
@@ -361,7 +361,7 @@ input — here the revenue of a segment, applied to enterprise customers:
 
 `concepts/EnterpriseCustomer.l`
 
-```prolog
+```
 ---
 name: EnterpriseCustomer
 description: Customers on the enterprise tier.
@@ -374,7 +374,7 @@ EnterpriseCustomer(customer_id:) distinct :- Customers(customer_id:, tier: "ente
 
 `rules/EnterpriseRevenue.l`
 
-```prolog
+```
 ---
 name: EnterpriseRevenue
 description: Revenue of enterprise customers.

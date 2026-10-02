@@ -10,7 +10,8 @@ database:
 
 ```shell
 uvx semantic-layers add SynaLinks/semantic-layers --layer sales
-uvx semantic-layers connect sales psql host=db.example.com database=sales user=analyst password=...
+cd .agents/layers/sales
+uvx semantic-layers connect psql host=db.example.com database=sales user=analyst password=...
 ```
 
 `add` copied the layer into `.agents/layers/sales/`, verified it, and told
@@ -31,9 +32,9 @@ uvx synalog rules/RevenueByCountry.l run RevenueByCountry
 ## Write your own
 
 ```shell
-uvx semantic-layers init sales          # tables/, concepts/, rules/, synalog.toml, .gitignore, README, git
+uvx semantic-layers init sales --description "Orders and customers"   # tables/, concepts/, rules/, synalog.toml, README, git
 cd sales
-uvx semantic-layers connect . psql host=db.example.com database=sales user=analyst password=...
+uvx semantic-layers connect psql host=db.example.com database=sales user=analyst password=...
 ```
 
 Write each definition as one `.l` file — concepts in `concepts/`, rules in

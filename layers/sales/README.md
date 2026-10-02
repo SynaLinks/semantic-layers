@@ -8,5 +8,6 @@ tables:
 
 ```shell
 uvx semantic-layers add SynaLinks/semantic-layers --layer sales
-uvx semantic-layers connect sales psql host=... database=... user=... password=...
+cd .agents/layers/sales
+uvx semantic-layers connect psql host=... database=... user=... password=...
 ```

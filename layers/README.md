@@ -8,5 +8,6 @@ uvx semantic-layers add SynaLinks/semantic-layers --list
 uvx semantic-layers add SynaLinks/semantic-layers --layer sales
 ```
 
-They are published without a `synalog.toml`: they are written for anyone's
-data, so whoever installs them connects them to their own database.
+Each has a `synalog.toml` naming and describing it, without a `[connection]`:
+they are written for anyone's data, so whoever installs them connects them to
+their own database.

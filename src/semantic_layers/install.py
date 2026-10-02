@@ -20,7 +20,7 @@ import tempfile
 from dataclasses import dataclass
 from pathlib import Path
 
-from .connect import PROJECT_FILE, SECRET_FILES
+from .connect import PROJECT_FILE, SECRET_FILES, project_template
 from .layers import FOLDERS, SemanticLayer, find_layers, read_layers, verify
 
 LOCK_FILE = "semantic-layers-lock.json"
@@ -112,7 +112,7 @@ def write_lock(scope: Scope, data: dict) -> None:
 
 def summary(layer: SemanticLayer) -> dict:
     kinds = {kind: sorted(n for n, p in layer.predicates.items() if p.kind == kind) for kind in FOLDERS}
-    return {"name": layer.name, **{FOLDERS[k]: v for k, v in kinds.items()}}
+    return {"name": layer.name, "description": layer.description, **{FOLDERS[k]: v for k, v in kinds.items()}}
 
 
 def available(source: str) -> list[dict]:
@@ -186,6 +186,8 @@ def _stage(offered: SemanticLayer, mine: SemanticLayer | None, folder: Path) -> 
         for name in (*_LOCAL_FILES, PROJECT_FILE):
             if (mine.path / name).exists():
                 shutil.copy2(mine.path / name, folder / name)
+    if not (folder / PROJECT_FILE).exists():  # so `connect` can run in it
+        (folder / PROJECT_FILE).write_text(project_template(folder.name))
     return folder
 
 
@@ -209,6 +211,7 @@ def installed(scope: Scope) -> list[dict]:
         rows.append(
             {
                 "name": name,
+                "description": layer.description if layer else "",
                 "source": entry.get("source", ""),
                 "commit": entry.get("commit"),
                 "connected": bool(layer and layer.connected),

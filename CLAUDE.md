@@ -18,8 +18,10 @@ documentation (`docs/`, a zensical site), the `semantic-layers` command
 - **A file's `name` is the predicate that runs**: one the file defines,
   beside any helpers (`layers.defined`, `verify`). Imports resolve from the
   layer's folder, so a layer is self-contained.
-- **Connections**: a layer's `synalog.toml` holds the engine and its fields
-  (committed); secrets are in its `.env` (`SYNALOG_<ENGINE>_<FIELD>`,
+- **`synalog.toml`**: `[project]` names and describes the layer (`name` must
+  be the folder's; `check` says so), `[connection]` holds the engine and its
+  fields (committed); `connect` runs only in a folder that has one, and `add`
+  writes one (`project_template`) when a source has none; secrets are in its `.env` (`SYNALOG_<ENGINE>_<FIELD>`,
   owner-only, git-ignored). `connect.write_connection` writes both;
   `connect.layer_dsn` reads them back.
 - **Installing never lands anything unverified** (`install.add`): layers are

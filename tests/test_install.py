@@ -135,3 +135,16 @@ def test_git_source_records_its_commit(source, project):
 def test_the_docs_show_the_section_agents_get(tmp_path):
     shown = (Path(__file__).resolve().parents[1] / "docs" / "agents-section.md").read_text()
     assert shown == _agents_section(Scope.resolve(tmp_path))
+
+
+def test_an_installed_layer_has_a_synalog_toml(source, project):
+    add(str(source), scope(project))
+    data = tomllib.loads((layer(project) / "support" / "synalog.toml").read_text())
+    assert data["project"]["name"] == "support" and "connection" not in data
+
+
+def test_a_single_layer_source_is_named_by_its_project(tmp_path, project):
+    single = write(tmp_path / "some-repo", SUPPORT)
+    (single / "synalog.toml").write_text('[project]\nname = "support"\ndescription = "Tickets."\n')
+    assert add(str(single), scope(project))["installed"] == ["support"]
+    assert installed(scope(project))[0]["description"] == "Tickets."

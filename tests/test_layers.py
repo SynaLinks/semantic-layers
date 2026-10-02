@@ -79,3 +79,11 @@ def test_a_functor_defines_its_predicate(tmp_path):
         },
     )
     assert verify(layer) == []
+
+
+def test_the_project_name_must_be_the_folder_name(tmp_path):
+    layer = write(tmp_path / "shop", {"rules/X.l": '---\nname: X\n---\n@OrderBy(X, "a");\nX(a: 1);\n'})
+    (layer / "synalog.toml").write_text('[project]\nname = "store"\n')
+    assert verify(layer) == ["synalog.toml: names the layer 'store', but its folder is 'shop' — they must match"]
+    (layer / "synalog.toml").write_text('[project]\nname = "shop"\n')
+    assert verify(layer) == []

@@ -8,7 +8,7 @@ from pathlib import Path
 
 from . import __version__
 from .banner import show_banner, show_logo
-from .connect import generate_tables, layer_dsn, write_connection
+from .connect import PROJECT_FILE, generate_tables, layer_dsn, write_connection
 from .init import init
 from .install import InstallError, Scope, add, available, installed, update
 from .layers import is_layer, search, verify, verify_layers
@@ -29,7 +29,7 @@ def _layer_folder(args) -> Path:
 
 def cmd_init(args) -> int:
     target = Path(args.name).expanduser() if args.name else Path.cwd()
-    result = init(target, None if args.name is None else Path(args.name).name)
+    result = init(target, None if args.name is None else Path(args.name).name, args.description or "")
     where = "." if not args.name else args.name
     print(f"Layer project {result['name']} in {result['path']}")
     for item in result["created"]:
@@ -37,7 +37,7 @@ def cmd_init(args) -> int:
     print(
         "Next:\n"
         + (f"  cd {where}\n" if args.name else "")
-        + "  uvx semantic-layers connect . <engine> host=... user=... password=...   # tables/ from your database\n"
+        + "  uvx semantic-layers connect <engine> host=... user=... password=...   # tables/ from your database\n"
         "  write concepts/<Name>.l and rules/<Name>.l, then: uvx semantic-layers check .\n"
         "  git push it, and anyone installs it with: uvx semantic-layers add <owner>/<repo>"
     )
@@ -55,11 +55,16 @@ def _details(pairs: list[str]) -> dict:
 
 
 def cmd_connect(args) -> int:
-    folder = _layer_folder(args)
+    folder = Path.cwd()
+    if not (folder / PROJECT_FILE).is_file():
+        raise ValueError(
+            f"connect runs inside a layer, and {folder} has no {PROJECT_FILE}: cd into one "
+            "(.agents/layers/<layer>/ for an installed layer), or create one with 'semantic-layers init'."
+        )
     if args.engine:
         write_connection(folder, args.engine, _details(args.fields))
     elif args.fields:
-        raise ValueError("name the engine before its fields: connect <layer> <engine> key=value ...")
+        raise ValueError("name the engine before its fields: connect <engine> key=value ...")
     engine, _dsn = layer_dsn(folder)
     try:
         result = generate_tables(folder)
@@ -84,7 +89,7 @@ def cmd_connect(args) -> int:
 def cmd_add(args) -> int:
     if args.list:
         for layer in available(args.source):
-            print(layer["name"])
+            print(layer["name"] + (f" — {layer['description']}" if layer["description"] else ""))
             for folder in ("tables", "concepts", "rules"):
                 if layer[folder]:
                     print(f"  {folder + ':':<10} {', '.join(layer[folder])}")
@@ -104,6 +109,8 @@ def cmd_list(args) -> int:
     for row in rows:
         connected = "connected" if row["connected"] else "not connected"
         print(f"{row['name']:<32} {row['source'] or '-':<40} {row['state']}, {connected}")
+        if row["description"]:
+            print(f"  {row['description']}")
     return 0
 
 
@@ -146,10 +153,12 @@ def main(argv: list[str] | None = None) -> int:
 
     p = commands.add_parser("init", help="set up a semantic layer project")
     p.add_argument("name", nargs="?", help="the layer's folder to create (default: the current folder)")
+    p.add_argument("--description", help="what the layer is about, written in its synalog.toml")
     p.set_defaults(func=cmd_init)
 
-    p = commands.add_parser("connect", help="connect a layer to your database and generate its tables")
-    p.add_argument("layer", help="an installed layer's name, or a layer folder's path (. in a layer project)")
+    p = commands.add_parser(
+        "connect", help="connect the layer in this folder (it has a synalog.toml) to a database, generate its tables"
+    )
     p.add_argument(
         "engine",
         nargs="?",
@@ -162,7 +171,6 @@ def main(argv: list[str] | None = None) -> int:
         help="connection details, e.g. host=db.example.com database=sales user=analyst"
         " password=... (secrets go to .env, the rest to synalog.toml)",
     )
-    _folder_options(p)
     p.set_defaults(func=cmd_connect)
 
     p = commands.add_parser("add", help="install semantic layers from a repository or a folder")

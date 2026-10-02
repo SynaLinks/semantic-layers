@@ -98,11 +98,28 @@ class SemanticLayer:
     @property
     def connected(self) -> bool:
         """Whether its ``synalog.toml`` names a database (a ``[connection]``)."""
-        path = self.path / "synalog.toml"
-        try:
-            return path.is_file() and "connection" in tomllib.loads(path.read_text())
-        except tomllib.TOMLDecodeError:
-            return False
+        return "connection" in _project_file(self.path)
+
+    @property
+    def description(self) -> str:
+        """What the layer is about: its ``synalog.toml``'s ``[project]``."""
+        return str(read_project(self.path).get("description") or "").strip()
+
+
+def _project_file(folder: Path) -> dict:
+    """A layer's ``synalog.toml``, parsed (``{}`` without one, or unreadable)."""
+    path = folder / "synalog.toml"
+    try:
+        return tomllib.loads(path.read_text()) if path.is_file() else {}
+    except tomllib.TOMLDecodeError:
+        return {}
+
+
+def read_project(folder: Path) -> dict:
+    """The ``[project]`` table of a layer's ``synalog.toml``: its ``name`` and
+    ``description`` (``{}`` without one)."""
+    table = _project_file(folder).get("project")
+    return table if isinstance(table, dict) else {}
 
 
 def front_matter(text: str) -> dict:
@@ -164,6 +181,7 @@ def find_layers(root: Path, name: str) -> dict[str, SemanticLayer]:
     folders at its root, named ``name``) or holds several, as sub-folders of
     its root, ``layers/``, ``layers/`` or ``.agents/layers/``."""
     if is_layer(root):
+        name = str(read_project(root).get("name") or name)
         return {name: SemanticLayer(name, root)}
     for candidate in (root, root / "layers", root / "layers", root / ".agents" / "layers"):
         layers = read_layers(candidate)
@@ -188,7 +206,24 @@ def verify(layer: Path) -> list[str]:
             elif p.meta["name"] not in own:
                 problems = [f"its front matter names '{p.meta['name']}', which it does not define ({', '.join(own)})"]
         errors.extend(f"{p.relative}: {problem}" for problem in problems)
-    return errors
+    return errors + _check_project_file(layer)
+
+
+def _check_project_file(layer: Path) -> list[str]:
+    """``synalog.toml`` reads as TOML, and its ``[project]`` name — when it
+    gives one — is the layer's folder name."""
+    path = layer / "synalog.toml"
+    if not path.is_file():
+        return []
+    try:
+        data = tomllib.loads(path.read_text())
+    except tomllib.TOMLDecodeError as exc:
+        return [f"synalog.toml: {exc}"]
+    named = (data.get("project") or {}).get("name") if isinstance(data.get("project"), dict) else None
+    folder = layer.resolve().name
+    if named and named != folder:
+        return [f"synalog.toml: names the layer '{named}', but its folder is '{folder}' — they must match"]
+    return []
 
 
 def verify_layers(folder: Path) -> list[str]:

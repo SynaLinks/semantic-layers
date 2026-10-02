@@ -12,7 +12,7 @@ layer-name/
 ├── tables/           # The data: one .l file per database table
 ├── concepts/         # Entities, relationships and clean views, built on tables
 ├── rules/            # Insights, built on concepts
-├── synalog.toml      # Optional: the database it runs on (committed)
+├── synalog.toml      # Its name, description and database (committed)
 ├── .env              # Optional: that database's secrets (never committed)
 └── .gitignore        # Optional: keeps the credentials out of git
 ```
@@ -206,11 +206,17 @@ database's.
 
 ## Connection
 
-A layer's database is synalog's project file, `synalog.toml`, at the layer's
-root: the engine and its connection details as plain fields, committed with
-the layer.
+A layer's `synalog.toml`, at its root and committed with it, says what the
+layer is and which database it runs on. `[project]` names and describes the
+layer — its `name` must be the folder's, and `check` reports a mismatch;
+`[connection]` is synalog's: the engine and its connection details as plain
+fields.
 
 ```toml
+[project]
+name = "sales"
+description = "Orders and customers: revenue, active customers, countries."
+
 [connection]
 engine = "psql"
 host = "db.example.com"
@@ -232,7 +238,7 @@ takes precedence, for CI.
 
 A layer published with its `synalog.toml` says which database it was written
 for: whoever installs it only adds the secrets — or connects it to another
-database. A layer meant for anyone's data is published without one.
+database. A layer meant for anyone's data is published without a `[connection]`.
 
 Engines with a connection: `psql`, `trino`, `presto`, `databricks`,
 `bigquery`. DuckDB and SQLite have none: synalog runs them in memory, loading

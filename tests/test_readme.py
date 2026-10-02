@@ -11,7 +11,7 @@ from semantic_layers.layers import verify
 
 ROOT = Path(__file__).resolve().parents[1]
 #: "`concepts/X.l`", a blank line, then the file in a code block.
-_FILE = re.compile(r"^`((?:concepts|rules|tables)/\w+\.l)`\n\n```prolog\n(.*?)```", re.M | re.S)
+_FILE = re.compile(r"^`((?:concepts|rules|tables)/\w+\.l)`\n\n```(?:prolog)?\n(.*?)```", re.M | re.S)
 #: What the examples build on without showing it.
 SUPPORT = {
     "tables/Suppliers.l": "Suppliers(supplier_id:, name:, country:) :- suppliers(supplier_id:, name:, country:);",
@@ -42,10 +42,12 @@ def test_every_example_is_a_file():
     """No synalog example without its path and front matter."""
     for page in [*PAGES, "docs/getting-started.md"]:
         text = (ROOT / page).read_text()
-        for block in re.finditer(r"```prolog\n(.*?)```", text, re.S):
+        for block in re.finditer(r"```(\w*)\n(.*?)```", text, re.S):
+            if block.group(1) not in ("", "prolog") or ":-" not in block.group(2) and "--8<--" not in block.group(2):
+                continue  # not a synalog example
             caption = text[: block.start()].rstrip().splitlines()[-1]
             assert re.fullmatch(r"`[\w/]+\.l`", caption), f"{page}: an example has no file path above it"
-            assert block.group(1).startswith(("---\n", "--8<--")), f"{page}: an example has no front matter"
+            assert block.group(2).startswith(("---\n", "--8<--")), f"{page}: an example has no front matter"
 
 
 def test_every_concept_and_rule_is_ordered():

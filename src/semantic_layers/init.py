@@ -13,29 +13,11 @@ import re
 import subprocess
 from pathlib import Path
 
-from .connect import PROJECT_FILE, SECRET_FILES, ensure_gitignore
+from .connect import PROJECT_FILE, SECRET_FILES, ensure_gitignore, project_template
 from .layers import FOLDERS
 
 #: Layer names: lowercase letters, numbers and single hyphens, as Agent Skills'.
 _NAME = re.compile(r"^[a-z0-9]+(-[a-z0-9]+)*$")
-
-
-#: A new layer's synalog.toml: no connection yet, and how to give it one.
-PROJECT_TEMPLATE = """\
-# The database this layer runs on. `semantic-layers connect . <engine> key=value ...`
-# writes it, or fill it in by hand:
-#
-# [connection]
-# engine = "psql"
-# host = "db.example.com"
-# port = 5432
-# database = "sales"
-# user = "analyst"
-# schema = "public"
-#
-# Secrets never go here: put them in .env (kept out of git), e.g.
-# SYNALOG_PSQL_PASSWORD=...
-"""
 
 
 def readme(name: str) -> str:
@@ -55,21 +37,22 @@ definitions about one database, as verified, executable
 
 ```shell
 uvx semantic-layers add <owner>/{name}
-uvx semantic-layers connect {name}                  # the database in its synalog.toml
-uvx semantic-layers connect {name} <engine> key=value ...   # or another one
+cd .agents/layers/{name}
+uvx semantic-layers connect                      # the database in its synalog.toml
+uvx semantic-layers connect <engine> key=value ...  # or another one
 ```
 
 ## Develop
 
 ```shell
-uvx semantic-layers connect . <engine> key=value ...   # synalog.toml, .env, then tables/ from the database
+uvx semantic-layers connect <engine> key=value ...     # synalog.toml, .env, then tables/ from the database
 uvx synalog rules/<Name>.l run <Name>                   # run a definition
 uvx semantic-layers check .                                      # verify every definition
 ```
 """
 
 
-def init(target: Path, name: str | None = None) -> dict:
+def init(target: Path, name: str | None = None, description: str = "") -> dict:
     """Set up the layer project ``target`` (created if missing). Never
     overwrites a file that exists. Returns what was ``created``."""
     name = name or target.resolve().name
@@ -88,7 +71,7 @@ def init(target: Path, name: str | None = None) -> dict:
             path.mkdir()
             (path / ".gitkeep").touch()
             created.append(f"{folder}/")
-    for relative, text in ((PROJECT_FILE, PROJECT_TEMPLATE), ("README.md", readme(name))):
+    for relative, text in ((PROJECT_FILE, project_template(name, description)), ("README.md", readme(name))):
         path = target / relative
         if not path.exists():
             path.write_text(text)

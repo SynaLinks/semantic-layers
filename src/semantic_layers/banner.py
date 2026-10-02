@@ -41,7 +41,7 @@ AGENT_VARIABLES = (
 
 COMMANDS = (
     ("add <owner>/<repo>", "Install semantic layers"),
-    ("connect <layer>", "Connect a layer to its database"),
+    ("connect <engine> ...", "Connect the layer in this folder"),
     ("search <regex>", "Find definitions"),
     ("list", "List installed layers"),
     ("update", "Update installed layers"),

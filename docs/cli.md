@@ -14,9 +14,9 @@ and `search` open with the logo — never when a coding agent runs them.
 
 | Command | |
 |---|---|
-| `init [<name>]` | set up a layer project: `./<name>/`, or the current folder |
+| `init [<name>]` | set up a layer project: `./<name>/`, or the current folder; `--description` |
 | `add <source>` | install layers from `owner/repo` on GitHub, a git URL or a folder; `--layer <name>` (repeatable), `--list`, `--force`, `--agent <name>`, `--all` |
-| `connect <layer> [<engine> key=value ...]` | give a layer its database (or use the one in its `synalog.toml`), generate its tables, check it; `<layer>` is an installed layer's name or a folder's path (`.`) |
+| `connect [<engine> key=value ...]` | run in a layer's folder (it has a `synalog.toml`): give the layer its database — or use the one in its `synalog.toml` — generate its tables, check it |
 | `list` | the installed layers and their state: `ok`, `modified`, `local` (yours), `missing` |
 | `update` | update installed layers, keeping the ones you modified |
 | `search <pattern>` | find definitions whose name, keywords or description match a regular expression (case-insensitive), name matches first; `--limit <n>`, `--tables` |
@@ -30,8 +30,10 @@ Every command takes `--global` (the user's layer, `~/.agents/layers/`) or
 ```shell
 uvx semantic-layers add SynaLinks/semantic-layers --list            # what a source offers
 uvx semantic-layers add SynaLinks/semantic-layers --layer sales     # install one layer
-uvx semantic-layers connect sales psql host=db.example.com database=sales user=analyst password=...
-uvx semantic-layers connect sales                                   # again, from its synalog.toml
+cd .agents/layers/sales
+uvx semantic-layers connect psql host=db.example.com database=sales user=analyst password=...
+uvx semantic-layers connect                                         # again, from its synalog.toml
+cd -
 uvx semantic-layers search 'revenue|turnover'
 uvx semantic-layers check sales
 uvx semantic-layers list

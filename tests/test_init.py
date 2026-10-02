@@ -46,3 +46,11 @@ def test_init_then_publish_then_add(tmp_path, project, monkeypatch, capsys):
     installed_layer = layer(project) / "sales"
     assert (installed_layer / "rules" / "ActiveCustomer.l").exists() and not (installed_layer / ".git").exists()
     assert verify(installed_layer) == []
+
+
+def test_init_names_and_describes_the_layer(tmp_path):
+    from semantic_layers.init import init
+
+    init(tmp_path / "sales", description="Orders and customers.")
+    data = tomllib.loads((tmp_path / "sales" / "synalog.toml").read_text())
+    assert data["project"] == {"name": "sales", "description": "Orders and customers."}

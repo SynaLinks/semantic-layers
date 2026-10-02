@@ -49,6 +49,7 @@ description: A supplier, as a node.
 ---
 import tables.Suppliers.Suppliers;
 
+@OrderBy(Supplier, "supplier_id");
 Supplier(supplier_id:, name:) distinct :- Suppliers(supplier_id:, name:);
 ```
 
@@ -61,6 +62,7 @@ description: A product, as a node.
 ---
 import tables.Products.Products;
 
+@OrderBy(Product, "product_id");
 Product(product_id:, name:) distinct :- Products(product_id:, name:);
 ```
 
@@ -73,6 +75,7 @@ description: A product category, a categorical column turned into a node.
 ---
 import tables.Products.Products;
 
+@OrderBy(Category, "category");
 Category(category:) distinct :- Products(category:);
 ```
 
@@ -87,6 +90,7 @@ import concepts.Supplier.Supplier;
 import concepts.Product.Product;
 import tables.Purchases.Purchases;
 
+@OrderBy(Supplies, "supplier_id", "product_id");
 Supplies(supplier_id:, product_id:) distinct :-
   Supplier(supplier_id:), Product(product_id:), Purchases(supplier_id:, product_id:);
 ```
@@ -102,6 +106,7 @@ import concepts.Product.Product;
 import concepts.Category.Category;
 import tables.Products.Products;
 
+@OrderBy(InCategory, "product_id");
 InCategory(product_id:, category:) distinct :-
   Product(product_id:), Category(category:), Products(product_id:, category:);
 ```
@@ -116,6 +121,7 @@ description: The categories that depend on each supplier, two hops away.
 import concepts.Supplies.Supplies;
 import concepts.InCategory.InCategory;
 
+@OrderBy(SupplierExposure, "supplier_id", "category");
 SupplierExposure(supplier_id:, category:) distinct :-
   Supplies(supplier_id:, product_id:), InCategory(product_id:, category:);
 ```
@@ -143,6 +149,7 @@ NextChange(person_id:, changed_at:, next? Min= later) distinct :-
   later > changed_at;
 
 # ...and the latest one is still open.
+@OrderBy(MemberOf, "person_id", "valid_from");
 MemberOf(person_id:, team_id:, valid_from:, valid_to:) distinct :-
   Assignments(person_id:, team_id:, changed_at: valid_from),
   NextChange(person_id:, changed_at: valid_from, next: valid_to);
@@ -160,6 +167,7 @@ description: Who is in which team today.
 ---
 import concepts.MemberOf.MemberOf;
 
+@OrderBy(MemberToday, "person_id");
 MemberToday(person_id:, team_id:) distinct :-
   MemberOf(person_id:, team_id:, valid_from:, valid_to:),
   Today(date:), valid_from <= date, date < valid_to;
@@ -174,6 +182,7 @@ description: Who was in which team on 15 January 2026.
 ---
 import concepts.MemberOf.MemberOf;
 
+@OrderBy(MemberOn, "person_id");
 MemberOn(person_id:, team_id:, date:) distinct :-
   MemberOf(person_id:, team_id:, valid_from:, valid_to:),
   date == "2026-01-15", valid_from <= date, date < valid_to;
@@ -203,6 +212,7 @@ RouteCost(destination:, cost: total) :-
   RouteCost(destination: hub, cost: hub_cost), Routes(origin: hub, destination:, cost:),
   total == hub_cost + cost;
 
+@OrderBy(ShortestCost, "cost");
 ShortestCost(destination:, cost? Min= cost) distinct :- RouteCost(destination:, cost:);
 ```
 
@@ -224,6 +234,7 @@ description: Customers who never ordered.
 import tables.Customers.Customers;
 import tables.Orders.Orders;
 
+@OrderBy(Dormant, "customer_id");
 Dormant(customer_id:) :- Customers(customer_id:), ~Orders(customer_id:);
 ```
 
@@ -236,6 +247,7 @@ description: How to reach each customer, by email when there is one, else by pho
 ---
 import tables.Customers.Customers;
 
+@OrderBy(Contactable, "customer_id");
 Contactable(customer_id:, channel:) distinct :-
   Customers(customer_id:, email:), email is not null, channel == "email" |
   Customers(customer_id:, phone:), phone is not null, channel == "phone";
@@ -250,7 +262,29 @@ description: The product with the largest single order.
 ---
 import tables.Orders.Orders;
 
+@OrderBy(TopProduct, "product_id");
 TopProduct(product_id? ArgMax= product_id -> amount) distinct :- Orders(product_id:, amount:);
+```
+
+### Ordered, bounded results
+
+Results are paginated, so every concept and rule carries `@OrderBy`: without
+a stable order, the same page comes back different between calls. `@Limit`
+caps a ranking. Both compile into the SQL — `ORDER BY`, `LIMIT` — so the
+database sorts and stops, not the agent:
+
+`rules/TopCustomers.l`
+
+```prolog
+---
+name: TopCustomers
+description: The ten customers who spent the most.
+---
+import tables.Orders.Orders;
+
+@OrderBy(TopCustomers, "spent", "DESC");
+@Limit(TopCustomers, 10);
+TopCustomers(customer_id:, spent? += amount) distinct :- Orders(customer_id:, amount:);
 ```
 
 ### Composition and reuse
@@ -271,6 +305,7 @@ description: Customers on the enterprise tier.
 ---
 import tables.Customers.Customers;
 
+@OrderBy(EnterpriseCustomer, "customer_id");
 EnterpriseCustomer(customer_id:) distinct :- Customers(customer_id:, tier: "enterprise");
 ```
 
@@ -290,6 +325,7 @@ Segment(customer_id:) distinct :- Customers(customer_id:);
 SegmentRevenue(revenue? += amount) distinct :- Segment(customer_id:), Orders(customer_id:, amount:);
 
 # ...instantiated for one segment.
+@OrderBy(EnterpriseRevenue, "revenue");
 EnterpriseRevenue := SegmentRevenue(Segment: EnterpriseCustomer);
 ```
 

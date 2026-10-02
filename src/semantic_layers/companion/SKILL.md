@@ -71,7 +71,9 @@ than an ad-hoc query:
 - front matter with `name` and a plain-language `description`;
 - one `import <folder>.<Name>.<Name>;` line per predicate it uses, from the
   same layer;
-- an `@OrderBy` directive, then the rule.
+- an `@OrderBy` directive (results are paginated: without a stable order,
+  pages differ between calls) — and `@Limit` for the top of a ranking —
+  then the rule.
 
 Check it before saving — this validates and compiles without running:
 

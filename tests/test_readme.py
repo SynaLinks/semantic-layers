@@ -44,3 +44,14 @@ def test_every_example_is_a_file():
             caption = text[: block.start()].rstrip().splitlines()[-1]
             assert re.fullmatch(r"`[\w/]+\.l`", caption), f"{page}: an example has no file path above it"
             assert block.group(1).startswith(("---\n", "--8<--")), f"{page}: an example has no front matter"
+
+
+def test_every_concept_and_rule_is_ordered():
+    """Results are paginated: every example concept and rule has its @OrderBy."""
+    examples = [(page, path, text) for page in PAGES for path, text in _FILE.findall((ROOT / page).read_text())]
+    examples += [("layers", str(p), p.read_text()) for p in (ROOT / "layers").glob("*/*/*.l")]
+    for page, path, text in examples:
+        if "tables/" in path:
+            continue
+        name = re.search(r"^name: (\w+)", text, re.M).group(1)
+        assert f"@OrderBy({name}," in text, f"{page}: {path} has no @OrderBy"

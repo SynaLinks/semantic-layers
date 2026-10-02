@@ -31,6 +31,7 @@ description: Customers with at least one delivered order.
 import concepts.Customer.Customer;
 import tables.Orders.Orders;
 
+@OrderBy(ActiveCustomer, "customer_id");
 ActiveCustomer(customer_id:) distinct :-
   Customer(customer_id:), Orders(customer_id:, status: "delivered");
 ```

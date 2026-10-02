@@ -15,6 +15,19 @@ on the next `add`, and everything else in the file is kept. `--all` writes it
 into every agent file `add` knows. Layers installed for the user (`--global`)
 belong to no project, so no file is written.
 
+## The Agent Skill
+
+For agents that support [Agent Skills](https://agentskills.io), this
+repository ships one: `skills/semantic-layers/`. Where the `AGENTS.md`
+section says *what* to do, the skill teaches *how* — searching and reading
+definitions, writing synalog in a layer, every modelling pattern, every error
+message — with an example layer that runs without a database. Install it
+with the Agent Skills CLI:
+
+```shell
+npx skills add SynaLinks/semantic-layers
+```
+
 ## What the agent reads
 
 ```markdown

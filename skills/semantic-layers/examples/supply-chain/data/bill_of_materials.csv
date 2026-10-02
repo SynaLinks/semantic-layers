@@ -1,0 +1,8 @@
+assembly_id,component_id,quantity
+bike,wheel,2
+bike,frame,1
+bike,saddle,1
+wheel,tyre,1
+wheel,bolt,8
+frame,bolt,4
+frame,tube,3

@@ -1,0 +1,8 @@
+part_id,name,supplier_id
+bike,Bike,
+wheel,Wheel,
+frame,Frame,
+bolt,Bolt,1
+tyre,Tyre,2
+tube,Steel tube,3
+saddle,Saddle,

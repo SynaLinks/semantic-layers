@@ -465,6 +465,11 @@ footprint.
   `.agents/layers/` and tells the agent how to use them — a section of
   `AGENTS.md`, and of `CLAUDE.md` for Claude Code — so every coding agent
   searches and runs them with the synalog CLI.
+- **[The `semantic-layers` Agent Skill](skills/semantic-layers/)**: teaches a
+  coding agent the whole loop — search, read, run, answer, and write the
+  definitions that are missing — with the synalog it needs, modelling
+  patterns, every error message and a runnable example layer:
+  `npx skills add SynaLinks/semantic-layers`.
 - **[Lemma](https://github.com/SynaLinks/lemma)**: a workspace is a
   set of semantic layers — its own, plus layers installed from repositories,
   each on its own database — versioned with git, searched and run by its

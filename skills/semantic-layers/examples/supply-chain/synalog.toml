@@ -1,0 +1,3 @@
+[project]
+name = "supply-chain"
+description = "Suppliers, parts and the bill of materials: what each supplier's failure would stop."

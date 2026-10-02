@@ -26,6 +26,10 @@ logic programming language from the Datalog family that compiles to optimized
 SQL. A semantic layer is a folder; synalog is what makes the folder *run* —
 and it reaches the questions that plain SQL makes hard to get right.
 
+Each example below is shown as a layer's files — path, front matter,
+imports — the way a layer stores it; a helper used by one predicate only
+stays in that predicate's file.
+
 ### Instant knowledge graphs from your tables
 
 A handful of concepts turn relational tables into a knowledge graph. Nodes
@@ -36,19 +40,82 @@ traversals are rules. The graph is virtual: no ETL, no graph database, no
 data moved — it compiles to SQL over the tables you already have, the moment
 the concepts are written.
 
-```prolog
-# Nodes: entities and categorical values, straight from the tables.
-Supplier(supplier_id:, name:) distinct :- Suppliers(supplier_id:, name:);
-Product(product_id:, name:) distinct :- Products(product_id:, name:);
-Category(category:) distinct :- Products(category:);
+`concepts/Supplier.l`
 
-# Edges between nodes.
+```prolog
+---
+name: Supplier
+description: A supplier, as a node.
+---
+import tables.Suppliers.Suppliers;
+
+Supplier(supplier_id:, name:) distinct :- Suppliers(supplier_id:, name:);
+```
+
+`concepts/Product.l`
+
+```prolog
+---
+name: Product
+description: A product, as a node.
+---
+import tables.Products.Products;
+
+Product(product_id:, name:) distinct :- Products(product_id:, name:);
+```
+
+`concepts/Category.l`
+
+```prolog
+---
+name: Category
+description: A product category, a categorical column turned into a node.
+---
+import tables.Products.Products;
+
+Category(category:) distinct :- Products(category:);
+```
+
+`concepts/Supplies.l`
+
+```prolog
+---
+name: Supplies
+description: The edge from a supplier to each product it supplies.
+---
+import concepts.Supplier.Supplier;
+import concepts.Product.Product;
+import tables.Purchases.Purchases;
+
 Supplies(supplier_id:, product_id:) distinct :-
   Supplier(supplier_id:), Product(product_id:), Purchases(supplier_id:, product_id:);
+```
+
+`concepts/InCategory.l`
+
+```prolog
+---
+name: InCategory
+description: The edge from a product to its category.
+---
+import concepts.Product.Product;
+import concepts.Category.Category;
+import tables.Products.Products;
+
 InCategory(product_id:, category:) distinct :-
   Product(product_id:), Category(category:), Products(product_id:, category:);
+```
 
-# A traversal: the categories that depend on each supplier, two hops away.
+`rules/SupplierExposure.l`
+
+```prolog
+---
+name: SupplierExposure
+description: The categories that depend on each supplier, two hops away.
+---
+import concepts.Supplies.Supplies;
+import concepts.InCategory.InCategory;
+
 SupplierExposure(supplier_id:, category:) distinct :-
   Supplies(supplier_id:, product_id:), InCategory(product_id:, category:);
 ```
@@ -61,24 +128,52 @@ the next change, and the latest one is still open. From there, what holds
 today, what held on any date, and whether two periods overlap are plain
 filters — not a bespoke query each time.
 
+`concepts/MemberOf.l`
+
 ```prolog
+---
+name: MemberOf
+description: The edge from a person to their team, valid from valid_from until valid_to (9999-12-31 while it lasts).
+---
+import tables.Assignments.Assignments;
+
 # Each change lasts until the next one for the same person...
 NextChange(person_id:, changed_at:, next? Min= later) distinct :-
   Assignments(person_id:, changed_at:), Assignments(person_id:, changed_at: later),
   later > changed_at;
 
-# ...so the log becomes a temporal edge, the latest period still open.
+# ...and the latest one is still open.
 MemberOf(person_id:, team_id:, valid_from:, valid_to:) distinct :-
   Assignments(person_id:, team_id:, changed_at: valid_from),
   NextChange(person_id:, changed_at: valid_from, next: valid_to);
 MemberOf(person_id:, team_id:, valid_from:, valid_to:) distinct :-
   Assignments(person_id:, team_id:, changed_at: valid_from),
   ~NextChange(person_id:, changed_at: valid_from), valid_to == "9999-12-31";
+```
 
-# The graph today, and as it was on any date.
+`rules/MemberToday.l`
+
+```prolog
+---
+name: MemberToday
+description: Who is in which team today.
+---
+import concepts.MemberOf.MemberOf;
+
 MemberToday(person_id:, team_id:) distinct :-
   MemberOf(person_id:, team_id:, valid_from:, valid_to:),
   Today(date:), valid_from <= date, date < valid_to;
+```
+
+`rules/MemberOn.l`
+
+```prolog
+---
+name: MemberOn
+description: Who was in which team on 15 January 2026.
+---
+import concepts.MemberOf.MemberOf;
+
 MemberOn(person_id:, team_id:, date:) distinct :-
   MemberOf(person_id:, team_id:, valid_from:, valid_to:),
   date == "2026-01-15", valid_from <= date, date < valid_to;
@@ -92,7 +187,16 @@ there, the route itself, the cheapest path (`Min=`), or the cycles in a
 hierarchy. `@Recursive` bounds the depth, and the verifier guarantees
 termination.
 
+`rules/ShortestCost.l`
+
 ```prolog
+---
+name: ShortestCost
+description: The cheapest shipping cost from the warehouse to each destination.
+---
+import tables.Routes.Routes;
+
+# Every route cost from the warehouse, hop by hop (up to 10 hops).
 @Recursive(RouteCost, 10);
 RouteCost(destination:, cost:) :- Routes(origin: "warehouse", destination:, cost:);
 RouteCost(destination:, cost: total) :-
@@ -110,11 +214,42 @@ stratification. `|` and multiple bodies union alternatives. Aggregations go
 beyond sums and counts: `Min=`, `Max=`, `Avg=`, `List=`, `Set=`, `ArgMax=`,
 `ArgMin=`, top-k.
 
+`rules/Dormant.l`
+
 ```prolog
+---
+name: Dormant
+description: Customers who never ordered.
+---
+import tables.Customers.Customers;
+import tables.Orders.Orders;
+
 Dormant(customer_id:) :- Customers(customer_id:), ~Orders(customer_id:);
+```
+
+`rules/Contactable.l`
+
+```prolog
+---
+name: Contactable
+description: How to reach each customer, by email when there is one, else by phone.
+---
+import tables.Customers.Customers;
+
 Contactable(customer_id:, channel:) distinct :-
   Customers(customer_id:, email:), email is not null, channel == "email" |
   Customers(customer_id:, phone:), phone is not null, channel == "phone";
+```
+
+`rules/TopProduct.l`
+
+```prolog
+---
+name: TopProduct
+description: The product with the largest single order.
+---
+import tables.Orders.Orders;
+
 TopProduct(product_id? ArgMax= product_id -> amount) distinct :- Orders(product_id:, amount:);
 ```
 

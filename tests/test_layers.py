@@ -55,3 +55,10 @@ def test_recursive_intermediate_rule(tmp_path):
     assert verify(layer) == [
         "rules/TeamSize.l: its front matter names 'Team', which it does not define (Manages, TeamSize)"
     ]
+
+
+def test_invalid_front_matter_is_reported_not_raised(tmp_path):
+    layer = write(tmp_path / "shop", {"rules/X.l": "---\nname: X\ndescription: A thing: broken.\n---\nX(a: 1);\n"})
+    assert verify(layer) == [
+        "rules/X.l: [ Error ] Invalid front matter YAML: mapping values are not allowed in this context."
+    ]

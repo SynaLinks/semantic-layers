@@ -106,8 +106,13 @@ class SemanticLayer:
 
 
 def front_matter(text: str) -> dict:
+    """The file's front matter, or ``{}`` when it has none or it is not valid
+    YAML (``verify`` reports why, from synalog's own check)."""
     raw = synalog.front_matter(text)
-    meta = yaml.safe_load(raw) if raw else None
+    try:
+        meta = yaml.safe_load(raw) if raw else None
+    except yaml.YAMLError:
+        return {}
     return meta if isinstance(meta, dict) else {}
 
 

@@ -17,8 +17,7 @@
 </div>
 
 # Semantic Layers
-## Onions have layers, and so do semantic.
-### A standardized way to give AI agents reasoning and meaning over your data
+## A standardized way to give AI agents reasoning and meaning over your data
 
 Semantic Layers are built on [synalog](https://github.com/SynaLinks/synalog), by
 [Synalinks](https://github.com/SynaLinks). New here? [Why semantic

@@ -1,52 +1,48 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="240" height="240" viewBox="0 0 200 210" role="img" aria-label="Semantic Layers">
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="240" height="240" viewBox="0 0 200 210" role="img" aria-label="Semantic Layers">
   <defs>
-    <radialGradient id="bulb" cx="0.38" cy="0.35" r="0.8">
-      <stop offset="0%" stop-color="#FBF1FE"/>
-      <stop offset="45%" stop-color="#DDB3F0"/>
-      <stop offset="100%" stop-color="#A866CF"/>
-    </radialGradient>
+    <path id="cut" d="M93 58 C 93 66, 84 74, 64 86 C 40 100, 28 120, 30 146 C 32 172, 60 190, 100 190 C 140 190, 168 172, 170 146 C 172 120, 160 100, 136 86 C 116 74, 107 66, 107 58 Z"/>
+    <linearGradient id="skin" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#C58BE3"/>
+      <stop offset="100%" stop-color="#8E4FB8"/>
+    </linearGradient>
     <linearGradient id="leaf" x1="0" y1="1" x2="0.3" y2="0">
       <stop offset="0%" stop-color="#4FA65A"/>
       <stop offset="100%" stop-color="#9BE07F"/>
     </linearGradient>
-    <clipPath id="inside"><path d="M93 58 C 93 66, 84 74, 64 86 C 40 100, 28 120, 30 146 C 32 172, 60 190, 100 190 C 140 190, 168 172, 170 146 C 172 120, 160 100, 136 86 C 116 74, 107 66, 107 58 Z"/></clipPath>
   </defs>
 
-  <!-- sprouts, growing out of the neck -->
+  <!-- sprouts -->
   <path d="M96 60 C 86 48, 72 34, 74 14 C 90 22, 100 38, 101 58 Z" fill="url(#leaf)" stroke="#EEDCFA" stroke-width="3.5" stroke-linejoin="round"/>
   <path d="M104 60 C 108 42, 120 26, 140 20 C 138 38, 124 52, 106 62 Z" fill="url(#leaf)" stroke="#EEDCFA" stroke-width="3.5" stroke-linejoin="round"/>
 
-  <!-- roots, starting inside the bulb so they hang from it -->
+  <!-- roots -->
   <g fill="none" stroke="#EEDCFA" stroke-width="3.5" stroke-linecap="round">
     <path d="M90 184 c -1 10, -8 12, -13 10"/>
     <path d="M100 185 c 0 8, 3 12, 0 17"/>
     <path d="M110 184 c 1 10, 8 12, 13 10"/>
   </g>
 
-  <path d="M93 58 C 93 66, 84 74, 64 86 C 40 100, 28 120, 30 146 C 32 172, 60 190, 100 190 C 140 190, 168 172, 170 146 C 172 120, 160 100, 136 86 C 116 74, 107 66, 107 58 Z" fill="url(#bulb)"/>
+  <!-- the skin -->
+  <use href="#cut" fill="url(#skin)"/>
 
-  <!-- the layers: nested shells along the sides, each running to the base -->
-  <g clip-path="url(#inside)" fill="none" stroke="#8A4DB5" stroke-width="3" stroke-linecap="round" opacity="0.55">
-    <path d="M97 60 C 70 82, 46 110, 48 150 C 50 172, 64 184, 80 192"/>
-    <path d="M103 60 C 130 82, 154 110, 152 150 C 150 172, 136 184, 120 192"/>
-    <path d="M98 60 C 82 84, 66 112, 66 146 C 66 168, 76 182, 90 192"/>
-    <path d="M102 60 C 118 84, 134 112, 134 146 C 134 168, 124 182, 110 192"/>
+  <!-- the cut: every layer, nested toward the root, the face in the heart -->
+  <g>
+    <use href="#cut" transform="translate(100 190) scale(0.84) translate(-100 -190)" fill="#FBF2FE" stroke="#C595DE" stroke-width="3.57"/>
+    <use href="#cut" transform="translate(100 190) scale(0.68) translate(-100 -190)" fill="#F2DDF9" stroke="#C595DE" stroke-width="4.41"/>
+    <use href="#cut" transform="translate(100 190) scale(0.53) translate(-100 -190)" fill="#FDF7FF" stroke="#C595DE" stroke-width="5.66"/>
   </g>
 
-  <!-- shine -->
-  <ellipse cx="62" cy="116" rx="8" ry="16" transform="rotate(24 62 116)" fill="#FFFFFF" opacity="0.65"/>
-  <circle cx="74" cy="97" r="3.4" fill="#FFFFFF" opacity="0.7"/>
+  <use href="#cut" fill="none" stroke="#EEDCFA" stroke-width="4" stroke-linejoin="round"/>
 
-  <path d="M93 58 C 93 66, 84 74, 64 86 C 40 100, 28 120, 30 146 C 32 172, 60 190, 100 190 C 140 190, 168 172, 170 146 C 172 120, 160 100, 136 86 C 116 74, 107 66, 107 58 Z" fill="none" stroke="#EEDCFA" stroke-width="4" stroke-linejoin="round"/>
-
-  <!-- face -->
-  <ellipse cx="82" cy="138" rx="7.5" ry="9.5" fill="#33193F"/>
-  <ellipse cx="118" cy="138" rx="7.5" ry="9.5" fill="#33193F"/>
-  <circle cx="85" cy="134" r="3" fill="#FFFFFF"/>
-  <circle cx="121" cy="134" r="3" fill="#FFFFFF"/>
-  <circle cx="80" cy="142" r="1.4" fill="#FFFFFF" opacity="0.8"/>
-  <circle cx="116" cy="142" r="1.4" fill="#FFFFFF" opacity="0.8"/>
-  <ellipse cx="67" cy="156" rx="9" ry="5" fill="#FF8FB8" opacity="0.65"/>
-  <ellipse cx="133" cy="156" rx="9" ry="5" fill="#FF8FB8" opacity="0.65"/>
-  <path d="M93 154 Q 100 162 107 154" fill="#7A2E52" stroke="#33193F" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+  <g transform="translate(100 162) scale(0.78) translate(-100 -147)">
+  <ellipse cx="82" cy="140" rx="7.5" ry="9.5" fill="#33193F"/>
+  <ellipse cx="118" cy="140" rx="7.5" ry="9.5" fill="#33193F"/>
+  <circle cx="85" cy="136" r="3" fill="#FFFFFF"/>
+  <circle cx="121" cy="136" r="3" fill="#FFFFFF"/>
+  <circle cx="80" cy="144" r="1.4" fill="#FFFFFF" opacity="0.8"/>
+  <circle cx="116" cy="144" r="1.4" fill="#FFFFFF" opacity="0.8"/>
+  <ellipse cx="67" cy="158" rx="9" ry="5" fill="#FF8FB8" opacity="0.7"/>
+  <ellipse cx="133" cy="158" rx="9" ry="5" fill="#FF8FB8" opacity="0.7"/>
+  <path d="M93 156 Q 100 164 107 156" fill="#7A2E52" stroke="#33193F" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
 </svg>

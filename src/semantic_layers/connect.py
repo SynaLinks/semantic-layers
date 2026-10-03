@@ -20,6 +20,7 @@ from pathlib import Path
 import yaml
 from synalog import project
 from synalog.config import parse_dotenv
+from synalog.introspect import table_description as describe_table
 
 from .layers import read_predicates, read_project
 
@@ -111,16 +112,10 @@ def table_declarations(introspected: str) -> dict[str, str]:
 
 
 def table_description(declaration: str) -> str:
-    """A table's description from its name, until someone writes a better
-    one — synalog wants every file described: ``public.order_items`` reads
-    "Order items.", ``CustomerAccounts`` "Customer accounts."."""
+    """A table's description from its name — synalog's, as `synalog
+    introspect` writes it — until someone writes a better one."""
     match = re.match(r"\s*\w+\([^)]*\)\s*:-\s*(?P<physical>[\w.]+)\(", declaration)
-    if not match:
-        return "A table of the database."
-    table = match["physical"].split(".")[-1]
-    words = re.sub(r"(?<=[a-z0-9])(?=[A-Z])", " ", table).replace("_", " ").replace("-", " ").split()
-    text = " ".join(words).lower()
-    return (text[:1].upper() + text[1:] + ".") if text else "A table of the database."
+    return describe_table(match["physical"]) if match else "A table of the database."
 
 
 def render_table(name: str, declaration: str, previous: dict | None) -> str:

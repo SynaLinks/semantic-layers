@@ -18,6 +18,7 @@ def test_name_is_the_predicate_that_runs(source):
     helper = (
         "import tables.Orders.Orders;\n\n"
         'Delivered(order_id:, customer_id:) :- Orders(order_id:, customer_id:, status: "delivered");\n'
+        '@OrderBy(RepeatBuyer, "customer_id");\n'
         "RepeatBuyer(customer_id:, n? += 1) distinct :- Delivered(customer_id:);\n"
     )
     (rules / "RepeatBuyer.l").write_text(
@@ -74,6 +75,7 @@ def test_a_functor_defines_its_predicate(tmp_path):
                 "Segment(customer_id:) distinct :- Orders(customer_id:);\n"
                 "Big(customer_id:) distinct :- Orders(customer_id:, amount:), amount > 100;\n"
                 "SegmentRevenue(revenue? += amount) distinct :- Segment(customer_id:), Orders(customer_id:, amount:);\n"
+                '@OrderBy(BigRevenue, "revenue");\n'
                 "BigRevenue := SegmentRevenue(Segment: Big);\n"
             ),
         },

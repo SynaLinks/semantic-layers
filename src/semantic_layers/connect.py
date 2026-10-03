@@ -59,6 +59,16 @@ def project_template(name: str, description: str = "") -> str:
 _DECLARATION = re.compile(r"^(?P<name>\w+)\((?P<args>[^)]*)\) :- (?P<physical>[\w.]+)\((?P=args)\);$")
 
 
+def ordered(declaration: str) -> str:
+    """A table's declaration after its ``@OrderBy`` on its first column (its
+    key, usually): synalog wants the predicate a file names ordered, so the
+    same page of rows comes back on every run."""
+    match = re.match(r"\s*(\w+)\((\w+):", declaration)
+    if not match:
+        return declaration
+    return f'@OrderBy({match[1]}, "{match[2]}");\n{declaration}'
+
+
 def write_connection(layer: Path, engine: str, details: dict) -> None:
     """Connect the layer: synalog writes the connection (``synalog.toml``'s
     ``[connection]``, the secrets in ``.env``, ``.gitignore``); the layer's
@@ -106,7 +116,11 @@ def render_table(name: str, declaration: str, previous: dict | None) -> str:
         if previous and previous.get(key) not in (None, "", []):
             meta[key] = previous[key]
     return (
-        "---\n" + yaml.safe_dump(meta, sort_keys=False, allow_unicode=True, width=1000) + "---\n" + declaration + "\n"
+        "---\n"
+        + yaml.safe_dump(meta, sort_keys=False, allow_unicode=True, width=1000)
+        + "---\n"
+        + ordered(declaration)
+        + "\n"
     )
 
 

@@ -104,9 +104,10 @@ The rules of the format — `semantic-layers check` enforces them:
   uses — `import concepts.Customer.Customer;`, `import tables.Orders.Orders;`.
   Every import must be used. Import concepts and rules rather than going
   back to the raw tables: that is how the layer stays consistent.
-- **`@OrderBy`** on every concept and rule: results are paginated, and
-  without a stable order the same page differs between calls. Add `@Limit`
-  for the top of a ranking.
+- **`@OrderBy`** on the predicate `name` names — `check` refuses a file
+  without it: results are paginated, and without a stable order the same
+  page differs between calls. Helpers need none. Add `@Limit` for the top
+  of a ranking.
 - **No secrets, no SQL**: never write `SqlExpr`; never put a password in a file.
 
 Then check it, run it, and only then answer from it:

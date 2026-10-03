@@ -160,7 +160,7 @@ Directives shape how a definition runs. Three matter for every layer:
 
 | Directive | Effect |
 |---|---|
-| `@OrderBy(Name, "column", "DESC")` | the order of its rows, compiled to `ORDER BY`. Every concept and rule should have one: results are paginated, and without a stable order a page differs between calls. |
+| `@OrderBy(Name, "column", "DESC")` | the order of its rows, compiled to `ORDER BY`. Every definition must have one — synalog refuses a file whose named predicate has none: results are paginated, and without a stable order a page differs between calls. |
 | `@Limit(Name, 10)` | at most that many rows, compiled to `LIMIT` — the top of a ranking. A caller's own limit can only lower it. |
 | `@Recursive(Name, 10)` | allows `Name` to be recursive, at most that many steps deep; the verifier refuses recursion without it. |
 
@@ -195,10 +195,13 @@ schema when the layer is connected, one per table, named schema + table
 name: PublicOrders
 description: One row per order.
 ---
+@OrderBy(PublicOrders, "order_id");
 PublicOrders(order_id:, customer_id:, status:, amount:) :- public.orders(order_id:, customer_id:, status:, amount:);
 ```
 
-The declaration maps the predicate onto the physical table. Connecting again
+The declaration maps the predicate onto the physical table, ordered by its
+first column — usually its key — since synalog wants the predicate a file
+names ordered. Connecting again
 regenerates the declarations and keeps the `description` and `keywords`
 written by hand. A shared layer's tables say which data its concepts and
 rules expect; connecting it to another database replaces them with that

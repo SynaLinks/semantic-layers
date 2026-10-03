@@ -1,65 +1,12 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="240" height="240" viewBox="-6 -26 212 234" role="img" aria-label="Semantic Layers">
+<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200" viewBox="0 0 100 100" role="img" aria-label="Semantic Layers">
+  <title>Semantic Layers</title>
+  <!-- Three layers: a Hilbert curve of order 3 engraved on the top one, two solid ones below. -->
   <defs>
-    <radialGradient id="bulb" cx="0.36" cy="0.25" r="0.9">
-      <stop offset="0%" stop-color="#F7E6FD"/>
-      <stop offset="45%" stop-color="#D7A8EE"/>
-      <stop offset="100%" stop-color="#A363CC"/>
-    </radialGradient>
-    <linearGradient id="leaf" x1="0" y1="1" x2="0.3" y2="0">
-      <stop offset="0%" stop-color="#4FA65A"/>
-      <stop offset="100%" stop-color="#9BE07F"/>
-    </linearGradient>
+    <mask id="o2" maskUnits="userSpaceOnUse" x="0" y="0" width="100" height="100"><rect width="100" height="100" fill="#fff"/><path d="M50.00 33.70 L82.60 50.00 L50.00 66.30 L17.40 50.00 Z" fill="#000" stroke="#000" stroke-width="12.4" stroke-linejoin="round"/></mask>
+    <mask id="o1" maskUnits="userSpaceOnUse" x="0" y="0" width="100" height="100"><rect width="100" height="100" fill="#fff"/><path d="M50.00 20.67 L82.60 36.97 L50.00 53.27 L17.40 36.97 Z" fill="#000" stroke="#000" stroke-width="12.4" stroke-linejoin="round"/></mask>
+    <mask id="k0" maskUnits="userSpaceOnUse" x="0" y="0" width="100" height="100"><rect width="100" height="100" fill="#fff"/><path d="M50.00 21.06 L45.45 23.33 L50.00 25.61 L54.55 23.33 L59.09 25.61 L63.64 27.88 L59.09 30.15 L54.55 27.88 L50.00 30.15 L54.55 32.42 L50.00 34.70 L45.45 32.42 L40.91 30.15 L45.45 27.88 L40.91 25.61 L36.36 27.88 L31.82 30.15 L36.36 32.42 L31.82 34.70 L27.27 32.42 L22.73 34.70 L18.18 36.97 L22.73 39.24 L27.27 36.97 L31.82 39.24 L27.27 41.52 L31.82 43.79 L36.36 41.52 L40.91 39.24 L36.36 36.97 L40.91 34.70 L45.45 36.97 L50.00 39.24 L54.55 41.52 L50.00 43.79 L45.45 41.52 L40.91 43.79 L36.36 46.06 L40.91 48.33 L45.45 46.06 L50.00 48.33 L45.45 50.61 L50.00 52.88 L54.55 50.61 L59.09 48.33 L54.55 46.06 L59.09 43.79 L63.64 46.06 L68.18 43.79 L72.73 41.52 L68.18 39.24 L63.64 41.52 L59.09 39.24 L54.55 36.97 L59.09 34.70 L63.64 36.97 L68.18 34.70 L63.64 32.42 L68.18 30.15 L72.73 32.42 L77.27 34.70 L72.73 36.97 L77.27 39.24 L81.82 36.97" fill="none" stroke="#000" stroke-width="1.83" stroke-linecap="round" stroke-linejoin="round"/></mask>
   </defs>
-
-  <!-- roots -->
-  <g fill="#EBD8B8" stroke="#EEDCFA" stroke-width="1.6" stroke-linejoin="round">
-    <path d="M93.8 187.1 Q 88.9 191.1 85.4 196.4 Q 92.4 195.0 97.3 190.9 Z"/>
-    <path d="M95.3 188.0 Q 92.3 195.2 91.5 202.0 Q 97.1 197.1 100.2 190.0 Z"/>
-    <path d="M97.4 189.0 Q 97.4 197.2 100.0 204.0 Q 102.6 197.2 102.6 189.0 Z"/>
-    <path d="M99.8 190.0 Q 102.9 197.1 108.5 202.0 Q 107.7 195.2 104.7 188.0 Z"/>
-    <path d="M102.7 190.9 Q 107.6 195.0 114.6 196.4 Q 111.1 191.1 106.2 187.1 Z"/>
-  </g>
-
-  <!-- the bottom half -->
-  <path d="M32 122 C 28 160, 58 192, 100 192 C 142 192, 172 160, 168 122 Z" fill="url(#bulb)" stroke="#EEDCFA" stroke-width="4" stroke-linejoin="round"/>
-
-  <!-- its cut: the layers, ring inside ring -->
-  <ellipse cx="100" cy="122" rx="68" ry="18.4" fill="#FDF7FF" stroke="#EEDCFA" stroke-width="4"/>
-  <ellipse cx="100" cy="122" rx="56" ry="15.1" fill="#F3DDFA" stroke="#C595DE" stroke-width="2.4"/>
-  <ellipse cx="100" cy="122" rx="44" ry="11.9" fill="#FBF2FE" stroke="#C595DE" stroke-width="2.4"/>
-  <ellipse cx="100" cy="122" rx="32" ry="8.6" fill="#F3DDFA" stroke="#C595DE" stroke-width="2.4"/>
-  <ellipse cx="100" cy="122" rx="20" ry="5.4" fill="#FBF2FE" stroke="#C595DE" stroke-width="2.4"/>
-  <ellipse cx="100" cy="122" rx="8" ry="2.2" fill="#E9C6F6" stroke="#C595DE" stroke-width="2.4"/>
-
-  <!-- the lid, lifted and tipped back -->
-  <g transform="translate(0 -30) rotate(-9 100 122)">
-    <path d="M97 62 C 88 50, 76 38, 78 20 C 92 28, 101 42, 101 60 Z" fill="url(#leaf)" stroke="#EEDCFA" stroke-width="3.5" stroke-linejoin="round"/>
-    <path d="M103 62 C 106 46, 117 32, 134 26 C 133 42, 121 54, 105 62 Z" fill="url(#leaf)" stroke="#EEDCFA" stroke-width="3.5" stroke-linejoin="round"/>
-    <!-- its underside: the same layers -->
-    <ellipse cx="100" cy="122" rx="68" ry="18.4" fill="#FDF7FF" stroke="#EEDCFA" stroke-width="4"/>
-    <ellipse cx="100" cy="122" rx="54" ry="14.6" fill="#F3DDFA" stroke="#C595DE" stroke-width="2.4"/>
-    <ellipse cx="100" cy="122" rx="40" ry="10.8" fill="#FBF2FE" stroke="#C595DE" stroke-width="2.4"/>
-    <path d="M32 122 C 32 104, 50 92, 68 85 C 85 78, 94 70, 94 60 L 106 60 C 106 70, 115 78, 132 85 C 150 92, 168 104, 168 122 C 140 134, 60 134, 32 122 Z" fill="url(#bulb)" stroke="#EEDCFA" stroke-width="4" stroke-linejoin="round"/>
-    <ellipse cx="66" cy="100" rx="5" ry="11" transform="rotate(50 66 100)" fill="#FFFFFF" opacity="0.7"/>
-  </g>
-
-  <!-- sparkles: look inside -->
-  <g fill="#F6C543">
-    <path d="M182 104 l 3 7 7 3 -7 3 -3 7 -3 -7 -7 -3 7 -3 Z"/>
-    <path d="M14 96 l 2 5 5 2 -5 2 -2 5 -2 -5 -5 -2 5 -2 Z"/>
-  </g>
-
-  <!-- shine on the bottom half -->
-  <ellipse cx="48" cy="150" rx="5" ry="12" transform="rotate(20 48 150)" fill="#FFFFFF" opacity="0.55"/>
-
-  <!-- face, looking up at its layers -->
-  <ellipse cx="82" cy="156" rx="7.5" ry="9.5" fill="#33193F"/>
-  <ellipse cx="118" cy="156" rx="7.5" ry="9.5" fill="#33193F"/>
-  <circle cx="84" cy="151" r="3.2" fill="#FFFFFF"/>
-  <circle cx="120" cy="151" r="3.2" fill="#FFFFFF"/>
-  <circle cx="80" cy="160" r="1.4" fill="#FFFFFF" opacity="0.8"/>
-  <circle cx="116" cy="160" r="1.4" fill="#FFFFFF" opacity="0.8"/>
-  <ellipse cx="66" cy="172" rx="9" ry="5" fill="#FF8FB8" opacity="0.7"/>
-  <ellipse cx="134" cy="172" rx="9" ry="5" fill="#FF8FB8" opacity="0.7"/>
-  <path d="M94 170 Q 100 178 106 170 Z" fill="#7A2E52" stroke="#33193F" stroke-width="3" stroke-linejoin="round"/>
+  <g mask="url(#o2)"><path d="M50.00 46.73 L82.60 63.03 L50.00 79.33 L17.40 63.03 Z" fill="#8e4fb8" stroke="#8e4fb8" stroke-width="4.4" stroke-linejoin="round"/></g>
+  <g mask="url(#o1)"><path d="M50.00 33.70 L82.60 50.00 L50.00 66.30 L17.40 50.00 Z" fill="#c49ae6" stroke="#c49ae6" stroke-width="4.4" stroke-linejoin="round"/></g>
+  <g><path d="M50.00 20.67 L82.60 36.97 L50.00 53.27 L17.40 36.97 Z" fill="#f0e3fb" stroke="#f0e3fb" stroke-width="4.4" stroke-linejoin="round" mask="url(#k0)"/></g>
 </svg>

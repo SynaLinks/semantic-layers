@@ -188,10 +188,6 @@ def verify(layer: Path) -> list[str]:
             problems = synalog.check(p.text, import_root=[str(layer)])
         except ValueError as exc:
             problems = [str(exc).strip().splitlines()[-1]]
-        # synalog checks that the name is a predicate the file defines; a
-        # layer also requires one.
-        if not problems and "name" not in p.meta:
-            problems = ["its front matter has no name: the predicate that runs"]
         errors.extend(f"{p.relative}: {problem}" for problem in problems)
     return errors + _check_project_file(layer)
 

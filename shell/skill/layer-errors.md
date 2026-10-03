@@ -8,7 +8,6 @@ then check again. Nothing is saved or installed while a problem remains.
 
 | Message | Fix |
 |---|---|
-| `its front matter has no name: the predicate that runs` | add `name:` with the predicate that answers — usually the file's name |
 | `synalog.toml is missing: a layer says what it is …` | create it with `[project]`: `name` and `description` |
 | `synalog.toml: [project] has no description — say what the layer is about` | add a `description` to `[project]` |
 | `synalog.toml: names the layer 'store', but its folder is 'shop' …` | change `[project] name` to the folder's name |

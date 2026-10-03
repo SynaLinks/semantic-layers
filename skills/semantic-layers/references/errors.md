@@ -8,7 +8,6 @@ then check again. Nothing is saved or installed while a problem remains.
 
 | Message | Fix |
 |---|---|
-| `its front matter has no name: the predicate that runs` | add `name:` with the predicate that answers — usually the file's name |
 | `synalog.toml is missing: a layer says what it is …` | create it with `[project]`: `name` and `description` |
 | `synalog.toml: [project] has no description — say what the layer is about` | add a `description` to `[project]` |
 | `synalog.toml: names the layer 'store', but its folder is 'shop' …` | change `[project] name` to the folder's name |
@@ -54,6 +53,7 @@ Fix the quoted statement and re-run: later syntax errors only surface once earli
 | `Trivial infinite loop: 'R' calls itself with same arguments` | the recursive case adds nothing | join the recursive atom with another predicate on a *different* variable |
 | `Negative recursion cycle detected: P` | `P` depends on `~P` through recursion | negate a predicate computed beforehand, not the recursive one |
 | `Unsafe SqlExpr in rule 'A': …` | raw SQL | write it with synalog functions instead |
+| `The front matter has no name: …` | the front matter does not say which predicate the file is about | add `name:` with the predicate that runs |
 | `The front matter has no description for 'A': …` | the front matter has no `description`, or an empty one | add `description:` saying what the rows are, in the words a user would search for |
 | `Missing @OrderBy for 'A', the predicate this file is about: …` | the front matter names `A`, and nothing orders it | add `@OrderBy(A, "column");` before its rules |
 

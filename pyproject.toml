@@ -16,7 +16,7 @@ classifiers = [
     "Topic :: Scientific/Engineering :: Artificial Intelligence",
 ]
 dependencies = [
-    "synalog>=1.2.0",
+    "synalog>=2.0.0",
     "pyyaml>=6",
     "tomli>=1.1; python_version < '3.11'",
 ]
@@ -43,7 +43,7 @@ build-backend = "hatchling.build"
 packages = ["src/semantic_layers"]
 
 [tool.uv.sources]
-# Front matter support is not released yet (SynaLinks/synalog#7).
+# synalog 2.0 (check() returns errors and warnings) is not released yet (SynaLinks/synalog#13).
 synalog = { path = "../synalog", editable = true }
 
 [tool.ruff]

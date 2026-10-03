@@ -181,11 +181,13 @@ def find_layers(root: Path, name: str) -> dict[str, SemanticLayer]:
 
 def verify(layer: Path) -> list[str]:
     """Check every predicate of a layer folder with synalog, imports resolved
-    from the folder. Returns ``"<file>: <error>"`` lines, empty when it checks."""
+    from the folder. Returns ``"<file>: <error>"`` lines, empty when it checks.
+    The check is structural and offline: a layer is checked before it is
+    connected, so its ``@Assert`` statements are not run against data here."""
     errors: list[str] = []
     for p in read_predicates(layer).values():
         try:
-            problems = synalog.check(p.text, import_root=[str(layer)])
+            problems, _ = synalog.check(p.text, import_root=[str(layer)], assertions=False)
         except ValueError as exc:
             problems = [str(exc).strip().splitlines()[-1]]
         errors.extend(f"{p.relative}: {problem}" for problem in problems)

@@ -201,8 +201,8 @@ PublicOrders(order_id:, customer_id:, status:, amount:) :- public.orders(order_i
 
 The declaration maps the predicate onto the physical table, ordered by its
 first column — usually its key — since synalog wants the predicate a file
-names ordered. A new table's `description` comes from its schema (the
-physical table and its columns) until someone writes a better one — synalog
+names ordered. A new table's `description` comes from its name
+(`public.order_items` reads "Order items.") until someone writes a better one — synalog
 wants every file described. Connecting again regenerates the declarations
 and keeps the `description` and `keywords` written by hand. A shared layer's tables say which data its concepts and
 rules expect; connecting it to another database replaces them with that

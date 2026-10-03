@@ -111,13 +111,16 @@ def table_declarations(introspected: str) -> dict[str, str]:
 
 
 def table_description(declaration: str) -> str:
-    """What a table holds, as its schema says it — until someone writes a
-    better description: synalog wants every file described."""
-    match = re.match(r"\s*\w+\((?P<args>[^)]*)\)\s*:-\s*(?P<physical>[\w.]+)\(", declaration)
+    """A table's description from its name, until someone writes a better
+    one — synalog wants every file described: ``public.order_items`` reads
+    "Order items.", ``CustomerAccounts`` "Customer accounts."."""
+    match = re.match(r"\s*\w+\([^)]*\)\s*:-\s*(?P<physical>[\w.]+)\(", declaration)
     if not match:
         return "A table of the database."
-    columns = [a.strip().rstrip(":").strip() for a in match["args"].split(",") if a.strip()]
-    return f"Rows of the {match['physical']} table, with {', '.join(columns)}."
+    table = match["physical"].split(".")[-1]
+    words = re.sub(r"(?<=[a-z0-9])(?=[A-Z])", " ", table).replace("_", " ").replace("-", " ").split()
+    text = " ".join(words).lower()
+    return (text[:1].upper() + text[1:] + ".") if text else "A table of the database."
 
 
 def render_table(name: str, declaration: str, previous: dict | None) -> str:

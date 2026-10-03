@@ -110,8 +110,18 @@ def table_declarations(introspected: str) -> dict[str, str]:
     return found
 
 
+def table_description(declaration: str) -> str:
+    """What a table holds, as its schema says it — until someone writes a
+    better description: synalog wants every file described."""
+    match = re.match(r"\s*\w+\((?P<args>[^)]*)\)\s*:-\s*(?P<physical>[\w.]+)\(", declaration)
+    if not match:
+        return "A table of the database."
+    columns = [a.strip().rstrip(":").strip() for a in match["args"].split(",") if a.strip()]
+    return f"Rows of the {match['physical']} table, with {', '.join(columns)}."
+
+
 def render_table(name: str, declaration: str, previous: dict | None) -> str:
-    meta = {"name": name}
+    meta = {"name": name, "description": table_description(declaration)}
     for key in ("description", "keywords", "locked", "protected"):
         if previous and previous.get(key) not in (None, "", []):
             meta[key] = previous[key]

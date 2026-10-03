@@ -98,8 +98,9 @@ The rules of the format — `semantic-layers check` enforces them:
   define helper predicates its definition needs (a recursive relation, a
   staging step); `name` says which one runs. A helper worth reusing gets a
   file of its own.
-- **`description`** says what the rows are, in the words a user would search
-  for. **`keywords`** list other words that should find it.
+- **`description`** — required, `check` refuses a file without one — says
+  what the rows are, in the words a user would search for. **`keywords`**
+  list other words that should find it.
 - **Imports**: one `import <folder>.<Name>.<Name>;` per predicate the file
   uses — `import concepts.Customer.Customer;`, `import tables.Orders.Orders;`.
   Every import must be used. Import concepts and rules rather than going

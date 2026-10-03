@@ -36,7 +36,9 @@ PAGES = ["README.md", "docs/index.md", "docs/specification.md"]
 def test_examples_verify(page, tmp_path):
     files = dict(_FILE.findall((ROOT / page).read_text()))
     assert files, f"no example file found in {page}"
-    support = {path: f"---\nname: {Path(path).stem}\n---\n{text}\n" for path, text in SUPPORT.items()}
+    support = {
+        path: f"---\nname: {Path(path).stem}\ndescription: Support.\n---\n{text}\n" for path, text in SUPPORT.items()
+    }
     layer = write(tmp_path / "examples", {**support, **files})
     assert verify(layer) == []
 

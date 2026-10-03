@@ -71,7 +71,7 @@ def test_a_functor_defines_its_predicate(tmp_path):
         {
             "tables/Orders.l": "---\nname: Orders\n---\nOrders(customer_id:, amount:) :- orders(customer_id:, amount:);\n",
             "rules/BigRevenue.l": (
-                "---\nname: BigRevenue\n---\nimport tables.Orders.Orders;\n\n"
+                "---\nname: BigRevenue\ndescription: Revenue of the big orders.\n---\nimport tables.Orders.Orders;\n\n"
                 "Segment(customer_id:) distinct :- Orders(customer_id:);\n"
                 "Big(customer_id:) distinct :- Orders(customer_id:, amount:), amount > 100;\n"
                 "SegmentRevenue(revenue? += amount) distinct :- Segment(customer_id:), Orders(customer_id:, amount:);\n"
@@ -84,7 +84,9 @@ def test_a_functor_defines_its_predicate(tmp_path):
 
 
 def test_the_project_name_must_be_the_folder_name(tmp_path):
-    layer = write(tmp_path / "shop", {"rules/X.l": '---\nname: X\n---\n@OrderBy(X, "a");\nX(a: 1);\n'})
+    layer = write(
+        tmp_path / "shop", {"rules/X.l": '---\nname: X\ndescription: One.\n---\n@OrderBy(X, "a");\nX(a: 1);\n'}
+    )
     (layer / "synalog.toml").write_text('[project]\nname = "store"\ndescription = "A shop."\n')
     assert verify(layer) == ["synalog.toml: names the layer 'store', but its folder is 'shop' — they must match"]
     (layer / "synalog.toml").write_text('[project]\nname = "shop"\ndescription = "A shop."\n')
@@ -92,7 +94,9 @@ def test_the_project_name_must_be_the_folder_name(tmp_path):
 
 
 def test_a_layer_must_describe_itself(tmp_path):
-    layer = write(tmp_path / "shop", {"rules/X.l": '---\nname: X\n---\n@OrderBy(X, "a");\nX(a: 1);\n'})
+    layer = write(
+        tmp_path / "shop", {"rules/X.l": '---\nname: X\ndescription: One.\n---\n@OrderBy(X, "a");\nX(a: 1);\n'}
+    )
     (layer / "synalog.toml").write_text('[project]\nname = "shop"\n')
     assert verify(layer) == ["synalog.toml: [project] has no description — say what the layer is about"]
     (layer / "synalog.toml").unlink()

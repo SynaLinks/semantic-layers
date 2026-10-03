@@ -79,7 +79,7 @@ def test_unverifiable_source_installs_nothing(source, project):
 
 def test_list_and_update(source, project):
     add(str(source), scope(project))
-    write(layer(project), {"mine/rules/X.l": "---\nname: X\n---\nX(a: 1);\n"})
+    write(layer(project), {"mine/rules/X.l": "---\nname: X\ndescription: One.\n---\nX(a: 1);\n"})
     sales = layer(project) / "sales" / "rules" / "ActiveCustomer.l"
     sales.write_text(SALES["rules/ActiveCustomer.l"].replace("Customers with", "Clients with"))
     states = {row["name"]: row["state"] for row in installed(scope(project))}
@@ -152,7 +152,8 @@ def test_a_single_layer_source_is_named_by_its_project(tmp_path, project):
 
 def test_an_undescribed_layer_is_not_installed(tmp_path, project):
     source = write(
-        tmp_path / "bare", {"rules/X.l": '---\nname: X\n---\n@OrderBy(X, "a");\nX(a: 1);\n', "synalog.toml": ""}
+        tmp_path / "bare",
+        {"rules/X.l": '---\nname: X\ndescription: One.\n---\n@OrderBy(X, "a");\nX(a: 1);\n', "synalog.toml": ""},
     )
     (source / "synalog.toml").unlink()
     with pytest.raises(InstallError, match="no description"):

@@ -22,11 +22,24 @@ SUPPORT = {
     "tables/Assignments.l": "Assignments(person_id:, team_id:, changed_at:) :- assignments(person_id:, team_id:, changed_at:);",
     "tables/Routes.l": "Routes(origin:, destination:, cost:) :- routes(origin:, destination:, cost:);",
     "tables/Customers.l": "Customers(customer_id:, email:, phone:, tier:) :- customers(customer_id:, email:, phone:, tier:);",
-    "tables/Orders.l": "Orders(customer_id:, product_id:, amount:, status:) :- orders(customer_id:, product_id:, amount:, status:);",
+    "tables/Orders.l": (
+        "Orders(order_id:, customer_id:, product_id:, amount:, status:) :- "
+        "orders(order_id:, customer_id:, product_id:, amount:, status:);"
+    ),
     "tables/Employees.l": "Employees(employee_id:, manager_id:) :- employees(employee_id:, manager_id:);",
     "concepts/Customer.l": (
         "import tables.Orders.Orders;\n\n"
         '@OrderBy(Customer, "customer_id");\nCustomer(customer_id:) distinct :- Orders(customer_id:);'
+    ),
+    "concepts/DeliveredOrder.l": (
+        "import tables.Orders.Orders;\n\n"
+        '@OrderBy(DeliveredOrder, "order_id");\n'
+        'DeliveredOrder(order_id:, customer_id:, amount:) :- Orders(order_id:, customer_id:, amount:, status: "delivered");'
+    ),
+    "concepts/Contains.l": (
+        "import tables.BillOfMaterials.BillOfMaterials;\n\n"
+        '@OrderBy(Contains, "assembly_id", "component_id");\n'
+        "Contains(assembly_id:, component_id:) :- BillOfMaterials(assembly_id:, component_id:);"
     ),
 }
 PAGES = ["README.md", "docs/index.md", "docs/specification.md"]

@@ -20,27 +20,46 @@
 <br>
 
 # Semantic Layers
-## A standardized way to give AI agents reasoning and meaning over your data
+## The Agent Skills of formally verified reasoning and knowledge work
+
+Ask three agents for "active customers" and you get three SQL queries, each
+plausible, each different. Written guidance — a prompt, a wiki page, an Agent
+Skill — can describe the right definition, but each agent still re-derives it
+in its own words, **every time**.
+
+A semantic layer holds the definition itself, as code the agent runs: checked
+before it runs, the same result from every agent.
 
 Semantic Layers are built on [synalog](https://github.com/SynaLinks/synalog), by
-[Synalinks](https://github.com/SynaLinks). New here? [Why semantic
-layers](https://synalinks.github.io/semantic-layers/why/) makes the case;
-[Getting started](https://synalinks.github.io/semantic-layers/getting-started/)
-installs one in two commands.
-
-Full documentation: **<https://synalinks.github.io/semantic-layers/>**
+[Synalinks](https://github.com/SynaLinks). Full documentation:
+**<https://synalinks.github.io/semantic-layers/>**
 
 ## What are Semantic Layers?
 
-Semantic Layers are a lightweight, open format for giving AI agents your
-business definitions — *an active customer*, *revenue*, *a late order* — as
-verified, composable and executable code instead of prose.
+[Agent Skills](https://agentskills.io) gave agents an open format for
+*procedures*: a folder of instructions an agent loads when a task calls for
+it. Semantic Layers are the same idea for *knowledge*: a folder of
+definitions — *an active customer*, *revenue*, *a late order* — and of the
+rules that reason over them, loaded when a question calls for them.
 
-At its core, a semantic layer is a folder holding three folders: `tables/`,
-`concepts/` and `rules/`. Each holds one [synalog](https://github.com/SynaLinks/synalog)
-`.l` file per definition, with YAML front matter (`name` and `description`,
-at minimum) followed by the definition, which compiles to SQL and runs on your
-database.
+Instructions suit procedures, which an agent adapts to the task at hand. They
+do not suit definitions, which must mean the same thing every time. So where a
+skill is read, a layer is run:
+
+|                | Agent Skill                        | Semantic Layer                                          |
+| -------------- | ---------------------------------- | ------------------------------------------------------- |
+| **Packages**   | Procedures: how to do a task       | Knowledge: what things mean, and what follows from them |
+| **Written as** | Instructions, in Markdown          | Predicates, in synalog                                  |
+| **The agent**  | Reads and interprets it            | **Runs** it                                             |
+| **The result** | Depends on the agent that reads it | **Deterministic**: the same from every agent            |
+| **Checked**    | By review                          | **Formally**: before it runs, and against the data      |
+
+The two work together: the [`semantic-layers` skill](skills/semantic-layers/)
+teaches an agent how to use a layer, and the layer holds the knowledge it
+reasons with.
+
+A semantic layer is a folder holding three folders, with one
+[synalog](https://github.com/SynaLinks/synalog) `.l` file per definition:
 
 ```
 my-layer/
@@ -51,7 +70,21 @@ my-layer/
 └── .env              # The password or token (local, never committed)
 ```
 
-Here is an example of a predicate, the atomic definition of a semantic layer.
+A project's layers live in `.agents/layers/`, side by side with its skills in
+`.agents/skills/`:
+
+```
+.agents/
+├── skills/           # How to do things: Agent Skills, read by the agent
+└── layers/           # What things mean: semantic layers, run by the agent
+    ├── sales/
+    └── support/
+```
+
+## From a question to an answer
+
+A definition is a predicate: YAML front matter (`name` and `description`, at
+minimum), what it builds on, what it must satisfy, and the rule itself.
 
 `rules/ActiveCustomer.l`
 
@@ -59,84 +92,120 @@ Here is an example of a predicate, the atomic definition of a semantic layer.
 ---
 name: ActiveCustomer
 description: Customers with at least one delivered order.
+keywords: [active, engaged, retained]
 ---
 import concepts.Customer.Customer;
-import tables.Orders.Orders;
+import concepts.DeliveredOrder.DeliveredOrder;
 
+# Assertions (new in synalog 2.0): what the result must satisfy, whatever the
+# rule below says. Each is a statement of first-order logic written as a Lean
+# proposition: ∀ "for all", ∃ "there is", → "implies". synalog searches the
+# data for counterexamples, and refuses to run the definition if it finds one.
+@Assert(ActiveCustomer,
+      # Every active customer is a customer.
+      is_customer:  "∀ c, ActiveCustomer c → Customer c",
+      # Every active customer has a delivered order o, of some amount a.
+      has_delivery: "∀ c, ActiveCustomer c → ∃ o a, DeliveredOrder o c a");
+
+# The rule: how the result is computed.
 @OrderBy(ActiveCustomer, "customer_id");
 ActiveCustomer(customer_id:) distinct :-
-  Customer(customer_id:), Orders(customer_id:, status: "delivered");
+  Customer(customer_id:), DeliveredOrder(customer_id:);
 ```
 
-Where an [Agent Skill](https://agentskills.io) is a set of instructions an
-agent reads and interprets, a semantic layer is a set of **deterministic,
-formally verified** predicates the agent **runs**. A definition is executed,
-not paraphrased, so every agent computes the same result from it — and
-definitions compose: new ones build on existing ones without losing meaning.
+Asked *"who are our active customers?"*, an agent does not write SQL. It
+searches the layers for a definition that fits:
 
-A project's layers live side by side in `.agents/layers/`.
+```
+$ uvx semantic-layers search 'active|customer'
+sales/rules/ActiveCustomer.l       Customers with at least one delivered order.
+sales/concepts/Customer.l          Every customer who placed at least one order.
+sales/concepts/DeliveredOrder.l    Orders that reached the customer — the ones that count as sales.
+sales/rules/RevenueByCountry.l     Delivered revenue per customer country, largest first.
+```
 
-## Powered by synalog
+reads it, and runs it on the database:
 
-Definitions are written in [synalog](https://github.com/SynaLinks/synalog), a
-logic programming language from the Datalog family that compiles to optimized
-SQL. A semantic layer is a folder; synalog is what makes the folder *run* —
-and it reaches the questions plain SQL makes hard to get right:
+```
+$ uvx synalog rules/ActiveCustomer.l run ActiveCustomer
++-------------+
+| customer_id |
++-------------+
+| 10          |
+| 11          |
++-------------+
+2 rows
+```
 
-- **Composition** — a definition builds on others by name, through its
-  imports; every answer traces back, rule by rule, to the source tables.
-- **[Knowledge graphs](https://synalinks.github.io/synalog/knowledge-graphs/)** — entities and
-  relationships modelled over the tables you already have: no ETL, no graph
-  database, no data moved.
-- **[Temporal knowledge graphs](https://synalinks.github.io/synalog/knowledge-graphs/#temporal-graphs)** —
-  edges that carry when they were true: what holds today, what held on any date.
-- **[Recursion](https://synalinks.github.io/synalog/language/recursion/)** — transitive closures, paths,
-  shortest paths, cycles, with termination guaranteed.
-- **[Negation, unions](https://synalinks.github.io/synalog/language/syntax/), [aggregation](https://synalinks.github.io/synalog/language/aggregation/)
-  and [functors](https://synalinks.github.io/synalog/language/functors/)** — what is *not* there, alternatives,
-  top-k, and generic rules instantiated for each input.
-- **[Verified before it runs](https://synalinks.github.io/synalog/verification/)** — safety, negation,
-  aggregation, stratification, arity, recursion and unknown references are
-  checked before any SQL is generated: this is what *formally verified* means
-  here.
-- **[Every warehouse](https://synalinks.github.io/synalog/engines/), [in milliseconds](https://synalinks.github.io/synalog/benchmark/)** —
-  one definition compiles to each engine's dialect, by a Rust engine fast
-  enough for an agent to check every rule it writes.
+The answer comes from those rows. The definition was executed, not
+paraphrased, so the next agent asked the same question gets the same
+customers — and when no definition fits, the agent writes one, building on
+the ones already there.
 
-Each is shown as layer files — front matter, imports, `@OrderBy` — in the
-[modelling patterns](skills/semantic-layers/references/patterns.md) and the
-[example layers](layers/).
+## What "formally verified" means
 
-## Why Semantic Layers?
+Two things are checked, neither by a model.
 
-Ask three agents for "active customers" and you get three SQL queries, each
-plausible, each different. Written guidance — a prompt, a wiki page, an Agent
-Skill — can describe the right definition, but each agent still re-derives it
-in its own words, **every time**. Semantic layers package the definitions
-themselves into portable, version-controlled folders. This gives agents:
+**The definition, before it runs.** synalog
+[verifies](https://synalinks.github.io/synalog/verification/) every definition
+before any SQL is generated: safety, negation, aggregation, stratification,
+arity, recursion and unknown references. A definition that does not check is
+never saved, and never run.
 
-- **One meaning, everywhere**: Every agent that uses a definition computes the
-  same thing, on any database synalog targets — DuckDB, SQLite, PostgreSQL,
-  Trino, Presto, Databricks, BigQuery.
-- **Verified knowledge**: synalog checks every definition formally — arity, safety,
-  stratification, unknown references — before it is saved; a definition that
-  doesn't check never lands.
-- **A layer that grows with use**: When a question needs a definition that
-  doesn't exist, the agent writes it, building on the ones already there —
-  and every change is a git commit: who made it, what changed, a way back.
-- **Cross-project reuse**: Build a layer once, share it as a folder in a git
-  repository, and install it in any project — connected to that project's
-  own database.
+**Its result, against the data.** A rule says *how* to compute a predicate. An
+assertion says *what the result must satisfy*, independently of the rule: a
+customer appears once, a revenue is positive, shares add up to one, a
+relationship is transitive.
+
+Assertions are new in synalog 2.0, and are not written in synalog. They are
+statements of first-order logic, written as [Lean](https://lean-lang.org/)
+propositions — the notation of the Lean theorem prover, with the same operator
+precedence, and an ASCII spelling for every symbol (`forall`, `exists`, `->`).
+A predicate takes its arguments by position, as in Lean: with
+`DeliveredOrder(order_id:, customer_id:, amount:)`, `DeliveredOrder o c a`
+holds when order `o` of customer `c`, of amount `a`, was delivered. So
+
+```
+∀ c, ActiveCustomer c → ∃ o a, DeliveredOrder o c a
+```
+
+reads *for every `c`, if `c` is an active customer, then there is an order `o`
+and an amount `a` such that `o` is a delivered order of `c`.*
+
+synalog does not hand the statement to a model, nor to Lean. It compiles a
+search for counterexamples to SQL and runs it on the database, like any
+predicate. The assertion holds when the search returns no row:
+
+```
+$ uvx synalog rules/ActiveCustomer.l verify
+✓ ActiveCustomer.is_customer holds
+✓ ActiveCustomer.has_delivery holds
+```
+
+Had the rule forgotten the delivered-order condition, `has_delivery` would be
+violated, and synalog would name the customer that breaks it. `run` checks a
+definition's assertions before it prints anything, and refuses one that is
+violated.
+
+This matters most for definitions an agent writes. A rule and its assertion
+state the same intent in two notations, so a mistake made in one is unlikely
+to be repeated in the other: the assertion is the contract, stated first, and
+the rule is written — and checked — against it.
+
+Two limits, stated plainly. An assertion that holds has no counterexample *in
+the data it ran on*: it is a check, not a proof, and says nothing about data
+it has not seen. And neither check says a definition is the one your business
+means — that is still yours to decide, once, in a file everyone can read.
 
 ## How do Semantic Layers work?
 
-Agents load semantic layers through **progressive disclosure**, as with Agent
-Skills, in three stages:
+Agents load semantic layers through **progressive disclosure**, in three
+stages:
 
 1. **Discovery**: Agents search. A semantic layer grows to thousands of
-   definitions — too many to list in context, as Agent Skills list theirs —
-   so the agent searches the `name`, `keywords` and `description` of every
-   definition with a regular expression built from the question
+   definitions — too many to list in context — so the agent searches the
+   `name`, `keywords` and `description` of every definition with a regular
+   expression built from the question
    (`semantic-layers search 'churn|retention'`), and gets back the few that
    fit.
 
@@ -150,6 +219,95 @@ Skills, in three stages:
 Only search results reach the context, and definitions only when a question
 calls for them, so a layer can hold thousands of them with a small context
 footprint.
+
+## Getting started
+
+```shell
+uvx semantic-layers add SynaLinks/semantic-layers --layer sales
+cd .agents/layers/sales
+uvx semantic-layers connect psql host=db.example.com database=sales user=analyst password=...
+```
+
+This installs the example `sales` layer into `.agents/layers/`, connects it
+to your database and generates its tables. Then ask your coding agent about
+your sales.
+
+To write your own layer, start a layer project:
+
+```shell
+uvx semantic-layers init sales --description "Orders and customers"   # tables/, concepts/, rules/, synalog.toml, README, git
+cd sales
+uvx semantic-layers connect psql host=db.example.com database=sales user=analyst password=...
+```
+
+Write your definitions in `concepts/` and `rules/`, check them with
+`semantic-layers check .`, and push the repository: anyone can then install it
+with `semantic-layers add <owner>/sales`.
+
+## Why Semantic Layers?
+
+Semantic layers package definitions into portable, version-controlled
+folders. This gives agents:
+
+- **One meaning, everywhere**: Every agent that uses a definition computes the
+  same thing, on any database synalog targets.
+- **Verified knowledge**: Every definition is checked before it is saved, and
+  its assertions against the data; a definition that doesn't check never
+  lands.
+- **A layer that grows with use**: When a question needs a definition that
+  doesn't exist, the agent writes it, building on the ones already there —
+  and every change is a git commit: who made it, what changed, a way back.
+- **Cross-project reuse**: Build a layer once, share it as a folder in a git
+  repository, and install it in any project — connected to that project's
+  own database.
+
+## Powered by synalog
+
+Definitions are written in [synalog](https://github.com/SynaLinks/synalog), a
+logic programming language from the Datalog family that compiles to optimized
+SQL. A semantic layer is a folder; synalog is what makes the folder *run* —
+and what lets a layer reason, not only count. This concept, from the
+[supply-chain example](skills/semantic-layers/examples/supply-chain/), follows
+a bill of materials to any depth:
+
+`concepts/Requires.l`
+
+```
+---
+name: Requires
+description: An assembly requires a component, directly or inside a sub-assembly, at any depth.
+keywords: [depends, requires]
+---
+import concepts.Contains.Contains;
+
+@Recursive(Requires, 20);
+@OrderBy(Requires, "assembly_id", "component_id");
+Requires(assembly_id:, component_id:) distinct :- Contains(assembly_id:, component_id:);
+Requires(assembly_id:, component_id:) distinct :-
+  Requires(assembly_id:, component_id: middle), Contains(assembly_id: middle, component_id:);
+```
+
+A rule built on it answers *which assemblies stop if this supplier fails?* —
+a question plain SQL makes hard to get right. synalog reaches the others like
+it:
+
+- **Composition** — a definition builds on others by name, through its
+  imports; every answer traces back, rule by rule, to the source tables.
+- **[Knowledge graphs](https://synalinks.github.io/synalog/knowledge-graphs/)** — entities and
+  relationships modelled over the tables you already have, and
+  [edges that carry when they were true](https://synalinks.github.io/synalog/knowledge-graphs/#temporal-graphs):
+  no ETL, no graph database, no data moved.
+- **[Recursion](https://synalinks.github.io/synalog/language/recursion/)** — transitive closures, paths,
+  shortest paths, cycles, with termination guaranteed.
+- **[Negation, unions](https://synalinks.github.io/synalog/language/syntax/), [aggregation](https://synalinks.github.io/synalog/language/aggregation/)
+  and [functors](https://synalinks.github.io/synalog/language/functors/)** — what is *not* there, alternatives,
+  top-k, and generic rules instantiated for each input.
+- **[In milliseconds](https://synalinks.github.io/synalog/benchmark/)** — a Rust engine fast enough for an
+  agent to check every rule it writes.
+
+Each is shown as layer files — front matter, imports, `@OrderBy` — in the
+[modelling patterns](skills/semantic-layers/references/patterns.md) and the
+[example layers](layers/).
 
 ## Where can I use Semantic Layers?
 
@@ -169,32 +327,10 @@ footprint.
 
 DuckDB, SQLite, PostgreSQL, Trino, Presto, Databricks and BigQuery — every
 engine [synalog supports](https://synalinks.github.io/synalog/engines/), with
-the drivers it needs. A layer's `synalog.toml` names its engine;
-`semantic-layers connect --help` lists each engine's connection fields, and
-the secret ones go to the layer's git-ignored `.env`.
-
-## Getting started
-
-```shell
-uvx semantic-layers add SynaLinks/semantic-layers --layer sales
-uvx semantic-layers connect sales psql host=db.example.com database=sales user=analyst password=...
-```
-
-This installs the example `sales` layer into `.agents/layers/`, connects it
-to your database and generates its tables. Then ask your coding agent about
-your sales.
-
-To write your own layer, start a layer project:
-
-```shell
-uvx semantic-layers init sales --description "Orders and customers"   # tables/, concepts/, rules/, synalog.toml, README, git
-cd sales
-uvx semantic-layers connect . psql host=db.example.com database=sales user=analyst password=...
-```
-
-Write your definitions in `concepts/` and `rules/`, check them with
-`semantic-layers check .`, and push the repository: anyone can then install it
-with `semantic-layers add <owner>/sales`.
+the drivers it needs. One definition compiles to each engine's dialect. A
+layer's `synalog.toml` names its engine; `semantic-layers connect --help`
+lists each engine's connection fields, and the secret ones go to the layer's
+git-ignored `.env`.
 
 ## Documentation
 

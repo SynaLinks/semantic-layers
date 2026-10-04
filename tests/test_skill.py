@@ -59,8 +59,8 @@ def test_example_layer_runs():
     assert run.stdout.splitlines() == [
         "supplier_id,name,assemblies",
         "1,Acme Bolts,3",
-        "3,Steelworks,2",
         "2,Rubber Co,2",
+        "3,Steelworks,2",
     ]
 
 

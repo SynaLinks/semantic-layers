@@ -56,6 +56,11 @@ Fix the quoted statement and re-run: later syntax errors only surface once earli
 | `The front matter has no name: …` | the front matter does not say which predicate the file is about | add `name:` with the predicate that runs |
 | `The front matter has no description for 'A': …` | the front matter has no `description`, or an empty one | add `description:` saying what the rows are, in the words a user would search for |
 | `Missing @OrderBy for 'A', the predicate this file is about: …` | the front matter names `A`, and nothing orders it | add `@OrderBy(A, "column");` before its rules |
+| `Invalid assertion 'A.name': …` | the statement does not parse, or applies a predicate to the wrong number of arguments | fix the statement (see *Assertions*) |
+| `Duplicate assertion 'A.name': …` | the same name is stated twice for `A` | give each property its own name |
+| `Malformed @Assert: …` | the annotation is not `@Assert(A, name: "statement", ...)` | one named argument per property |
+
+**Violated assertions** (`run`, `verify`, and `check` inside a connected project): `Assertion 'A.name' is violated: …` quotes a few counterexamples, rows of the data the statement is false for. The rule computes something other than what it claims: fix the rule, or the assertion if it was wrong. A warning `Assertion 'A.name' cannot be checked: …` means the statement is well-formed but cannot be checked on data (a variable no predicate binds, a raw table).
 
 **Compile errors** (`print`/`run`) mean SQL generation failed, e.g. `Compile error: No rules are defining 'Missing', but compilation was requested.` Usually a typo in the predicate name passed to the command, or an imported predicate run by its short name (run it from its own module instead).
 
@@ -66,7 +71,7 @@ Fix the quoted statement and re-run: later syntax errors only surface once earli
 | `synalog.toml: password is a secret — remove it from the file and set SYNALOG_PSQL_PASSWORD …` | move the secret to `.env`; never commit it |
 | `The databricks connection needs SYNALOG_DATABRICKS_ACCESS_TOKEN` | the secret is missing from `.env`: ask the user for it |
 | `synalog.toml: psql has no field 'hots' (fields: …)` | use one of the fields listed |
-| `The psql engine needs the 'psycopg' package: pip install psycopg` | run with the driver: `uvx --with psycopg synalog …` |
+| `The psql engine needs psycopg with its libpq (...)` | the driver ships with synalog; reinstall it with its libpq: `pip install 'psycopg[binary]'` |
 | `The psql engine needs a connection string: …` | give the project a `[connection]`, or pass `--dsn` |
 
 A query that runs but returns nothing is not an error: check the filter values against the data before concluding there is none.

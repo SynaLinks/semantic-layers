@@ -29,16 +29,17 @@ The full reference is at <https://synalinks.github.io/synalog/>.
 ## Critical rules
 
 - Directives (`@OrderBy`, `@Limit`, `@Recursive`, `@Ground`) go **before** the rule they apply to.
-- `@OrderBy` is **mandatory** on every concept and rule; without it pagination is non-deterministic.
+- One predicate per file, in `tables/`, `concepts/` or `rules/`, with front matter (`name`, `description`): see *Project structure*.
+- `@OrderBy` is **mandatory** on every predicate; without it pagination is non-deterministic.
 - Arguments are always **named**: `Predicate(column: variable)`. LEFT = column of the predicate, RIGHT = your variable. `Orders(amount:)` is shorthand when both share the name. `Orders(total: amount)` is WRONG (looks for a column named `total`).
 - Null tests: `x is null` / `x is not null`. **Never** `x != null` (silently broken).
 - Count with `count? += 1`. **Never** `Count()`.
-- Reuse predicates: before adding a rule, read the program and build on existing predicates instead of recomputing (define `CustomerRevenue` once; `TopCustomers` builds on it).
+- Reuse predicates: before adding a file, read the project and import existing predicates instead of recomputing (define `CustomerRevenue` once; `TopCustomers` imports it).
 - For categorical columns (`status`, `type`, `tier`, ...), extract the distinct values as a concept first, then write rules over it.
 
 ## Syntax
 
-- `#` comment; `##` description attached to the predicate that follows.
+- `#` comment. What a predicate holds goes in its file's front matter, as `description`.
 - Variables bind with `==`: `total == subtotal * 1.10`.
 - Operators: arithmetic `+ - * / ^ %`; string concat `++`; comparison `== != < > <= >=`; boolean `&& || !`; membership `x in [1, 2, 3]`.
 - AND/join, comma: `Orders(order_id:, pid:), Products(product_id: pid, name:)`
@@ -91,13 +92,13 @@ ToString(created_at) >= "2024-01-01", ToString(created_at) < "2024-02-01";  # IS
 
 ## Recursion
 
-Base case + recursive case, with `@Recursive(Pred, iterations)` before the rules. Use for org charts, taxonomies, BOM, referral chains. The iteration limit bounds path length, so cyclic graphs terminate. Full runnable version: [`examples/recursion.l`](https://github.com/SynaLinks/synalog/blob/main/skills/synalog/examples/recursion.l).
+Base case + recursive case, with `@Recursive(Pred, iterations)` before the rules. Use for org charts, taxonomies, BOM, referral chains. The iteration limit bounds path length, so cyclic graphs terminate; `run` stops earlier, as soon as a step adds nothing, so a generous limit costs nothing, and `@Recursive(Pred, -1)` recurses until nothing changes. Keep recursive rules linear (the recursive predicate once per rule, `distinct`, no aggregate in it): each step then only derives from the rows the last step added. `print` shows a script that writes every step out; it refuses `-1`. Full runnable version: [`examples/org/concepts/AllManagers.l`](https://github.com/SynaLinks/synalog/blob/main/skills/synalog/examples/org/concepts/AllManagers.l).
 
 ```logica
 @Recursive(AllManagers, 20);
 AllManagers(employee_id:, manager_id:) :- Employees(employee_id:, manager_id:);
 AllManagers(employee_id:, manager_id:) :-
-  AllManagers(employee_id:, intermediate:),
+  AllManagers(employee_id:, manager_id: intermediate),
   Employees(employee_id: intermediate, manager_id:);
 ```
 
@@ -118,7 +119,7 @@ The generic rule can live in another module: import it, and name its arguments b
 
 ## Knowledge graphs
 
-When data has entities and relationships, model entity concepts (first column = primary key, sorted by it) and relationship concepts, then write rules that traverse. Worked example: [`examples/knowledge_graph.l`](https://github.com/SynaLinks/synalog/blob/main/skills/synalog/examples/knowledge_graph.l).
+When data has entities and relationships, model entity concepts (first column = primary key, sorted by it) and relationship concepts, then write rules that traverse. Worked example: the [`examples/company/`](https://github.com/SynaLinks/synalog/blob/main/skills/synalog/examples/company/) project (nodes in `concepts/Person.l` and `concepts/Department.l`, the edge in `concepts/WorksIn.l`, the traversal in `rules/TeamMate.l`).
 
 - Edges join **through node concepts**, not raw tables: a node filter then applies to all edges automatically.
 - Preserve URI/URL columns in nodes (`url`, `href`, `permalink`, ...); dropping them makes the node useless for action.

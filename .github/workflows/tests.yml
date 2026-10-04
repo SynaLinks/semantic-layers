@@ -11,14 +11,15 @@ jobs:
         python-version: ["3.10", "3.12"]
     steps:
       # pyproject.toml takes synalog from a checkout beside this one
-      # (../synalog) until the features it needs are released.
+      # (../synalog) until the features it needs are released: synalog 2.0,
+      # on its branch until SynaLinks/synalog#13 is merged (then back to main).
       - uses: actions/checkout@v6
         with:
           path: semantic-layers
       - uses: actions/checkout@v6
         with:
           repository: synalinks/synalog
-          ref: main
+          ref: feat/v2-assertions
           path: synalog
       - uses: dtolnay/rust-toolchain@stable
       - uses: astral-sh/setup-uv@v6

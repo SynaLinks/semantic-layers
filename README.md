@@ -222,6 +222,9 @@ footprint.
 
 ## Getting started
 
+> Until `semantic-layers` is published on PyPI, run it from the repository:
+> `uvx --from git+https://github.com/SynaLinks/semantic-layers semantic-layers ...`.
+
 ```shell
 uvx semantic-layers add SynaLinks/semantic-layers --layer sales
 cd .agents/layers/sales
@@ -241,8 +244,10 @@ uvx semantic-layers connect psql host=db.example.com database=sales user=analyst
 ```
 
 Write your definitions in `concepts/` and `rules/`, check them with
-`semantic-layers check .`, and push the repository: anyone can then install it
-with `semantic-layers add <owner>/sales`.
+`semantic-layers check .` — their structure, and their assertions on your
+database — and push the repository: anyone can then install it with
+`semantic-layers add <owner>/sales`. The [Quickstart](docs/creating/quickstart.md)
+walks through a first layer on a CSV file.
 
 ## Why Semantic Layers?
 
@@ -334,10 +339,15 @@ git-ignored `.env`.
 
 ## Documentation
 
-- **[Getting started](docs/getting-started.md)** — Install a layer, connect it, write your own
+- **[Getting started](docs/getting-started.md)** — Install a layer, connect it, ask
+- **[Quickstart](docs/creating/quickstart.md)** — Write, check and run your first layer, no database needed
 - **[Specification](docs/specification.md)** — The format, file by file
+- **[Best practices](docs/creating/best-practices.md)** — Definitions that mean one thing and stay consistent
+- **[Writing findable definitions](docs/creating/findable-definitions.md)** — Front matter that search finds, and how to test it
+- **[Evaluating layers](docs/creating/evaluating.md)** — Assertions, and testing the answers
 - **[Sharing](docs/sharing.md)** — Installing, connecting, publishing and updating layers
-- **[Agents](docs/agents.md)** — How coding agents are told about the layers
+- **[Coding agents](docs/agents.md)** — How coding agents are told about the layers
+- **[Adding layer support to your agent](docs/agent-support.md)** — Discovery, search, execution and verification, step by step
 - **[CLI](docs/cli.md)** — Every `semantic-layers` command
 - **[Examples](layers/)** — The `sales` and `support` example layers
 - **[Agent Skills](https://agentskills.io)** — The format semantic layers are modeled on

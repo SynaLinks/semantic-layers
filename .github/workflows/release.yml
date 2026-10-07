@@ -1,0 +1,45 @@
+# Publishes semantic-layers to PyPI when a version tag is pushed:
+#
+#   git tag v0.1.0 && git push origin v0.1.0
+#
+# One-time setup on the GitHub repository:
+#   1. Create an Environment named `pypi` (Settings → Environments), ideally
+#      restricted to tags matching `v*`.
+#   2. Add `PYPI_API_TOKEN` as a secret on that environment.
+name: Release
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: astral-sh/setup-uv@v6
+      - run: ./shell/lint.sh
+      - run: ./shell/test.sh
+  publish:
+    needs: test
+    # Only a tag publishes: a manual run builds and tests.
+    if: startsWith(github.ref, 'refs/tags/')
+    runs-on: ubuntu-latest
+    environment: pypi
+    permissions:
+      contents: read
+      id-token: write
+      attestations: write
+    steps:
+      - uses: actions/checkout@v6
+      - uses: astral-sh/setup-uv@v6
+      - name: The tag is the package's version
+        run: test "${GITHUB_REF_NAME#v}" = "$(uv version --short)"
+      - run: uv build
+      - uses: actions/attest-build-provenance@v3
+        with:
+          subject-path: dist/*
+      - run: uv publish
+        env:
+          UV_PUBLISH_TOKEN: ${{ secrets.PYPI_API_TOKEN }}

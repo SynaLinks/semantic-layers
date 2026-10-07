@@ -1,25 +1,24 @@
 # Semantic Layers
 
-Semantic Layers are a lightweight, open format for giving AI agents your
-business definitions — *an active customer*, *revenue*, *a late order* — as
-verified, executable code instead of prose, unlocking reasoning and meaning.
+A simple, open format for giving AI agents your business definitions as
+verified, executable code.
 
-At its core, a semantic layer is a folder holding three folders: `tables/`,
-`concepts/` and `rules/`. Each holds one [synalog](https://github.com/SynaLinks/synalog)
-`.l` file per definition, with YAML front matter (`name` and `description`,
-at minimum) followed by the definition, which compiles to SQL and runs on your
-database.
+## What are semantic layers?
+
+A semantic layer is a folder of business definitions — *an active customer*,
+*revenue*, *a late order* — each written as a
+[synalog](https://github.com/SynaLinks/synalog) predicate that compiles to SQL
+and runs on your database. Every definition is one `.l` file: YAML front
+matter (`name` and `description`) followed by the definition.
 
 ```shell
-my-layer/
+sales/
 ├── tables/           # The data: one file per table, generated from the database
 ├── concepts/         # What the data is about: entities, relationships, clean views
 ├── rules/            # What you want to know: counts, rates, rankings, trends
-├── synalog.toml      # The database it runs on (secrets stay in .env)
+├── synalog.toml      # What the layer is, and the database it runs on
 └── .env              # The password or token (local, never committed)
 ```
-
-Here is an example of a predicate, the atomic structure of a semantic layer.
 
 `rules/ActiveCustomer.l`
 
@@ -38,46 +37,69 @@ ActiveCustomer(customer_id:) distinct :-
 
 Where an [Agent Skill](https://agentskills.io) is a set of instructions an
 agent reads and interprets, a semantic layer is a set of **deterministic,
-formally verified** predicates the agent **runs**. A definition is executed,
-not paraphrased, so every agent computes the same result from it — and
-definitions compose: new ones build on existing ones without losing meaning.
+formally verified** predicates the agent **runs**.
 
-A project's layers live side by side in `.agents/layers/`.
+## Why semantic layers?
 
-## How they work
+Ask three agents for "active customers" and you get three SQL queries, each
+plausible, each different. Written guidance can describe the right definition,
+but each agent still re-derives it in its own words, every time. A semantic
+layer packages the definitions themselves:
 
-Agents load semantic layers through **progressive disclosure**, as with Agent
-Skills, in three stages:
+- **One meaning, everywhere**: every agent that runs a definition computes the
+  same rows, on any database synalog targets.
+- **Verified knowledge**: every definition is checked before it is saved,
+  and its `@Assert` statements are checked against the data.
+- **A layer that grows with use**: a missing definition is written by the
+  agent, on top of the ones already there, and reviewed like code.
+- **Portable**: a layer is a folder in a git repository, installed in any
+  project with one command and connected to that project's database.
 
-1. **Discovery**: Agents search. A semantic layer grows to thousands of
-   definitions — too many to list in context, as Agent Skills list theirs —
-   so the agent searches the `name`, `keywords` and `description` of every
-   definition with a regular expression built from the question
-   (`semantic-layers search 'churn|retention'`), and gets back the few that
-   fit.
+[Why semantic layers](why.md) tells the longer story.
 
-2. **Activation**: When a question matches a definition, the agent reads it —
-   and the definitions it imports — into context.
+## How do semantic layers work?
 
-3. **Execution**: The agent runs the definition on the database and answers
-   from its rows. When no definition fits, it writes one, verified before it
-   is saved.
+Agents load semantic layers through **progressive disclosure**, in three
+stages:
+
+1. **Discovery**: a layer grows to thousands of definitions — too many to list
+   in the agent's context — so the agent **searches** their `name`,
+   `keywords` and `description` with a regular expression built from the
+   question (`semantic-layers search 'churn|retention'`), and gets back the
+   few that fit.
+2. **Activation**: when a definition fits, the agent reads it — and the
+   definitions it imports — into context.
+3. **Execution**: the agent runs the definition on the database and answers
+   from its rows. When none fits, it writes one, verified before it is saved.
 
 Only search results reach the context, and definitions only when a question
-calls for them, so a layer can hold thousands of them with a small context
-footprint.
+calls for them, so a layer of thousands of definitions costs a few lines of
+context.
 
-## Where to use them
+## Where can I use semantic layers?
 
 - **Any coding agent**: `semantic-layers add` installs layers into
-  `.agents/layers/` and tells the agent how to use them — a section of
-  `AGENTS.md`, and of `CLAUDE.md` for Claude Code — so every coding agent
-  searches and runs them with the synalog CLI.
-- **The [synalog](https://github.com/SynaLinks/synalog) CLI**: runs any
+  `.agents/layers/` and tells the agent how to use them, in `AGENTS.md` (and
+  `CLAUDE.md` for Claude Code). See [Coding agents](agents.md).
+- **Agents that support [Agent Skills](https://agentskills.io)**: the
+  `semantic-layers` skill teaches searching, running and writing definitions.
+- **Your own agent**: [Adding layer support](agent-support.md) walks through
+  discovery, search, execution and verification, step by step.
+- **The command line**: `uvx synalog rules/Revenue.l run Revenue` runs any
   definition from its layer's folder.
 
-## Next
+## Open development
 
-- [Why semantic layers](why.md): the problem they solve.
+The format, the `semantic-layers` command and the example layers are
+developed in the open, under the Apache 2.0 license, at
+[github.com/SynaLinks/semantic-layers](https://github.com/SynaLinks/semantic-layers).
+Contributions — layers, fixes, ideas — are welcome as issues and pull
+requests.
+
+## Get started
+
 - [Getting started](getting-started.md): install a layer, connect it, ask.
+- [Quickstart](creating/quickstart.md): write your first layer in five minutes,
+  no database needed.
 - [Specification](specification.md): the format, file by file.
+- [Examples](examples.md): two layers to read and install.

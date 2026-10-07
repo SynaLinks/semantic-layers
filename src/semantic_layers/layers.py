@@ -168,30 +168,43 @@ def read_layers(folder: Path) -> dict[str, SemanticLayer]:
 def find_layers(root: Path, name: str) -> dict[str, SemanticLayer]:
     """The layers a fetched source offers. A source is one layer (the three
     folders at its root, named ``name``) or holds several, as sub-folders of
-    its root, ``layers/``, ``layers/`` or ``.agents/layers/``."""
+    its root, ``layers/`` or ``.agents/layers/``."""
     if is_layer(root):
         name = str(read_project(root).get("name") or name)
         return {name: SemanticLayer(name, root)}
-    for candidate in (root, root / "layers", root / "layers", root / ".agents" / "layers"):
+    for candidate in (root, root / "layers", root / ".agents" / "layers"):
         layers = read_layers(candidate)
         if layers:
             return layers
     return {}
 
 
-def verify(layer: Path) -> list[str]:
+def check(layer: Path, database: tuple[str, str] | None = None) -> tuple[list[str], list[str]]:
     """Check every predicate of a layer folder with synalog, imports resolved
-    from the folder. Returns ``"<file>: <error>"`` lines, empty when it checks.
-    The check is structural and offline: a layer is checked before it is
-    connected, so its ``@Assert`` statements are not run against data here."""
+    from the folder: ``(errors, warnings)``, ``"<file>: <message>"`` lines.
+
+    Without ``database`` the check is structural and offline, as before a
+    layer is connected. With the layer's ``(engine, dsn)`` its ``@Assert``
+    statements also run there: each violated one is an error quoting a few
+    counterexamples, and a database that cannot be reached is a warning."""
     errors: list[str] = []
+    warnings: list[str] = []
+    engine, dsn = database or (None, None)
     for p in read_predicates(layer).values():
         try:
-            problems, _ = synalog.check(p.text, import_root=[str(layer)], assertions=False)
+            problems, notes = synalog.check(
+                p.text, engine=engine, import_root=[str(layer)], assertions=database is not None, dsn=dsn
+            )
         except ValueError as exc:
-            problems = [str(exc).strip().splitlines()[-1]]
+            problems, notes = [str(exc).strip().splitlines()[-1]], []
         errors.extend(f"{p.relative}: {problem}" for problem in problems)
-    return errors + _check_project_file(layer)
+        warnings.extend(f"{p.relative}: {note}" for note in notes)
+    return errors + _check_project_file(layer), warnings
+
+
+def verify(layer: Path) -> list[str]:
+    """The errors of the offline ``check``: empty when the layer verifies."""
+    return check(layer)[0]
 
 
 def _check_project_file(layer: Path) -> list[str]:

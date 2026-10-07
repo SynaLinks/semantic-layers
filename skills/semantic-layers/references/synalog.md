@@ -104,6 +104,26 @@ AllManagers(employee_id:, manager_id:) :-
 
 Shortest paths: enumerate route costs recursively, then keep `Min=` per destination in a separate aggregating rule.
 
+## Assertions
+
+`@Assert` states what a predicate must satisfy, in first-order logic rather than Synalog, so a mistake in a rule is unlikely to be repeated in its assertion. Write the contract first, then the rules:
+
+```logica
+@Assert(Ancestor,
+      transitive:  "∀ x y z, Ancestor x y → Ancestor y z → Ancestor x z",
+      irreflexive: "∀ x, ¬ Ancestor x x");
+
+@Recursive(Ancestor, 20);
+@OrderBy(Ancestor, "x");
+Ancestor(x:, y:) :- Parent(x:, y:);
+Ancestor(x:, y: z) :- Ancestor(x:, y:), Parent(x: y, y: z);
+```
+
+- Statements use Lean notation, each symbol with an ASCII spelling: `∀`/`forall`, `∃`/`exists`, `→`/`->`, `↔`/`<->`, `∧`/`/\`, `∨`/`\/`, `¬`/`not`, `≠`/`!=`, `≤`/`<=`, `≥`/`>=`, `∑ x, t`/`sum x, t`.
+- Predicates are applied positionally, their columns in the order the first rule declares them: `Ancestor x y` is `Ancestor(x: x, y: y)`. Applied to all but the last column, a predicate is a function: with `Share(h:, e:, p:)`, `Share h e` is `p`, so `∀ e, ∑ h, Share h e = 1`.
+- Every variable must be bound by a predicate (`∀ x, x > 0` ranges over nothing). A raw table cannot be applied: wrap it in a predicate.
+- An assertion is checked by searching the data for counterexamples: holding means *no counterexample in this data*, not a proof. It does not change the generated SQL.
+
 ## Functors (parameterize predicates)
 
 ```logica

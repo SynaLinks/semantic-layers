@@ -5,9 +5,9 @@ repositories, installed with one command. The command, `semantic-layers`, is a
 Python tool run with [uv](https://docs.astral.sh/uv/) — nothing to install
 beyond `uv`.
 
-!!! note "Not on PyPI yet"
-    Run it from a checkout of this repository:
-    `uvx --from <path-to-checkout> semantic-layers ...`.
+!!! note "Before the first PyPI release"
+    Until `semantic-layers` is published, run it from the repository:
+    `uvx --from git+https://github.com/SynaLinks/semantic-layers semantic-layers ...`.
 
 ## Installing
 
@@ -52,7 +52,8 @@ generates one file per table of the database with `synalog introspect`,
 keeping the descriptions and keywords already written. A table the layer has
 but the database doesn't is kept and reported, since definitions may still
 import it. Then the layer is checked: a concept or rule using a table or
-column your database lacks is listed.
+column your database lacks is listed, and so is an assertion its data
+violates.
 
 Then any definition runs from the layer's folder:
 
@@ -117,4 +118,4 @@ uvx semantic-layers search 'churn|retention'   # find definitions by name, keywo
 
 `update` never overwrites a layer you modified: it keeps it and says so.
 
-Every command and its options: [CLI](cli.md). How coding agents are told about the layers: [Agents](agents.md).
+Every command and its options: [CLI](cli.md). How coding agents are told about the layers: [Coding agents](agents.md).

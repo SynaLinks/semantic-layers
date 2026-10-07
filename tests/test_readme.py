@@ -42,7 +42,7 @@ SUPPORT = {
         "Contains(assembly_id:, component_id:) :- BillOfMaterials(assembly_id:, component_id:);"
     ),
 }
-PAGES = ["README.md", "docs/index.md", "docs/specification.md"]
+PAGES = ["README.md", "docs/index.md", "docs/specification.md", "docs/creating/quickstart.md"]
 
 
 @pytest.mark.parametrize("page", PAGES)

@@ -27,6 +27,7 @@ LANGUAGE = [
     "Built-in functions",
     "Temporal columns: mandatory pipeline",
     "Recursion",
+    "Assertions",
     "Functors (parameterize predicates)",
     "Knowledge graphs",
 ]

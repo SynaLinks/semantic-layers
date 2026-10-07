@@ -12,10 +12,14 @@ layer-name/
 ├── tables/           # The data: one .l file per database table
 ├── concepts/         # Entities, relationships and clean views, built on tables
 ├── rules/            # Insights, built on concepts
-├── synalog.toml      # Its name, description and database (committed)
+├── synalog.toml      # Required: its name, description and database (committed)
 ├── .env              # Optional: that database's secrets (never committed)
-└── .gitignore        # Optional: keeps the credentials out of git
+├── .gitignore        # Optional: keeps the credentials out of git
+└── README.md         # Optional: what the layer is for, for people
 ```
+
+Other files — a `README.md`, sample data in `data/` — are allowed and
+ignored by the tools: only `.l` files in the three folders are definitions.
 
 The layer's name is its directory's name. It should use lowercase letters,
 numbers and hyphens (`sales`, `customer-retention`), as Agent Skills do.
@@ -42,12 +46,14 @@ The front matter opens with `---` on the file's first line and closes with a
 
 | Field | Required | Constraints |
 |-------|----------|-------------|
-| `name` | Yes | The predicate that runs, when the file also defines intermediate rules. Must be one of the predicates the file defines. |
-| `description` | Recommended | Says what the definition holds, in plain words. Generated tables start without one. |
-| `keywords` | No | A list of terms that should lead an agent to the definition. |
-| `locked` | No | `true` for a definition that must not change. |
-| `protected` | No | Tables only. `true` when the table's structure is fixed: its rows stay editable. |
+| `name` | Yes | Must be a predicate the file defines (not an imported one), ordered by an `@OrderBy`. Should be `UpperCamelCase` and the file's name without `.l`. |
+| `description` | Yes | Non-empty text: what the definition's rows are, in plain words. Generated tables get one made from the table's name. |
+| `keywords` | No | A list of strings: other words that should find the definition. |
+| `locked` | No | A boolean. `true` for a definition that must not change. |
+| `protected` | No | Tables only. A boolean: `true` when the table's structure is fixed; its rows stay editable. |
 | `columns` | No | Tables only. The column types of a table on a remote database. |
+
+Other keys are allowed, and ignored.
 
 **Minimal example:**
 
@@ -136,6 +142,25 @@ description: Customers with at least one delivered order in the last 90 days.
 description: Active customers.
 ```
 
+#### `keywords` field
+
+The optional `keywords` field:
+
+- Lists the words that should find the definition but are not in its name
+  or description: synonyms, the business's own terms and acronyms, the
+  team's other languages
+- Ranks between the `name` and the `description` in search
+
+```yaml
+keywords: [revenue, sales, turnover, income, GMV]
+```
+
+#### `locked` field
+
+The optional `locked` field marks a definition the business signed off:
+agents read it and build on it, and are told never to change it. A change
+goes through the people who own the definition.
+
 ### Body content
 
 After the front matter come the `import` lines, one per definition the file
@@ -156,13 +181,14 @@ ActiveCustomer(customer_id:) distinct :-
   Customer(customer_id:), Orders(customer_id:, status: "delivered");
 ```
 
-Directives shape how a definition runs. Three matter for every layer:
+Directives shape how a definition runs and what it promises:
 
 | Directive | Effect |
 |---|---|
 | `@OrderBy(Name, "column", "DESC")` | the order of its rows, compiled to `ORDER BY`. Every definition must have one — synalog refuses a file whose named predicate has none: results are paginated, and without a stable order a page differs between calls. |
 | `@Limit(Name, 10)` | at most that many rows, compiled to `LIMIT` — the top of a ranking. A caller's own limit can only lower it. |
 | `@Recursive(Name, 10)` | allows `Name` to be recursive, at most that many steps deep; the verifier refuses recursion without it. |
+| `@Assert(Name, key: "statement", ...)` | what the rows must satisfy, in first-order logic, one named statement per property; checked against the data (see [Assertions](#assertions)). It does not change the SQL. |
 
 The [synalog directives](https://synalinks.github.io/synalog/language/directives/)
 lists the others.
@@ -171,6 +197,32 @@ The file is a standalone synalog module: run from the layer's folder, it
 checks, compiles and runs on its own. See the
 [synalog language reference](https://github.com/SynaLinks/synalog) for the
 definitions themselves.
+
+## Assertions
+
+An `@Assert` states what a definition's rows must satisfy, as named
+statements in first-order logic. It is part of the definition: written in
+its file, before or after its rules, and checked against the data.
+
+```prolog
+@Assert(RevenueByCountry,
+        one_row_per_country: "∀ c r s, RevenueByCountry c r → RevenueByCountry c s → r = s",
+        positive:            "∀ c, RevenueByCountry c > 0");
+```
+
+- Each statement has a name, unique for its predicate, that reports use
+  (`RevenueByCountry.positive`).
+- Predicates are applied by position, in the order their rule declares
+  their columns. A statement may use any predicate the file defines or
+  imports.
+- A statement holds when the data has no counterexample to it. It is
+  checked when the layer is checked on its database (see
+  [Validation](#validation)), not when it is installed.
+
+The statement language is synalog's: see
+[Assertions](https://synalinks.github.io/synalog/assertions/).
+[Evaluating layers](creating/evaluating.md) lists the properties worth
+asserting.
 
 ## Imports
 
@@ -225,10 +277,13 @@ database = "sales"
 user = "analyst"
 ```
 
-- `[project]` is the layer's, and every layer has one. Its `description`
-  is **required**: what the layer is about, shown by `list` and
-  `add --list` — a layer without one does not check, and does not install.
-  Its `name`, when given, must be the folder's.
+| Key | Required | Constraints |
+|---|---|---|
+| `[project] name` | No | The layer's name; when given, must be its folder's name. |
+| `[project] description` | Yes | Non-empty: what the layer is about, shown by `list` and `add --list`. A layer without one does not check, and does not install. |
+| `[connection] engine` | To run | `psql`, `trino`, `presto`, `databricks` or `bigquery`. |
+| `[connection]` other keys | Per engine | The engine's non-secret fields (`host`, `port`, `database`, `user`, `schema`, ...): `semantic-layers connect --help` lists them. Never a secret. |
+
 - `[connection]` is synalog's [project file](https://github.com/SynaLinks/synalog#projects-synalogtoml):
   the engine and its fields, the secrets in the git-ignored `.env`, found by
   synalog run anywhere in the layer. `semantic-layers connect` writes both
@@ -272,6 +327,8 @@ business's own terms, the other language of the team).
 
 Keep each definition small, and build larger ones on top through imports:
 small definitions are easier to find, to reuse and to check.
+[Writing findable definitions](creating/findable-definitions.md) shows how,
+and how to test it.
 
 ## Validation
 
@@ -280,13 +337,19 @@ folder:
 
 ```shell
 cd my-layer
-uvx synalog rules/ActiveCustomer.l print ActiveCustomer   # one definition
 uvx semantic-layers check .                               # the whole layer
+uvx synalog rules/ActiveCustomer.l print ActiveCustomer   # one definition, its SQL
 ```
 
-This checks that the front matter is valid YAML and its `name` is a predicate
-the file defines, and that the definition parses, its imports resolve and the
-whole program is sound.
+The check has two levels:
+
+| Level | Checks | Runs |
+|---|---|---|
+| **Structure** | The front matter is valid YAML, with a `name` the file defines and orders, and a `description`; the definition parses, its imports resolve, and the program is sound — safety, arity, stratification, recursion, unknown references; `synalog.toml` describes the layer | Always: `add`, `check`, `connect` |
+| **Data** | Every `@Assert` holds on the layer's database: each violated one is reported with a few counterexamples | When the layer is connected: `check` (unless `--offline`) and `connect` |
+
+A layer is installed only if its structure checks. Its assertions run once
+it has a database.
 
 ## Open questions
 

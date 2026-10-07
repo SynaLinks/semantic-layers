@@ -42,10 +42,6 @@ build-backend = "hatchling.build"
 [tool.hatch.build.targets.wheel]
 packages = ["src/semantic_layers"]
 
-[tool.uv.sources]
-# synalog 2.0 (check() returns errors and warnings) is not released yet (SynaLinks/synalog#13).
-synalog = { path = "../synalog", editable = true }
-
 [tool.ruff]
 line-length = 120
 target-version = "py310"

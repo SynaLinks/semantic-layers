@@ -10,8 +10,8 @@ themselves into portable, version-controlled folders. This gives agents:
   same thing, on any database synalog targets — DuckDB, SQLite, PostgreSQL,
   Trino, Presto, Databricks, BigQuery.
 - **Verified knowledge**: synalog checks every definition formally — arity, safety,
-  stratification, unknown references — before it is saved; a definition that
-  doesn't check never lands.
+  stratification, unknown references — before it is saved, and runs its
+  assertions against the data; a definition that doesn't check never lands.
 - **A layer that grows with use**: When a question needs a definition that
   doesn't exist, the agent writes it, building on the ones already there —
   and every change is a git commit: who made it, what changed, a way back.
@@ -42,6 +42,10 @@ and it reaches the questions plain SQL makes hard to get right:
   aggregation, stratification, arity, recursion and unknown references are
   checked before any SQL is generated: this is what *formally verified* means
   here.
+- **[Assertions](https://synalinks.github.io/synalog/assertions/)** — what a
+  definition must satisfy, stated in first-order logic (one row per customer,
+  a share between 0 and 1, every order tied to a known customer) and checked
+  against the data: a counterexample names the rows a rule gets wrong.
 - **[Every warehouse](https://synalinks.github.io/synalog/engines/), [in milliseconds](https://synalinks.github.io/synalog/benchmark/)** —
   one definition compiles to each engine's dialect, by a Rust engine fast
   enough for an agent to check every rule it writes.

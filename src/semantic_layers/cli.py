@@ -11,7 +11,7 @@ from .banner import show_banner, show_logo
 from .connect import PROJECT_FILE, generate_tables, layer_dsn, write_connection
 from .init import init
 from .install import InstallError, Scope, add, available, installed, update
-from .layers import is_layer, search, verify, verify_layers
+from .layers import SemanticLayer, check, is_layer, read_layers, search
 
 
 def _scope(args) -> Scope:
@@ -75,13 +75,13 @@ def cmd_connect(args) -> int:
         print(f"  tables/{name}.l")
     if result["gone"]:
         print("Not in this database (kept, fix or delete them): " + ", ".join(result["gone"]))
-    errors = verify(folder)
-    for error in errors:
-        print(error)
+    errors, warnings = check(folder, (engine, _dsn))
+    for line in errors + [f"warning: {w}" for w in warnings]:
+        print(line)
     print(
-        f"{folder.name} verifies against your tables."
+        f"{folder.name} verifies against your database."
         if not errors
-        else f"{len(errors)} problem(s): the layer needs tables or columns this database does not have."
+        else f"{len(errors)} problem(s): a table or column this database lacks, or an assertion its data violates."
     )
     return 1 if errors else 0
 
@@ -133,10 +133,20 @@ def cmd_search(args) -> int:
 
 
 def cmd_check(args) -> int:
-    folder = _scope(args).layers
-    errors = [f"{args.layer}/{e}" for e in verify(_layer_folder(args))] if args.layer else verify_layers(folder)
-    for error in errors:
-        print(error)
+    if args.layer:
+        path = _layer_folder(args)
+        layers = {path.name: path}
+    else:
+        layers = {name: layer.path for name, layer in read_layers(_scope(args).layers).items()}
+    errors, warnings = [], []
+    for name, path in layers.items():
+        # A connected layer's assertions run on its database, unless --offline.
+        connected = not args.offline and SemanticLayer(name, path).connected
+        found, notes = check(path, layer_dsn(path) if connected else None)
+        errors += [f"{name}/{e}" for e in found]
+        warnings += [f"{name}/{w}" for w in notes]
+    for line in errors + [f"warning: {w}" for w in warnings]:
+        print(line)
     print("Everything verifies." if not errors else f"{len(errors)} problem(s).")
     return 1 if errors else 0
 
@@ -216,8 +226,13 @@ def main(argv: list[str] | None = None) -> int:
     _folder_options(p)
     p.set_defaults(func=cmd_search)
 
-    p = commands.add_parser("check", help="verify the installed layers with synalog")
+    p = commands.add_parser(
+        "check", help="verify the installed layers with synalog; run their assertions on their databases"
+    )
     p.add_argument("layer", nargs="?", help="one layer, or a layer folder's path (default: every installed layer)")
+    p.add_argument(
+        "--offline", action="store_true", help="check the definitions only: run no assertion on the layers' databases"
+    )
     _folder_options(p)
     p.set_defaults(func=cmd_check)
 

@@ -1,4 +1,4 @@
-# Agents
+# Coding agents
 
 Files in a folder are not enough: an agent has to be told the layers exist and
 how to use them. `add` does it through the file each agent reads at the start
@@ -26,6 +26,9 @@ with the Agent Skills CLI:
 ```shell
 npx skills add SynaLinks/semantic-layers
 ```
+
+Building your own agent rather than using a coding agent? See
+[Adding layer support to your agent](agent-support.md).
 
 ## What the agent reads
 

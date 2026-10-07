@@ -16,10 +16,9 @@ semantic-layers/
 └── shell/                 # test, lint, format, doc
 ```
 
-Semantic layers build on [synalog](https://github.com/SynaLinks/synalog): it
-parses, checks and runs the definitions, and owns `synalog.toml`. Until the
-features this repository needs are released, `pyproject.toml` takes synalog
-from a checkout beside this one (`../synalog`).
+Semantic layers build on [synalog](https://github.com/SynaLinks/synalog) (2.0
+or later, from PyPI): it parses, checks and runs the definitions, runs their
+assertions, and owns `synalog.toml`.
 
 ## Tests
 
@@ -29,7 +28,8 @@ uv run pytest tests/test_connect.py -q
 ```
 
 Tests run synalog for real on temporary layers; nothing reaches a database
-(`connect` is tested with a stand-in for `synalog introspect`).
+(`connect` is tested with a stand-in for `synalog introspect`, assertions on
+an in-memory DuckDB standing in for the layer's database).
 
 ## Lint and format
 
@@ -42,7 +42,8 @@ Tests run synalog for real on temporary layers; nothing reaches a database
 
 `skills/semantic-layers/references/synalog.md` and `errors.md` are generated
 from synalog's own skill, so the language and its error messages are written
-once, in synalog. After synalog's skill changes:
+once, in synalog. After synalog's skill changes, from a synalog checkout
+beside this one (`../synalog`):
 
 ```shell
 uv run python shell/sync_skill.py
@@ -50,6 +51,20 @@ uv run python shell/sync_skill.py
 
 The layer-specific parts are in `shell/skill/`; a test fails while the
 generated files are stale.
+
+## Releasing
+
+Publishing to PyPI is automated by `.github/workflows/release.yml`, which
+runs the lint and the tests, then builds and publishes the package when a
+version tag is pushed. The tag must be the version in `pyproject.toml`:
+
+```shell
+git tag v0.1.0 && git push origin v0.1.0
+```
+
+One-time setup on the GitHub repository: an Environment named `pypi`
+(Settings → Environments), ideally restricted to tags matching `v*`, with a
+`PYPI_API_TOKEN` secret.
 
 ## Documentation
 

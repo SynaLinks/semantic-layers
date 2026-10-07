@@ -109,6 +109,11 @@ The rules of the format — `semantic-layers check` enforces them:
   without it: results are paginated, and without a stable order the same
   page differs between calls. Helpers need none. Add `@Limit` for the top
   of a ranking.
+- **`@Assert`** what the rows must satisfy, when a rule could silently get
+  it wrong — one row per key, a share between 0 and 1, every row tied to a
+  known entity. Write it first, in logic, then the rule:
+  `@Assert(RepeatBuyer, one_row_per_customer: "∀ c m n, RepeatBuyer c m → RepeatBuyer c n → m = n");`
+  (see *Assertions* in [references/synalog.md](references/synalog.md)).
 - **No secrets, no SQL**: never write `SqlExpr`; never put a password in a file.
 
 Then check it, run it, and only then answer from it:
@@ -119,8 +124,10 @@ uvx semantic-layers check .                                   # every file of th
 uvx synalog rules/RepeatBuyer.l run RepeatBuyer --limit 20     # does it return what you expect?
 ```
 
-`check` reports every problem at once, one line per file. Fix them all and
-check again; [references/errors.md](references/errors.md) explains each
+`check` reports every problem at once, one line per file. In a connected
+layer it also runs every `@Assert` on the database: a violated one quotes
+the rows it is false for — fix the rule (or the assertion, if it was wrong).
+Fix them all and check again; [references/errors.md](references/errors.md) explains each
 message. A definition that does not check must not be left in the layer.
 
 ## Changing a definition

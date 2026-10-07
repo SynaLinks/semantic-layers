@@ -11,12 +11,21 @@ Copyright &copy; 2026 Synalinks
 """
 
 nav = [
-  { "Home" = "index.md" },
+  { "Overview" = "index.md" },
   { "Why semantic layers" = "why.md" },
   { "Getting started" = "getting-started.md" },
   { "Specification" = "specification.md" },
-  { "Sharing" = "sharing.md" },
-  { "Agents" = "agents.md" },
+  { "Creating layers" = [
+    { "Quickstart" = "creating/quickstart.md" },
+    { "Best practices" = "creating/best-practices.md" },
+    { "Writing findable definitions" = "creating/findable-definitions.md" },
+    { "Evaluating layers" = "creating/evaluating.md" },
+  ] },
+  { "Using layers" = [
+    { "Sharing" = "sharing.md" },
+    { "Coding agents" = "agents.md" },
+    { "Adding layer support to your agent" = "agent-support.md" },
+  ] },
   { "CLI" = "cli.md" },
   { "Examples" = "examples.md" },
   { "Development" = "development.md" },

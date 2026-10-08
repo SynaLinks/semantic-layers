@@ -55,14 +55,18 @@ connected to that one?* SQL makes them hard to get right — a recursive query
 per engine, a traversal that stops one level short, a cycle that never ends.
 The usual answer is a knowledge graph in a graph database: an ETL pipeline
 to copy the tables, a second store to keep in sync and secure, a second query
-language — and agents that reason over a copy already out of date.
+language — and agents that reason over a copy already out of date. GraphRAG
+pipelines go further still: an LLM reads the rows to extract entities and
+relationships, at a cost per row, with edges it may invent or miss, and the
+whole extraction runs again when the data changes.
 
 A semantic layer holds the definition itself, as code the agent **runs**:
 checked before it runs, asserted against the data, and the same result from
 every agent, every time. Entities and relationships are definitions too: the
 knowledge graph is built over the tables you already have, traversed by
 recursive rules compiled to SQL and run where the data lives — no data
-moved, no graph database to maintain.
+moved, no graph database to maintain. Extraction is a query, not an LLM
+pass: instant, exact, and current with the latest row.
 
 ## What are Semantic Layers?
 

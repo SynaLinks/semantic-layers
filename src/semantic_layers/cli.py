@@ -27,10 +27,9 @@ def _layer_folder(args) -> Path:
     return _scope(args).layers / args.layer
 
 
-def _ask(label: str, check=None) -> str:
-    """Ask in a terminal until the answer is non-empty (and passes ``check``,
-    which raises ``ValueError`` with what is wrong); ``""`` when there is no
-    terminal to ask in — a coding agent, a script."""
+def _ask(label: str) -> str:
+    """Ask in a terminal until the answer is non-empty; ``""`` when there is
+    no terminal to ask in — a coding agent, a script."""
     if not sys.stdin.isatty():
         return ""
     while True:
@@ -38,33 +37,37 @@ def _ask(label: str, check=None) -> str:
             answer = input(f"{label}: ").strip()
         except EOFError:
             return ""
-        try:
-            if answer and check is not None:
-                check(answer)
-        except ValueError as exc:
-            print(f"  {exc}", file=sys.stderr)
-            continue
         if answer:
             return answer
 
 
 def cmd_init(args) -> int:
     # -n wins over the positional name, as in `synalinks init`.
-    name = (args.name_option or args.name or "").strip() or _ask("Layer name (its folder)", check_name)
-    if not name:
-        raise ValueError("a layer needs a name: pass it as 'init <name>' or with -n (it is the layer's folder).")
-    check_name(name)
+    name = (args.name_option or args.name or "").strip()
+    if name:
+        check_name(name)
+        target = Path(name)
+    else:
+        target = Path.cwd()
+        name = target.name
+        try:
+            check_name(name)
+        except ValueError as exc:
+            raise ValueError(f"the current folder names the layer: {exc} Rename it, or pass a name.") from None
+        print(f"No name given: setting up the layer in the current folder, {target}, named '{name}' after it.")
     description = (args.description or "").strip() or _ask("Description (what the layer is about)")
     if not description:
         raise ValueError('a layer needs a description: pass it with -d "..." (it goes in layer.toml).')
-    result = init(Path(name), name, description, force=args.force)
+    # The current folder is often a repository already: it is filled in,
+    # never overwritten. A new folder must be empty, unless --force.
+    result = init(target, name, description, force=args.force or target == Path.cwd())
     print(f"Layer project {result['name']} in {result['path']}")
     for item in result["created"]:
         print(f"  {item}")
     print(
         "Next:\n"
-        f"  cd {name}\n"
-        "  uvx semantic-layers connect <engine> host=... user=... password=...   # tables/ from your database\n"
+        + (f"  cd {name}\n" if target != Path.cwd() else "")
+        + "  uvx semantic-layers connect <engine> host=... user=... password=...   # tables/ from your database\n"
         "  write concepts/<Name>.l and rules/<Name>.l, then: uvx semantic-layers check .\n"
         "  git push it, and anyone installs it with: uvx semantic-layers add <owner>/<repo>"
     )
@@ -201,10 +204,11 @@ def main(argv: list[str] | None = None) -> int:
     p = commands.add_parser(
         "init",
         help="set up a semantic layer project",
-        description="Set up a layer project in ./<name>. In a terminal, asks for what is not given.",
+        description="Set up a layer project in ./<name>, or in the current folder, named after it. In a terminal,"
+        " asks for the description when it is not given.",
         epilog='e.g.: semantic-layers init sales -d "Orders and customers: revenue, active customers."',
     )
-    p.add_argument("name", nargs="?", help="the layer's name: lowercase letters, numbers, hyphens; also its folder")
+    p.add_argument("name", nargs="?", help="the layer's name, also its folder (default: the current folder)")
     p.add_argument(
         "-n", "--name", dest="name_option", metavar="NAME", help="the layer's name (instead of the argument)"
     )

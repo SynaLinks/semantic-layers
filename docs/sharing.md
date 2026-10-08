@@ -64,16 +64,17 @@ uvx synalog rules/ActiveCustomer.l run ActiveCustomer
 
 ## Publishing
 
-Start a layer project with `init`. It asks for the layer's name and
-description:
+Start a layer project with `init`, giving the layer's name — its folder —
+and asked for its description:
 
 ```console
-$ uvx semantic-layers init
-Layer name (its folder): sales
+$ uvx semantic-layers init sales
 Description (what the layer is about): Orders and customers: revenue, active customers.
 ```
 
-or takes them as arguments, as a coding agent or a script must:
+Without a name, the layer is set up in the current folder, named after it
+(an empty repository you cloned, say). A coding agent or a script, with no
+terminal to answer in, passes the description with `-d`:
 
 ```shell
 uvx semantic-layers init sales -d "Orders and customers: revenue, active customers."
@@ -89,12 +90,12 @@ sales/
 └── README.md       # what the layer is, how to install and develop it
 ```
 
-The name is the layer's folder, created in the current directory:
-lowercase letters, numbers and hyphens. The description, required, says
-what the layer is about. Both go in `layer.toml`'s `[project]`, which
-`add --list` and `list` show. `init` also runs `git init` when the folder
-isn't in a repository yet. It refuses a folder that exists and is not empty
-unless you pass `--force`, and even then never overwrites a file. Inside
+The name is lowercase letters, numbers and hyphens. The description,
+required, says what the layer is about. Both go in `layer.toml`'s
+`[project]`, which `add --list` and `list` show. `init` also runs `git init`
+when the folder isn't in a repository yet, and never overwrites a file. A
+named folder that exists and is not empty is refused unless you pass
+`--force`. Inside
 the project, connect it with `semantic-layers connect psql host=... user=...`
 and check it with `semantic-layers check .`.
 

@@ -17,8 +17,8 @@ uvx semantic-layers init shop -d "Orders of an online shop: what counts as a sal
 cd shop
 ```
 
-Run without arguments, `init` asks for the name and the description. It
-created the layer's folders, its `layer.toml` (its name and
+Without `-d`, `init` asks for the description; without a name, it sets up
+the current folder. It created the layer's folders, its `layer.toml` (its name and
 description), a `README.md` and a `.gitignore`, and ran `git init`.
 
 ## Add the data

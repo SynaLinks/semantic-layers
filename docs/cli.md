@@ -14,7 +14,7 @@ and `search` open with the logo — never when a coding agent runs them.
 
 | Command | |
 |---|---|
-| `init [<name>]` | set up a layer project in `./<name>/`: `-d` its description, `-n` its name as an option, `--force` into a folder that is not empty; in a terminal, asks for what is not given |
+| `init [<name>]` | set up a layer project in `./<name>/`, or in the current folder, named after it: `-d` its description (asked in a terminal when not given), `-n` the name as an option, `--force` into a named folder that is not empty |
 | `add <source>` | install layers from `owner/repo` on GitHub, a git URL or a folder; `--layer <name>` (repeatable), `--list`, `--force`, `--agent <name>`, `--all` |
 | `connect [<engine> key=value ...]` | run in a layer's folder (it has a `layer.toml`): give the layer its database — or use the one in its `layer.toml` — generate its tables, check it |
 | `list` | the installed layers and their state: `ok`, `modified`, `local` (yours), `missing` |

@@ -13,11 +13,12 @@ each customer, counting delivered orders only.
 ## Create the layer
 
 ```shell
-uvx semantic-layers init shop --description "Orders of an online shop: what counts as a sale, revenue."
+uvx semantic-layers init shop -d "Orders of an online shop: what counts as a sale, revenue."
 cd shop
 ```
 
-`init` created the layer's folders, its `layer.toml` (its name and
+Run without arguments, `init` asks for the name and the description. It
+created the layer's folders, its `layer.toml` (its name and
 description), a `README.md` and a `.gitignore`, and ran `git init`.
 
 ## Add the data

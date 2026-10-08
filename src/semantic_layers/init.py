@@ -54,19 +54,27 @@ uvx semantic-layers check .                                      # verify every 
 """
 
 
-def init(target: Path, name: str | None = None, description: str = "") -> dict:
-    """Set up the layer project ``target`` (created if missing). Never
-    overwrites a file that exists. Returns what was ``created``."""
-    name = name or target.resolve().name
-    if not description.strip():
-        raise ValueError("a layer needs a description: what it is about, for whoever installs it.")
+def check_name(name: str) -> None:
+    """Raise ``ValueError`` unless ``name`` is a layer name."""
     if not _NAME.match(name):
         raise ValueError(
             f"'{name}' is not a layer name: use lowercase letters, numbers and hyphens "
             "(e.g. sales, customer-retention)."
         )
+
+
+def init(target: Path, name: str | None = None, description: str = "", force: bool = False) -> dict:
+    """Set up the layer project ``target`` (created if missing). A folder that
+    exists and is not empty is refused unless ``force``; even then, no file
+    that exists is overwritten. Returns what was ``created``."""
+    name = name or target.resolve().name
+    if not description.strip():
+        raise ValueError("a layer needs a description: what it is about, for whoever installs it.")
+    check_name(name)
     if target.exists() and not target.is_dir():
         raise ValueError(f"{target} is a file.")
+    if target.is_dir() and any(target.iterdir()) and not force:
+        raise ValueError(f"{target} exists and is not empty: pass --force to set up the layer in it.")
     created: list[str] = []
     target.mkdir(parents=True, exist_ok=True)
     for folder in FOLDERS.values():

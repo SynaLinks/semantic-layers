@@ -9,7 +9,7 @@ from pathlib import Path
 from . import __version__
 from .banner import show_banner, show_logo
 from .connect import PROJECT_FILE, generate_tables, layer_connection, write_connection
-from .init import init
+from .init import check_name, init
 from .install import InstallError, Scope, add, available, installed, update
 from .layers import check, is_layer, read_layers, search
 
@@ -27,17 +27,44 @@ def _layer_folder(args) -> Path:
     return _scope(args).layers / args.layer
 
 
+def _ask(label: str, check=None) -> str:
+    """Ask in a terminal until the answer is non-empty (and passes ``check``,
+    which raises ``ValueError`` with what is wrong); ``""`` when there is no
+    terminal to ask in — a coding agent, a script."""
+    if not sys.stdin.isatty():
+        return ""
+    while True:
+        try:
+            answer = input(f"{label}: ").strip()
+        except EOFError:
+            return ""
+        try:
+            if answer and check is not None:
+                check(answer)
+        except ValueError as exc:
+            print(f"  {exc}", file=sys.stderr)
+            continue
+        if answer:
+            return answer
+
+
 def cmd_init(args) -> int:
-    target = Path(args.name).expanduser() if args.name else Path.cwd()
-    result = init(target, None if args.name is None else Path(args.name).name, args.description)
-    where = "." if not args.name else args.name
+    # -n wins over the positional name, as in `synalinks init`.
+    name = (args.name_option or args.name or "").strip() or _ask("Layer name (its folder)", check_name)
+    if not name:
+        raise ValueError("a layer needs a name: pass it as 'init <name>' or with -n (it is the layer's folder).")
+    check_name(name)
+    description = (args.description or "").strip() or _ask("Description (what the layer is about)")
+    if not description:
+        raise ValueError('a layer needs a description: pass it with -d "..." (it goes in layer.toml).')
+    result = init(Path(name), name, description, force=args.force)
     print(f"Layer project {result['name']} in {result['path']}")
     for item in result["created"]:
         print(f"  {item}")
     print(
         "Next:\n"
-        + (f"  cd {where}\n" if args.name else "")
-        + "  uvx semantic-layers connect <engine> host=... user=... password=...   # tables/ from your database\n"
+        f"  cd {name}\n"
+        "  uvx semantic-layers connect <engine> host=... user=... password=...   # tables/ from your database\n"
         "  write concepts/<Name>.l and rules/<Name>.l, then: uvx semantic-layers check .\n"
         "  git push it, and anyone installs it with: uvx semantic-layers add <owner>/<repo>"
     )
@@ -171,9 +198,18 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--version", action="version", version=__version__)
     commands = parser.add_subparsers(dest="command", required=True)
 
-    p = commands.add_parser("init", help="set up a semantic layer project")
-    p.add_argument("name", nargs="?", help="the layer's folder to create (default: the current folder)")
-    p.add_argument("--description", required=True, help="what the layer is about, written in its layer.toml")
+    p = commands.add_parser(
+        "init",
+        help="set up a semantic layer project",
+        description="Set up a layer project in ./<name>. In a terminal, asks for what is not given.",
+        epilog='e.g.: semantic-layers init sales -d "Orders and customers: revenue, active customers."',
+    )
+    p.add_argument("name", nargs="?", help="the layer's name: lowercase letters, numbers, hyphens; also its folder")
+    p.add_argument(
+        "-n", "--name", dest="name_option", metavar="NAME", help="the layer's name (instead of the argument)"
+    )
+    p.add_argument("-d", "--description", help="what the layer is about, written in its layer.toml")
+    p.add_argument("-f", "--force", action="store_true", help="set up a folder that exists and is not empty")
     p.set_defaults(func=cmd_init)
 
     p = commands.add_parser(

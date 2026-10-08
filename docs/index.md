@@ -16,7 +16,7 @@ sales/
 ├── tables/           # The data: one file per table, generated from the database
 ├── concepts/         # What the data is about: entities, relationships, clean views
 ├── rules/            # What you want to know: counts, rates, rankings, trends
-├── layer.toml      # What the layer is, and the database it runs on
+├── layer.toml        # What the layer is, and the database it runs on
 └── .env              # The password or token (local, never committed)
 ```
 

@@ -13,7 +13,7 @@ from the definitions — you never re-derive one, and you never write ad-hoc SQL
 ```
 .agents/layers/
   sales/
-    layer.toml   [project] name + description; [connection] the database
+    layer.toml     [project] name + description; [connection] the database
     tables/        one file per database table — generated, never edited by hand
     concepts/      what the data is about: entities, relationships, clean views
     rules/         what people want to know: counts, rates, rankings, trends

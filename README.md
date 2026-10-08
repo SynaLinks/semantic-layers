@@ -104,7 +104,7 @@ my-layer/
 ├── tables/           # The data: one file per table, generated from the database
 ├── concepts/         # What the data is about: entities, relationships, clean views
 ├── rules/            # What you want to know: counts, rates, rankings, trends
-├── layer.toml      # The database it runs on (secrets stay in .env)
+├── layer.toml        # The database it runs on (secrets stay in .env)
 └── .env              # The password or token (local, never committed)
 ```
 
@@ -276,7 +276,7 @@ your sales.
 To write your own layer, start a layer project:
 
 ```shell
-uvx semantic-layers init sales --description "Orders and customers"   # tables/, concepts/, rules/, layer.toml, README, git
+uvx semantic-layers init sales -d "Orders and customers"   # tables/, concepts/, rules/, layer.toml, README, git (asks when not given)
 cd sales
 uvx semantic-layers connect psql host=db.example.com database=sales user=analyst password=...
 ```

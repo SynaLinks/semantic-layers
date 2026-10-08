@@ -12,7 +12,7 @@ layer-name/
 ├── tables/           # The data: one .l file per database table
 ├── concepts/         # Entities, relationships and clean views, built on tables
 ├── rules/            # Insights, built on concepts
-├── layer.toml      # Required: its name, description and database (committed)
+├── layer.toml        # Required: its name, description and database (committed)
 ├── .env              # Optional: that database's secrets (never committed)
 ├── .gitignore        # Optional: keeps the credentials out of git
 └── README.md         # Optional: what the layer is for, for people

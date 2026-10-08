@@ -105,3 +105,28 @@ def test_init_without_a_terminal_says_what_to_pass(tmp_path, monkeypatch, capsys
     assert (tmp_path / "shop" / "layer.toml").is_file()
     assert main(["init", "shop", "-d", "Again."]) == 1  # not empty
     assert "--force" in capsys.readouterr().err
+
+
+def test_layer_toml_shows_every_engine_ready_to_uncomment(tmp_path):
+    """init's layer.toml carries, commented, each engine's [connection]: one
+    uncommented is a connection synalog accepts, its secret named for .env."""
+    import re
+
+    from synalog import project
+
+    from semantic_layers.init import init
+
+    init(tmp_path / "sales", description="Orders and customers.")
+    text = (tmp_path / "sales" / "layer.toml").read_text()
+    blocks = re.findall(r"^# --- (.+) ---\n((?:# .*\n)+)", text, re.M)
+    assert [label for label, _ in blocks] == [spec.label for spec in project.ENGINES.values()]
+    for label, block in blocks:
+        settings = "".join(line[2:] + "\n" for line in block.splitlines() if not line.startswith("#   "))
+        path = tmp_path / label / "layer.toml"
+        path.parent.mkdir()
+        path.write_text(text + "\n" + settings)  # the block, uncommented, under the [project]
+        connection = project.connection(path)
+        assert connection is not None and project.ENGINES[connection["engine"]].label == label
+        for field in project.ENGINES[connection["engine"]].fields:
+            if field.secret:
+                assert project.secret_env(connection["engine"], field.key) in block

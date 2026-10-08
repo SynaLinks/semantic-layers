@@ -27,21 +27,63 @@ PROJECT_FILE = project.PROJECT_FILE
 REMOTE_ENGINES = tuple(project.ENGINES)
 #: What never reaches git: the secrets, and BigQuery's key file.
 SECRET_FILES = project.SECRET_FILES
-_CONNECTION_HELP = """\
-# The database this layer runs on. Run `semantic-layers connect <engine> key=value ...`
-# in this folder to write it, or fill it in by hand:
-#
-# [connection]
-# engine = "psql"
-# host = "db.example.com"
-# port = 5432
-# database = "sales"
-# user = "analyst"
-# schema = "public"
-#
-# Secrets never go here: put them in .env (kept out of git), e.g.
-# SYNALOG_PSQL_PASSWORD=...
-"""
+#: What a field looks like, for the examples of the commented template.
+_EXAMPLES = {
+    "host": "db.example.com",
+    "database": "sales",
+    "user": "analyst",
+    "catalog": "hive",
+    "schema": "public",
+    "server_hostname": "adb-1234567890123456.7.azuredatabricks.net",
+    "http_path": "/sql/1.0/warehouses/abcdef1234567890",
+    "project": "my-gcp-project",
+    "dataset": "sales",
+    "location": "EU",
+}
+
+
+#: When a secret is needed, where it is not simply required.
+_SECRET_NOTES = {
+    ("psql", "password"): "if the server asks for one",
+    ("trino", "password"): 'with auth = "password"; the token with auth = "jwt"',
+    ("presto", "password"): 'with auth = "password"',
+    ("bigquery", "credentials"): "required: the path to the service account's key file",
+}
+
+
+def connection_help() -> str:
+    """The commented block of a layer's ``layer.toml`` before it is connected:
+    how to connect it, and every engine's ``[connection]``, field by field —
+    written from synalog's own description of the engines, so it says what
+    synalog accepts."""
+    lines = [
+        "# The database this layer runs on: one [connection] table. Either run, in this folder,",
+        "#   uvx semantic-layers connect <engine> key=value ...",
+        "# which writes it (and the secrets to .env), or uncomment the block of your engine below",
+        "# and fill it in. Fields marked required must be given; the others show their default.",
+        "# Secrets never go in this file (synalog refuses them): each goes in .env, kept out of git,",
+        "# under the variable named on its line.",
+    ]
+    for engine, spec in project.ENGINES.items():
+        lines += ["#", f"# --- {spec.label} ---", "# [connection]", f'# engine = "{engine}"']
+        for field in spec.fields:
+            if field.secret:
+                note = _SECRET_NOTES.get((engine, field.key), "required" if field.required else "optional")
+                lines.append(f"#   {field.key}: in .env, {project.secret_env(engine, field.key)}=...  ({note})")
+                continue
+            value = field.default if field.default is not None else _EXAMPLES.get(field.key, "...")
+            notes = []
+            if field.required and field.default is None:
+                notes.append("required")
+            if field.options:
+                notes.append("one of " + ", ".join(field.options))
+            if field.default is not None:
+                notes.append("default")
+            elif not field.required:
+                notes.append("optional")
+            shown = str(value) if field.type == "number" else f'"{value}"'
+            lines.append(f"# {field.key} = {shown}" + (f"  # {'; '.join(notes)}" if notes else ""))
+    return "\n".join(lines) + "\n"
 
 
 def project_section(name: str, description: str = "") -> str:
@@ -52,7 +94,7 @@ def project_section(name: str, description: str = "") -> str:
 def project_template(name: str, description: str = "") -> str:
     """A layer's layer.toml before it is connected (written by ``init``, and
     by ``add`` when a source has none)."""
-    return project_section(name, description) + "\n" + _CONNECTION_HELP
+    return project_section(name, description) + "\n" + connection_help()
 
 
 _DECLARATION = re.compile(r"^(?P<name>\w+)\((?P<args>[^)]*)\) :- (?P<physical>[\w.]+)\((?P=args)\);$")

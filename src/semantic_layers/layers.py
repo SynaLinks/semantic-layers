@@ -35,7 +35,7 @@ FOLDERS = {"table": "tables", "concept": "concepts", "rule": "rules"}
 KINDS = {folder: kind for kind, folder in FOLDERS.items()}
 
 _IMPORT = re.compile(r"^import\s+(tables|concepts|rules)\.(\w+)\.(\w+)\s*;", re.MULTILINE)
-_DECLARATION = re.compile(r"^\s*(?P<name>\w+)\((?P<args>[^)]*)\)\s*:-\s*(?P<physical>[\w.]+)\(", re.MULTILINE)
+_DECLARATION = re.compile(r"^\s*(?P<name>\w+)\((?P<args>[^)]*)\)\s*:-\s*(?P<physical>[\w.]+|`[^`]+`)\(", re.MULTILINE)
 
 
 @dataclass

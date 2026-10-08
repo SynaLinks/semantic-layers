@@ -152,8 +152,8 @@ def table_declarations(introspected: str) -> dict[str, str]:
 def table_description(declaration: str) -> str:
     """A table's description from its name — synalog's, as `synalog
     introspect` writes it — until someone writes a better one."""
-    match = re.match(r"\s*\w+\([^)]*\)\s*:-\s*(?P<physical>[\w.]+)\(", declaration)
-    return describe_table(match["physical"]) if match else "A table of the database."
+    match = re.match(r"\s*\w+\([^)]*\)\s*:-\s*(?P<physical>[\w.]+|`[^`]+`)\(", declaration)
+    return describe_table(match["physical"].strip("`")) if match else "A table of the database."
 
 
 def render_table(name: str, declaration: str, previous: dict | None) -> str:

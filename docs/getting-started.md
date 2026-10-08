@@ -38,7 +38,7 @@ cd .agents/layers/sales
 uvx semantic-layers connect psql host=db.example.com database=sales user=analyst password=...
 ```
 
-It wrote the database into the layer's `synalog.toml` and the password into
+It wrote the database into the layer's `layer.toml` and the password into
 its `.env` — kept out of git — then generated `tables/` from your database
 and checked every definition against it: a table or column your database
 lacks, or an assertion its data violates, is listed.

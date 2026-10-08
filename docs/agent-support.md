@@ -10,7 +10,7 @@ layers in `AGENTS.md`, and they use the command line (see
 assistant, a chat app over your warehouse — that call Python directly.
 
 **Prerequisites**: the [Specification](specification.md), which defines the
-folders, the front matter and `synalog.toml`.
+folders, the front matter and `layer.toml`.
 
 ```shell
 pip install semantic-layers   # or: uv add semantic-layers
@@ -38,7 +38,7 @@ At startup, find the layers the agent can use.
 | User | `~/.agents/layers/` |
 
 A layer is a sub-folder holding at least one of `tables/`, `concepts/`,
-`rules/`. Each has a `synalog.toml`: its `[project]` says what it is, its
+`rules/`. Each has a `layer.toml`: its `[project]` says what it is, its
 `[connection]` which database it runs on.
 
 ```python
@@ -104,7 +104,7 @@ along.
 ## Step 5: Run
 
 Run the definition with synalog. Give it the layer's folder: its imports
-resolve from there, and its `synalog.toml` names the database, the secrets
+resolve from there, and its `layer.toml` names the database, the secrets
 read from the layer's `.env`:
 
 ```python

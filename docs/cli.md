@@ -16,7 +16,7 @@ and `search` open with the logo — never when a coding agent runs them.
 |---|---|
 | `init [<name>]` | set up a layer project: `./<name>/`, or the current folder; `--description` |
 | `add <source>` | install layers from `owner/repo` on GitHub, a git URL or a folder; `--layer <name>` (repeatable), `--list`, `--force`, `--agent <name>`, `--all` |
-| `connect [<engine> key=value ...]` | run in a layer's folder (it has a `synalog.toml`): give the layer its database — or use the one in its `synalog.toml` — generate its tables, check it |
+| `connect [<engine> key=value ...]` | run in a layer's folder (it has a `layer.toml`): give the layer its database — or use the one in its `layer.toml` — generate its tables, check it |
 | `list` | the installed layers and their state: `ok`, `modified`, `local` (yours), `missing` |
 | `update` | update installed layers, keeping the ones you modified |
 | `search <pattern>` | find definitions whose name, keywords or description match a regular expression (case-insensitive), name matches first; `--limit <n>`, `--tables` |
@@ -32,7 +32,7 @@ uvx semantic-layers add SynaLinks/semantic-layers --list            # what a sou
 uvx semantic-layers add SynaLinks/semantic-layers --layer sales     # install one layer
 cd .agents/layers/sales
 uvx semantic-layers connect psql host=db.example.com database=sales user=analyst password=...
-uvx semantic-layers connect                                         # again, from its synalog.toml
+uvx semantic-layers connect                                         # again, from its layer.toml
 cd -
 uvx semantic-layers search 'revenue|turnover'
 uvx semantic-layers check sales
@@ -42,13 +42,13 @@ uvx semantic-layers update
 
 `connect` takes the engine's fields as `key=value`; the secret ones
 (`password`, `access_token`, `credentials`) go to the layer's `.env`, the
-others to its `synalog.toml`. `semantic-layers connect --help` lists every
+others to its `layer.toml`. `semantic-layers connect --help` lists every
 engine's fields — they are synalog's (`synalog.project.ENGINES`).
 
 ## Checking
 
 `check` verifies each layer's structure — front matter, imports, a sound
-program, its `synalog.toml` — and, for a layer that is connected, runs every
+program, its `layer.toml` — and, for a layer that is connected, runs every
 `@Assert` on its database. A violated assertion is a problem, quoting a few
 counterexamples; a database that cannot be reached, or an assertion that
 cannot be checked on data, is a warning. `--offline` checks the structure

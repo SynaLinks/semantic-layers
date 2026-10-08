@@ -6,7 +6,7 @@ The repository:
 semantic-layers/
 ├── src/semantic_layers/   # the package and the semantic-layers command
 │   ├── layers.py          #   reading, verifying and searching layers
-│   ├── connect.py         #   synalog.toml, .env, tables from the database
+│   ├── connect.py         #   layer.toml, .env, tables from the database
 │   ├── install.py         #   add, list, update; the AGENTS.md / CLAUDE.md section
 │   ├── init.py            #   layer projects
 │   └── cli.py, banner.py  #   the command
@@ -16,9 +16,9 @@ semantic-layers/
 └── shell/                 # test, lint, format, doc
 ```
 
-Semantic layers build on [synalog](https://github.com/SynaLinks/synalog) (2.0
+Semantic layers build on [synalog](https://github.com/SynaLinks/synalog) (2.1
 or later, from PyPI): it parses, checks and runs the definitions, runs their
-assertions, and owns `synalog.toml`.
+assertions, and owns `layer.toml`.
 
 ## Tests
 

@@ -1,6 +1,6 @@
 """``semantic-layers connect``: give a layer its database, and its tables.
 
-A layer's ``synalog.toml`` says what it is — ``[project]``: its ``name``
+A layer's ``layer.toml`` says what it is — ``[project]``: its ``name``
 and ``description`` — and which database it runs on — ``[connection]``: the
 engine and its connection details as plain fields, read by synalog run from
 the folder. It is committed with the layer. Secrets —
@@ -50,7 +50,7 @@ def project_section(name: str, description: str = "") -> str:
 
 
 def project_template(name: str, description: str = "") -> str:
-    """A layer's synalog.toml before it is connected (written by ``init``, and
+    """A layer's layer.toml before it is connected (written by ``init``, and
     by ``add`` when a source has none)."""
     return project_section(name, description) + "\n" + _CONNECTION_HELP
 
@@ -69,7 +69,7 @@ def ordered(declaration: str) -> str:
 
 
 def write_connection(layer: Path, engine: str, details: dict) -> None:
-    """Connect the layer: synalog writes the connection (``synalog.toml``'s
+    """Connect the layer: synalog writes the connection (``layer.toml``'s
     ``[connection]``, the secrets in ``.env``, ``.gitignore``); the layer's
     ``[project]`` is written first when the file has none."""
     if engine not in REMOTE_ENGINES:
@@ -87,7 +87,7 @@ def write_connection(layer: Path, engine: str, details: dict) -> None:
 
 def layer_connection(layer: Path) -> dict:
     """A connected layer's connection, as synalog resolves it from the
-    layer's ``synalog.toml``, its secrets from its ``.env`` (the environment
+    layer's ``layer.toml``, its secrets from its ``.env`` (the environment
     wins)."""
     conn = project.resolve(layer) if (layer / PROJECT_FILE).is_file() else None
     if conn is None:

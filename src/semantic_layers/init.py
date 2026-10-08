@@ -1,7 +1,7 @@
 """``semantic-layers init``: set up a semantic layer project.
 
 A layer project is a layer folder ready to be filled and published: the
-three folders, a ``synalog.toml`` for the database it runs on, the
+three folders, a ``layer.toml`` for the database it runs on, the
 ``.gitignore`` that keeps the secrets (``.env``) out of git, a README for whoever
 installs it, and a git repository — pushed, it is a one-layer repository
 that ``semantic-layers add owner/repo`` installs.
@@ -40,14 +40,14 @@ definitions about one database, as verified, executable
 ```shell
 uvx semantic-layers add <owner>/{name}
 cd .agents/layers/{name}
-uvx semantic-layers connect                      # the database in its synalog.toml
+uvx semantic-layers connect                      # the database in its layer.toml
 uvx semantic-layers connect <engine> key=value ...  # or another one
 ```
 
 ## Develop
 
 ```shell
-uvx semantic-layers connect <engine> key=value ...     # synalog.toml, .env, then tables/ from the database
+uvx semantic-layers connect <engine> key=value ...     # layer.toml, .env, then tables/ from the database
 uvx synalog rules/<Name>.l run <Name>                   # run a definition
 uvx semantic-layers check .                                      # verify every definition
 ```

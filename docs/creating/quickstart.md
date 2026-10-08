@@ -17,7 +17,7 @@ uvx semantic-layers init shop --description "Orders of an online shop: what coun
 cd shop
 ```
 
-`init` created the layer's folders, its `synalog.toml` (its name and
+`init` created the layer's folders, its `layer.toml` (its name and
 description), a `README.md` and a `.gitignore`, and ran `git init`.
 
 ## Add the data

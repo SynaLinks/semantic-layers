@@ -1,4 +1,4 @@
-"""Connecting a layer: synalog.toml, the secrets in .env, the tables."""
+"""Connecting a layer: layer.toml, the secrets in .env, the tables."""
 
 import stat
 import sys
@@ -49,7 +49,7 @@ def test_connect_generates_tables_and_keeps_descriptions(tmp_path):
     assert result["written"] == ["PublicCustomers", "PublicOrders"]
     orders = (layer / "tables" / "PublicOrders.l").read_text()
     assert "description: One row per order." in orders and "status:" in orders
-    conn = tomllib.loads((layer / "synalog.toml").read_text())["connection"]
+    conn = tomllib.loads((layer / "layer.toml").read_text())["connection"]
     assert conn == {
         "engine": "psql",
         "host": "h",
@@ -100,6 +100,6 @@ def test_connect_keeps_the_project_table(tmp_path):
 
     init(tmp_path / "shop", description="Orders of the shop.")
     connect.write_connection(tmp_path / "shop", "psql", PG)
-    data = tomllib.loads((tmp_path / "shop" / "synalog.toml").read_text())
+    data = tomllib.loads((tmp_path / "shop" / "layer.toml").read_text())
     assert data["project"] == {"name": "shop", "description": "Orders of the shop."}
     assert data["connection"]["host"] == "h"

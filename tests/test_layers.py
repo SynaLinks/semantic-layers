@@ -93,9 +93,9 @@ def test_the_project_name_must_be_the_folder_name(tmp_path):
     layer = write(
         tmp_path / "shop", {"rules/X.l": '---\nname: X\ndescription: One.\n---\n@OrderBy(X, "a");\nX(a: 1);\n'}
     )
-    (layer / "synalog.toml").write_text('[project]\nname = "store"\ndescription = "A shop."\n')
-    assert verify(layer) == ["synalog.toml: names the layer 'store', but its folder is 'shop' — they must match"]
-    (layer / "synalog.toml").write_text('[project]\nname = "shop"\ndescription = "A shop."\n')
+    (layer / "layer.toml").write_text('[project]\nname = "store"\ndescription = "A shop."\n')
+    assert verify(layer) == ["layer.toml: names the layer 'store', but its folder is 'shop' — they must match"]
+    (layer / "layer.toml").write_text('[project]\nname = "shop"\ndescription = "A shop."\n')
     assert verify(layer) == []
 
 
@@ -103,10 +103,10 @@ def test_a_layer_must_describe_itself(tmp_path):
     layer = write(
         tmp_path / "shop", {"rules/X.l": '---\nname: X\ndescription: One.\n---\n@OrderBy(X, "a");\nX(a: 1);\n'}
     )
-    (layer / "synalog.toml").write_text('[project]\nname = "shop"\n')
-    assert verify(layer) == ["synalog.toml: [project] has no description — say what the layer is about"]
-    (layer / "synalog.toml").unlink()
-    assert verify(layer) == ["synalog.toml is missing: a layer says what it is in its [project] (name, description)"]
+    (layer / "layer.toml").write_text('[project]\nname = "shop"\n')
+    assert verify(layer) == ["layer.toml: [project] has no description — say what the layer is about"]
+    (layer / "layer.toml").unlink()
+    assert verify(layer) == ["layer.toml is missing: a layer says what it is in its [project] (name, description)"]
 
 
 def test_parse_splits_front_matter_and_body():

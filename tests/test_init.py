@@ -21,10 +21,10 @@ def test_init_sets_up_a_layer_project(tmp_path):
     result = init(tmp_path / "sales", description="Orders and customers.")
     layer = tmp_path / "sales"
     assert result["name"] == "sales"
-    assert {"tables/", "concepts/", "rules/", "synalog.toml", "README.md", ".gitignore", ".git/"} <= set(
+    assert {"tables/", "concepts/", "rules/", "layer.toml", "README.md", ".gitignore", ".git/"} <= set(
         result["created"]
     )
-    assert "connection" not in tomllib.loads((layer / "synalog.toml").read_text())  # not connected yet
+    assert "connection" not in tomllib.loads((layer / "layer.toml").read_text())  # not connected yet
     assert ".env" in (layer / ".gitignore").read_text().splitlines()
     assert "semantic-layers add <owner>/sales" in (layer / "README.md").read_text()
     (layer / "README.md").write_text("mine\n")
@@ -54,5 +54,5 @@ def test_init_names_and_describes_the_layer(tmp_path):
     from semantic_layers.init import init
 
     init(tmp_path / "sales", description="Orders and customers.")
-    data = tomllib.loads((tmp_path / "sales" / "synalog.toml").read_text())
+    data = tomllib.loads((tmp_path / "sales" / "layer.toml").read_text())
     assert data["project"] == {"name": "sales", "description": "Orders and customers."}

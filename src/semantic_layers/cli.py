@@ -159,7 +159,7 @@ def _engine_fields() -> str:
     """Each engine's connection fields, from synalog (secrets marked *)."""
     from synalog import project
 
-    lines = ["engines and their fields (* secret: written to .env, never to synalog.toml):"]
+    lines = ["engines and their fields (* secret: written to .env, never to layer.toml):"]
     for name, spec in project.ENGINES.items():
         fields = ", ".join(f.key + ("*" if f.secret else "") for f in spec.fields)
         lines.append(f"  {name:<11} {fields}")
@@ -173,26 +173,26 @@ def main(argv: list[str] | None = None) -> int:
 
     p = commands.add_parser("init", help="set up a semantic layer project")
     p.add_argument("name", nargs="?", help="the layer's folder to create (default: the current folder)")
-    p.add_argument("--description", required=True, help="what the layer is about, written in its synalog.toml")
+    p.add_argument("--description", required=True, help="what the layer is about, written in its layer.toml")
     p.set_defaults(func=cmd_init)
 
     p = commands.add_parser(
         "connect",
-        help="connect the layer in this folder (it has a synalog.toml) to a database, generate its tables",
+        help="connect the layer in this folder (it has a layer.toml) to a database, generate its tables",
         epilog=_engine_fields(),
         formatter_class=argparse.RawDescriptionHelpFormatter,
     )
     p.add_argument(
         "engine",
         nargs="?",
-        help="psql, trino, presto, databricks or bigquery (default: the layer's synalog.toml, as it is)",
+        help="psql, trino, presto, databricks or bigquery (default: the layer's layer.toml, as it is)",
     )
     p.add_argument(
         "fields",
         nargs="*",
         metavar="key=value",
         help="connection details, e.g. host=db.example.com database=sales user=analyst"
-        " password=... (secrets go to .env, the rest to synalog.toml)",
+        " password=... (secrets go to .env, the rest to layer.toml)",
     )
     p.set_defaults(func=cmd_connect)
 

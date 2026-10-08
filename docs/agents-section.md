@@ -9,7 +9,7 @@ folder per layer, each with `tables/`, `concepts/` and `rules/` — one synalog
 - **Answer from them.** Before answering a question about the data, search
   the definitions that fit (`uvx semantic-layers search '<regex from the
   question>'`), read them, and run them from their layer's folder
-  (`uvx synalog rules/<Name>.l run <Name>`: the folder's `synalog.toml`
+  (`uvx synalog rules/<Name>.l run <Name>`: the folder's `layer.toml`
   names the database). Never re-derive a definition or write ad-hoc SQL.
 - **Write what is missing.** An entity or relationship goes in
   `concepts/<Name>.l`, a computation in `rules/<Name>.l`, inside the layer

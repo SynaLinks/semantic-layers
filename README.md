@@ -104,7 +104,7 @@ my-layer/
 ├── tables/           # The data: one file per table, generated from the database
 ├── concepts/         # What the data is about: entities, relationships, clean views
 ├── rules/            # What you want to know: counts, rates, rankings, trends
-├── synalog.toml      # The database it runs on (secrets stay in .env)
+├── layer.toml      # The database it runs on (secrets stay in .env)
 └── .env              # The password or token (local, never committed)
 ```
 
@@ -276,7 +276,7 @@ your sales.
 To write your own layer, start a layer project:
 
 ```shell
-uvx semantic-layers init sales --description "Orders and customers"   # tables/, concepts/, rules/, synalog.toml, README, git
+uvx semantic-layers init sales --description "Orders and customers"   # tables/, concepts/, rules/, layer.toml, README, git
 cd sales
 uvx semantic-layers connect psql host=db.example.com database=sales user=analyst password=...
 ```
@@ -371,7 +371,7 @@ Each is shown as layer files (front matter, imports, `@OrderBy`) in the
 DuckDB, SQLite, PostgreSQL, Trino, Presto, Databricks and BigQuery: every
 engine [synalog supports](https://synalinks.github.io/synalog/engines/), with
 the drivers it needs. One definition compiles to each engine's dialect. A
-layer's `synalog.toml` names its engine; `semantic-layers connect --help`
+layer's `layer.toml` names its engine; `semantic-layers connect --help`
 lists each engine's connection fields, and the secret ones go to the layer's
 git-ignored `.env`.
 

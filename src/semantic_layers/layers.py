@@ -97,18 +97,18 @@ class SemanticLayer:
 
     @property
     def connected(self) -> bool:
-        """Whether its ``synalog.toml`` names a database (a ``[connection]``)."""
+        """Whether its ``layer.toml`` names a database (a ``[connection]``)."""
         return "connection" in _project_file(self.path)
 
     @property
     def description(self) -> str:
-        """What the layer is about: its ``synalog.toml``'s ``[project]``."""
+        """What the layer is about: its ``layer.toml``'s ``[project]``."""
         return str(read_project(self.path).get("description") or "").strip()
 
 
 def _project_file(folder: Path) -> dict:
-    """A layer's ``synalog.toml``, parsed (``{}`` without one, or unreadable)."""
-    path = folder / "synalog.toml"
+    """A layer's ``layer.toml``, parsed (``{}`` without one, or unreadable)."""
+    path = folder / "layer.toml"
     try:
         return tomllib.loads(path.read_text()) if path.is_file() else {}
     except tomllib.TOMLDecodeError:
@@ -116,7 +116,7 @@ def _project_file(folder: Path) -> dict:
 
 
 def read_project(folder: Path) -> dict:
-    """The ``[project]`` table of a layer's ``synalog.toml``: its ``name`` and
+    """The ``[project]`` table of a layer's ``layer.toml``: its ``name`` and
     ``description`` (``{}`` without one)."""
     table = _project_file(folder).get("project")
     return table if isinstance(table, dict) else {}
@@ -185,7 +185,7 @@ def check(layer: Path, assertions: bool = False) -> tuple[list[str], list[str]]:
 
     The check is structural and offline, as before a layer is connected.
     With ``assertions``, a connected layer's ``@Assert`` statements also run
-    on its database — the one its ``synalog.toml`` names: each violated one
+    on its database — the one its ``layer.toml`` names: each violated one
     is an error quoting a few counterexamples, and a database that cannot be
     reached is a warning."""
     errors: list[str] = []
@@ -206,22 +206,22 @@ def verify(layer: Path) -> list[str]:
 
 
 def _check_project_file(layer: Path) -> list[str]:
-    """Every layer has a ``synalog.toml`` whose ``[project]`` describes it; its
+    """Every layer has a ``layer.toml`` whose ``[project]`` describes it; its
     name, when it gives one, is the layer's folder name."""
-    path = layer / "synalog.toml"
+    path = layer / "layer.toml"
     if not path.is_file():
-        return ["synalog.toml is missing: a layer says what it is in its [project] (name, description)"]
+        return ["layer.toml is missing: a layer says what it is in its [project] (name, description)"]
     try:
         data = tomllib.loads(path.read_text())
     except tomllib.TOMLDecodeError as exc:
-        return [f"synalog.toml: {exc}"]
+        return [f"layer.toml: {exc}"]
     about = data.get("project") if isinstance(data.get("project"), dict) else {}
     problems = []
     if not str(about.get("description") or "").strip():
-        problems.append("synalog.toml: [project] has no description — say what the layer is about")
+        problems.append("layer.toml: [project] has no description — say what the layer is about")
     named, folder = about.get("name"), layer.resolve().name
     if named and named != folder:
-        problems.append(f"synalog.toml: names the layer '{named}', but its folder is '{folder}' — they must match")
+        problems.append(f"layer.toml: names the layer '{named}', but its folder is '{folder}' — they must match")
     return problems
 
 

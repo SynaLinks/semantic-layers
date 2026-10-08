@@ -337,8 +337,8 @@ folder:
 
 ```shell
 cd my-layer
-uvx semantic-layers check .                               # the whole layer
-uvx synalog rules/ActiveCustomer.l print ActiveCustomer   # one definition, its SQL
+uvx semantic-layers check .                  # the whole layer
+uvx semantic-layers run ActiveCustomer       # one definition: checked, then run
 ```
 
 The check has two levels:

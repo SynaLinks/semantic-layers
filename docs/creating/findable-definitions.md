@@ -127,9 +127,9 @@ jq -c '.[]' "$QUESTIONS" | while read -r item; do
   hits=0
   for _ in $(seq "$RUNS"); do
     if [ -n "$expected" ]; then
-      ask "$question" | grep -q "rules/$expected.l run $expected\|concepts/$expected.l run $expected" && hits=$((hits + 1))
+      ask "$question" | grep -q "semantic-layers run [^ ]*$expected\b" && hits=$((hits + 1))
     else
-      ask "$question" | grep -q "synalog .*\.l run" || hits=$((hits + 1))
+      ask "$question" | grep -q "semantic-layers run" || hits=$((hits + 1))
     fi
   done
   echo "$hits/$RUNS  ${expected:-(none)}  $question"

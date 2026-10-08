@@ -48,7 +48,7 @@ uvx semantic-layers connect <engine> key=value ...  # or another one
 
 ```shell
 uvx semantic-layers connect <engine> key=value ...     # layer.toml, .env, then tables/ from the database
-uvx synalog rules/<Name>.l run <Name>                   # run a definition
+uvx semantic-layers run <Name>                          # run a definition
 uvx semantic-layers check .                                      # verify every definition
 ```
 """

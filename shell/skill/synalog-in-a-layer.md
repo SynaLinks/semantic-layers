@@ -19,8 +19,8 @@ The full reference is at <https://synalinks.github.io/synalog/>.
 - **Imports name the folder, the file and the predicate**:
   `import concepts.Customer.Customer;`, `import tables.Orders.Orders;`,
   resolved from the layer's folder. Every import must be used.
-- **Run from the layer's folder**: `uvx synalog rules/<Name>.l run <Name>`.
-  Its `layer.toml` names the engine and the database, and synalog loads the
-  secrets from its `.env` — no `--engine`, no `--load`.
+- **Run with `uvx semantic-layers run <layer>/<Name>`**. The layer's
+  `layer.toml` names the engine and the database, and its secrets come from
+  its `.env` — no `--engine`, no connection to give.
 - **`@OrderBy` on every concept and rule**, `@Limit` for a ranking.
 

@@ -51,7 +51,7 @@ from its rows. Or run one yourself:
 
 ```shell
 cd .agents/layers/sales
-uvx synalog rules/RevenueByCountry.l run RevenueByCountry
+uvx semantic-layers run sales/RevenueByCountry
 ```
 
 ## How it works

@@ -46,13 +46,15 @@ imports only its own files, and layers cannot be joined in one definition.
    means what the question means: a "customer" who ordered once is not an
    "active customer".
 
-3. **Run** it from its layer's folder. The folder's `layer.toml` names the
-   engine and the database; the password comes from `.env` by itself:
+3. **Run** it. The layer's `layer.toml` names the engine and the database;
+   the password comes from its `.env` by itself. `run` takes the path search
+   printed, or `<layer>/<Name>`, and refuses a definition whose assertions
+   the data violates:
 
    ```shell
-   cd .agents/layers/sales
-   uvx synalog rules/RevenueByCountry.l run RevenueByCountry --limit 50
-   uvx synalog rules/RevenueByCountry.l run RevenueByCountry --csv   # to read the values
+   uvx semantic-layers run sales/rules/RevenueByCountry.l --limit 50
+   uvx semantic-layers run sales/RevenueByCountry --csv      # to read the values
+   uvx semantic-layers run sales/RevenueByCountry --offset 50 --limit 50   # the next page
    ```
 
 4. **Answer** from the rows, naming the definition you ran
@@ -121,7 +123,7 @@ Then check it, run it, and only then answer from it:
 ```shell
 cd .agents/layers/sales
 uvx semantic-layers check .                                   # every file of the layer
-uvx synalog rules/RepeatBuyer.l run RepeatBuyer --limit 20     # does it return what you expect?
+uvx semantic-layers run RepeatBuyer --limit 20                 # does it return what you expect?
 ```
 
 `check` reports every problem at once, one line per file. In a connected
@@ -184,7 +186,7 @@ without a database, on the CSV files in its `data/`:
 
 ```shell
 cd examples/supply-chain
-uvx synalog rules/CriticalSuppliers.l run CriticalSuppliers \
+uvx semantic-layers run CriticalSuppliers \
   --load suppliers=data/suppliers.csv --load parts=data/parts.csv \
   --load bill_of_materials=data/bill_of_materials.csv
 ```

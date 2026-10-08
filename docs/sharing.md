@@ -59,7 +59,7 @@ Then any definition runs from the layer's folder:
 
 ```shell
 cd .agents/layers/sales
-uvx synalog rules/ActiveCustomer.l run ActiveCustomer
+uvx semantic-layers run ActiveCustomer      # in the layer's folder; elsewhere: run sales/ActiveCustomer
 ```
 
 ## Publishing

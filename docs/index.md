@@ -85,7 +85,7 @@ context.
   `semantic-layers` skill teaches searching, running and writing definitions.
 - **Your own agent**: [Adding layer support](agent-support.md) walks through
   discovery, search, execution and verification, step by step.
-- **The command line**: `uvx synalog rules/Revenue.l run Revenue` runs any
+- **The command line**: `uvx semantic-layers run sales/Revenue` runs any
   definition from its layer's folder.
 
 ## Open development

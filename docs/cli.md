@@ -1,6 +1,6 @@
 # CLI
 
-`semantic-layers` installs, connects, searches and verifies layers. It is a
+`semantic-layers` installs, connects, searches, runs and verifies layers. It is a
 Python tool run with [uv](https://docs.astral.sh/uv/):
 
 ```shell
@@ -20,7 +20,8 @@ and `search` open with the logo — never when a coding agent runs them.
 | `list` | the installed layers and their state: `ok`, `modified`, `local` (yours), `missing` |
 | `update` | update installed layers, keeping the ones you modified |
 | `search <pattern>` | find definitions whose name, keywords or description match a regular expression (case-insensitive), name matches first; `--limit <n>`, `--tables` |
-| `check [<layer>]` | verify the installed layers with synalog, or one layer — by name or path (`.`); a connected layer's assertions run on its database; `--offline` |
+| `run <definition>` | check a definition, then run it on its layer's database: `<layer>/<Name>`, the path `search` prints, or `<Name>` inside a layer's folder; `--limit`, `--offset`, `--csv`, `--load TABLE=PATH` (in memory, on data files) |
+| `check [<layer>]` | verify the installed layers with synalog, or one layer — by name or path (`.`); a connected layer's assertions run on its database; `--offline`, `--load TABLE=PATH` |
 
 Every command takes `--global` (the user's layer, `~/.agents/layers/`) or
 `--layers <folder>` (another layers folder).
@@ -35,6 +36,7 @@ uvx semantic-layers connect psql host=db.example.com database=sales user=analyst
 uvx semantic-layers connect                                         # again, from its layer.toml
 cd -
 uvx semantic-layers search 'revenue|turnover'
+uvx semantic-layers run sales/RevenueByCountry --limit 10
 uvx semantic-layers check sales
 uvx semantic-layers list
 uvx semantic-layers update

@@ -1,8 +1,9 @@
-"""The ``semantic-layers`` command: init, connect, add, list, update, search, check."""
+"""The ``semantic-layers`` command: init, connect, add, list, update, search, run, check."""
 
 from __future__ import annotations
 
 import argparse
+import csv
 import sys
 from pathlib import Path
 
@@ -11,7 +12,7 @@ from .banner import show_banner, show_logo
 from .connect import PROJECT_FILE, generate_tables, layer_connection, write_connection
 from .init import check_name, init
 from .install import InstallError, Scope, add, available, installed, update
-from .layers import check, is_layer, read_layers, search
+from .layers import check, find_definition, is_layer, read_layers, run, search
 
 
 def _scope(args) -> Scope:
@@ -162,6 +163,47 @@ def cmd_search(args) -> int:
     return 0
 
 
+def _loads(pairs: list[str] | None) -> list[tuple[str, str]]:
+    loads = []
+    for pair in pairs or []:
+        table, sep, path = pair.partition("=")
+        if not sep or not table or not Path(path).is_file():
+            raise ValueError(f"--load takes TABLE=PATH, a data file (csv, json, parquet): not {pair!r}")
+        loads.append((table, path))
+    return loads
+
+
+def _table(columns: list[str], rows: list[tuple]) -> str:
+    """Rows as an aligned text table, values as they are."""
+    cells = [[("null" if v is None else str(v)) for v in row] for row in rows]
+    widths = [max([len(c)] + [len(row[i]) for row in cells]) for i, c in enumerate(columns)]
+
+    def line(values):
+        return "  ".join(v.ljust(w) for v, w in zip(values, widths, strict=True)).rstrip()
+
+    rule = "  ".join("-" * w for w in widths)
+    return "\n".join([line(columns), rule, *(line(row) for row in cells)])
+
+
+def cmd_run(args) -> int:
+    layer, predicate = find_definition(args.definition, _scope(args).layers)
+    loads = _loads(args.load)
+    try:
+        columns, rows = run(layer, predicate, args.limit, args.offset, loads)
+    except ValueError:
+        raise
+    except Exception as exc:  # the database's own error (a driver, a server): one line, no traceback
+        raise ValueError(f"{layer.name}.{predicate.name} did not run: {type(exc).__name__}: {exc}") from None
+    if args.csv:
+        writer = csv.writer(sys.stdout)
+        writer.writerow(columns)
+        writer.writerows(rows)
+        return 0
+    print(_table(columns, rows))
+    print(f"{len(rows)} row{'' if len(rows) == 1 else 's'} of {layer.name}.{predicate.name}")
+    return 0
+
+
 def cmd_check(args) -> int:
     if args.layer:
         path = _layer_folder(args)
@@ -171,7 +213,7 @@ def cmd_check(args) -> int:
     errors, warnings = [], []
     for name, path in layers.items():
         # A connected layer's assertions run on its database, unless --offline.
-        found, notes = check(path, assertions=not args.offline)
+        found, notes = check(path, assertions=not args.offline, loads=_loads(args.load))
         errors += [f"{name}/{e}" for e in found]
         warnings += [f"{name}/{w}" for w in notes]
     for line in errors + [f"warning: {w}" for w in warnings]:
@@ -266,11 +308,27 @@ def main(argv: list[str] | None = None) -> int:
     p.set_defaults(func=cmd_search)
 
     p = commands.add_parser(
+        "run",
+        help="run a definition on its layer's database, after checking it",
+        epilog="e.g.: semantic-layers run sales/RevenueByCountry --limit 20",
+    )
+    p.add_argument("definition", help="<layer>/<Name>, the path search prints, or <Name> inside a layer's folder")
+    p.add_argument("--limit", type=int, help="at most this many rows")
+    p.add_argument("--offset", type=int, help="skip this many rows (the next page)")
+    p.add_argument("--csv", action="store_true", help="print CSV, to read the values")
+    p.add_argument("--load", action="append", metavar="TABLE=PATH", help="run in memory on this data file (repeatable)")
+    _folder_options(p)
+    p.set_defaults(func=cmd_run)
+
+    p = commands.add_parser(
         "check", help="verify the installed layers with synalog; run their assertions on their databases"
     )
     p.add_argument("layer", nargs="?", help="one layer, or a layer folder's path (default: every installed layer)")
     p.add_argument(
         "--offline", action="store_true", help="check the definitions only: run no assertion on the layers' databases"
+    )
+    p.add_argument(
+        "--load", action="append", metavar="TABLE=PATH", help="run the assertions in memory on this data file instead"
     )
     _folder_options(p)
     p.set_defaults(func=cmd_check)

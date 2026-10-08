@@ -3,9 +3,11 @@
 import shutil
 from pathlib import Path
 
+import synalog
 from samples import write
 from synalog import checking, runners
 
+from semantic_layers.connect import write_connection
 from semantic_layers.layers import check, verify
 
 
@@ -117,10 +119,11 @@ def test_parse_splits_front_matter_and_body():
 
 
 def test_check_runs_the_assertions_on_the_layers_database(tmp_path, monkeypatch):
-    """With the layer's database, check runs its @Assert statements there: a
-    refund counted as a sale makes a country's revenue negative."""
+    """A connected layer's check runs its @Assert statements on its database:
+    a refund counted as a sale makes a country's revenue negative."""
     layer = tmp_path / "sales"
     shutil.copytree(Path(__file__).resolve().parents[1] / "layers" / "sales", layer)
+    write_connection(layer, "psql", {"host": "db.example.com", "database": "sales", "user": "analyst"})
     data = {
         "customers": "customer_id,country\n1,FR\n2,DE\n",
         "orders": "order_id,customer_id,status,amount,ordered_at\n"
@@ -130,12 +133,27 @@ def test_check_runs_the_assertions_on_the_layers_database(tmp_path, monkeypatch)
     for table, rows in data.items():
         (tmp_path / f"{table}.csv").write_text(rows)
         loads.append((table, str(tmp_path / f"{table}.csv")))
-    # The layer's database: DuckDB, holding the tables above.
-    monkeypatch.setattr(checking, "session", lambda engine, dsn, _loads=(): runners.session("duckdb", None, loads))
+    # The layer's PostgreSQL stands as an in-memory DuckDB holding the tables
+    # above, the assertions compiled for it.
+    sessions = []
+
+    def session(engine, connection, _loads=()):
+        sessions.append((engine, connection["host"]))
+        return runners.session("duckdb", None, loads)
+
+    plan_for = synalog.plan
+    monkeypatch.setattr(checking, "session", session)
+    monkeypatch.setattr(
+        checking._synalog,
+        "plan",
+        lambda source, predicate, engine=None, **kw: plan_for(source, predicate, engine="duckdb", **kw),
+    )
 
     assert check(layer) == ([], [])  # offline: the assertions wait for data
-    errors, warnings = check(layer, ("duckdb", "the layer's database"))
+    assert sessions == []
+    errors, warnings = check(layer, assertions=True)
     assert warnings == []
     assert len(errors) == 1
     assert errors[0].startswith("rules/RevenueByCountry.l: Assertion 'RevenueByCountry.positive' is violated")
     assert errors[0].endswith('counterexamples (c): ("DE")')
+    assert ("psql", "db.example.com") in sessions  # through the layer's own connection

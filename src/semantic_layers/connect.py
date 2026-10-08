@@ -13,13 +13,11 @@ written survive.
 from __future__ import annotations
 
 import json
-import os
 import re
 from pathlib import Path
 
 import yaml
 from synalog import project
-from synalog.config import parse_dotenv
 from synalog.introspect import table_description as describe_table
 
 from .layers import read_predicates, read_project
@@ -87,18 +85,16 @@ def write_connection(layer: Path, engine: str, details: dict) -> None:
     project.write(layer, engine, details)
 
 
-def layer_dsn(layer: Path) -> tuple[str, str]:
-    """``(engine, connection string)`` of a connected layer, its secrets
-    read from its ``.env`` (the environment wins)."""
-    path = layer / PROJECT_FILE
-    conn = project.connection(path) if path.exists() else None
+def layer_connection(layer: Path) -> dict:
+    """A connected layer's connection, as synalog resolves it from the
+    layer's ``synalog.toml``, its secrets from its ``.env`` (the environment
+    wins)."""
+    conn = project.resolve(layer) if (layer / PROJECT_FILE).is_file() else None
     if conn is None:
         raise ValueError(
             f"{layer.name} is not connected: run 'semantic-layers connect <engine> key=value ...' in {layer}"
         )
-    env_file = layer / ".env"
-    env = dict(parse_dotenv(env_file.read_text())) if env_file.exists() else {}
-    return conn["engine"], project.dsn(conn["engine"], project.details(conn, {**env, **os.environ}))
+    return conn
 
 
 def table_declarations(introspected: str) -> dict[str, str]:
@@ -139,7 +135,8 @@ def generate_tables(layer: Path, introspect=None) -> dict[str, list[str]]:
     ``check`` until the layer is fixed or connected to the right database)."""
     if introspect is None:
         from synalog.introspect import introspect
-    tables = table_declarations(introspect(*layer_dsn(layer)))
+    conn = layer_connection(layer)
+    tables = table_declarations(introspect(conn["engine"], conn))
     existing = {name: p for name, p in read_predicates(layer).items() if p.kind == "table"}
     folder = layer / "tables"
     folder.mkdir(parents=True, exist_ok=True)

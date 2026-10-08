@@ -72,6 +72,6 @@ Fix the quoted statement and re-run: later syntax errors only surface once earli
 | `The databricks connection needs SYNALOG_DATABRICKS_ACCESS_TOKEN` | the secret is missing from `.env`: ask the user for it |
 | `synalog.toml: psql has no field 'hots' (fields: …)` | use one of the fields listed |
 | `The psql engine needs psycopg with its libpq (...)` | the driver ships with synalog; reinstall it with its libpq: `pip install 'psycopg[binary]'` |
-| `The psql engine needs a connection string: …` | give the project a `[connection]`, or pass `--dsn` |
+| `The psql engine needs the project's connection: …` | connect the project: `synalog connect psql key=value ...` (ask the user for the credentials) |
 
 A query that runs but returns nothing is not an error: check the filter values against the data before concluding there is none.

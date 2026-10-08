@@ -21,6 +21,6 @@ The full reference is at <https://synalinks.github.io/synalog/>.
   resolved from the layer's folder. Every import must be used.
 - **Run from the layer's folder**: `uvx synalog rules/<Name>.l run <Name>`.
   Its `synalog.toml` names the engine and the database, and synalog loads the
-  secrets from its `.env` — no `--engine`, no `--dsn`, no `--load`.
+  secrets from its `.env` — no `--engine`, no `--load`.
 - **`@OrderBy` on every concept and rule**, `@Limit` for a ranking.
 

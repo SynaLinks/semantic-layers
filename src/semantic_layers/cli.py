@@ -8,10 +8,10 @@ from pathlib import Path
 
 from . import __version__
 from .banner import show_banner, show_logo
-from .connect import PROJECT_FILE, generate_tables, layer_dsn, write_connection
+from .connect import PROJECT_FILE, generate_tables, layer_connection, write_connection
 from .init import init
 from .install import InstallError, Scope, add, available, installed, update
-from .layers import SemanticLayer, check, is_layer, read_layers, search
+from .layers import check, is_layer, read_layers, search
 
 
 def _scope(args) -> Scope:
@@ -65,7 +65,7 @@ def cmd_connect(args) -> int:
         write_connection(folder, args.engine, _details(args.fields))
     elif args.fields:
         raise ValueError("name the engine before its fields: connect <engine> key=value ...")
-    engine, _dsn = layer_dsn(folder)
+    engine = layer_connection(folder)["engine"]
     try:
         result = generate_tables(folder)
     except Exception as exc:  # a missing driver, an unreachable server, bad credentials
@@ -75,7 +75,7 @@ def cmd_connect(args) -> int:
         print(f"  tables/{name}.l")
     if result["gone"]:
         print("Not in this database (kept, fix or delete them): " + ", ".join(result["gone"]))
-    errors, warnings = check(folder, (engine, _dsn))
+    errors, warnings = check(folder, assertions=True)
     for line in errors + [f"warning: {w}" for w in warnings]:
         print(line)
     print(
@@ -141,8 +141,7 @@ def cmd_check(args) -> int:
     errors, warnings = [], []
     for name, path in layers.items():
         # A connected layer's assertions run on its database, unless --offline.
-        connected = not args.offline and SemanticLayer(name, path).connected
-        found, notes = check(path, layer_dsn(path) if connected else None)
+        found, notes = check(path, assertions=not args.offline)
         errors += [f"{name}/{e}" for e in found]
         warnings += [f"{name}/{w}" for w in notes]
     for line in errors + [f"warning: {w}" for w in warnings]:

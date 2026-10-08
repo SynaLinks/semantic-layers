@@ -179,22 +179,20 @@ def find_layers(root: Path, name: str) -> dict[str, SemanticLayer]:
     return {}
 
 
-def check(layer: Path, database: tuple[str, str] | None = None) -> tuple[list[str], list[str]]:
+def check(layer: Path, assertions: bool = False) -> tuple[list[str], list[str]]:
     """Check every predicate of a layer folder with synalog, imports resolved
     from the folder: ``(errors, warnings)``, ``"<file>: <message>"`` lines.
 
-    Without ``database`` the check is structural and offline, as before a
-    layer is connected. With the layer's ``(engine, dsn)`` its ``@Assert``
-    statements also run there: each violated one is an error quoting a few
-    counterexamples, and a database that cannot be reached is a warning."""
+    The check is structural and offline, as before a layer is connected.
+    With ``assertions``, a connected layer's ``@Assert`` statements also run
+    on its database — the one its ``synalog.toml`` names: each violated one
+    is an error quoting a few counterexamples, and a database that cannot be
+    reached is a warning."""
     errors: list[str] = []
     warnings: list[str] = []
-    engine, dsn = database or (None, None)
     for p in read_predicates(layer).values():
         try:
-            problems, notes = synalog.check(
-                p.text, engine=engine, import_root=[str(layer)], assertions=database is not None, dsn=dsn
-            )
+            problems, notes = synalog.check(p.text, import_root=[str(layer)], assertions=assertions, project=layer)
         except ValueError as exc:
             problems, notes = [str(exc).strip().splitlines()[-1]], []
         errors.extend(f"{p.relative}: {problem}" for problem in problems)

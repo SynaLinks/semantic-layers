@@ -13,11 +13,12 @@ each customer, counting delivered orders only.
 ## Create the layer
 
 ```shell
-uvx semantic-layers init shop --description "Orders of an online shop: what counts as a sale, revenue."
+uvx semantic-layers init shop -d "Orders of an online shop: what counts as a sale, revenue."
 cd shop
 ```
 
-`init` created the layer's folders, its `synalog.toml` (its name and
+Without `-d`, `init` asks for the description; without a name, it sets up
+the current folder. It created the layer's folders, its `layer.toml` (its name and
 description), a `README.md` and a `.gitignore`, and ran `git init`.
 
 ## Add the data
@@ -98,7 +99,7 @@ imports that resolve, a sound program.
 ## Run it
 
 ```shell
-uvx synalog rules/RevenueByCustomer.l run RevenueByCustomer --load orders=data/orders.csv
+uvx semantic-layers run RevenueByCustomer --load orders=data/orders.csv
 ```
 
 ```text
@@ -115,7 +116,7 @@ Customer 2's cancelled order is not revenue. Now check the assertions on the
 data:
 
 ```shell
-uvx synalog rules/RevenueByCustomer.l verify --load orders=data/orders.csv
+uvx semantic-layers check . --load orders=data/orders.csv
 ```
 
 ```text

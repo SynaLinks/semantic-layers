@@ -24,6 +24,7 @@ from pathlib import Path
 
 import synalog
 import yaml
+from synalog.checking import violated_assertions
 
 if sys.version_info >= (3, 11):
     import tomllib
@@ -97,18 +98,18 @@ class SemanticLayer:
 
     @property
     def connected(self) -> bool:
-        """Whether its ``synalog.toml`` names a database (a ``[connection]``)."""
+        """Whether its ``layer.toml`` names a database (a ``[connection]``)."""
         return "connection" in _project_file(self.path)
 
     @property
     def description(self) -> str:
-        """What the layer is about: its ``synalog.toml``'s ``[project]``."""
+        """What the layer is about: its ``layer.toml``'s ``[project]``."""
         return str(read_project(self.path).get("description") or "").strip()
 
 
 def _project_file(folder: Path) -> dict:
-    """A layer's ``synalog.toml``, parsed (``{}`` without one, or unreadable)."""
-    path = folder / "synalog.toml"
+    """A layer's ``layer.toml``, parsed (``{}`` without one, or unreadable)."""
+    path = folder / "layer.toml"
     try:
         return tomllib.loads(path.read_text()) if path.is_file() else {}
     except tomllib.TOMLDecodeError:
@@ -116,7 +117,7 @@ def _project_file(folder: Path) -> dict:
 
 
 def read_project(folder: Path) -> dict:
-    """The ``[project]`` table of a layer's ``synalog.toml``: its ``name`` and
+    """The ``[project]`` table of a layer's ``layer.toml``: its ``name`` and
     ``description`` (``{}`` without one)."""
     table = _project_file(folder).get("project")
     return table if isinstance(table, dict) else {}
@@ -179,27 +180,84 @@ def find_layers(root: Path, name: str) -> dict[str, SemanticLayer]:
     return {}
 
 
-def check(layer: Path, database: tuple[str, str] | None = None) -> tuple[list[str], list[str]]:
+def check(layer: Path, assertions: bool = False, loads=()) -> tuple[list[str], list[str]]:
     """Check every predicate of a layer folder with synalog, imports resolved
     from the folder: ``(errors, warnings)``, ``"<file>: <message>"`` lines.
 
-    Without ``database`` the check is structural and offline, as before a
-    layer is connected. With the layer's ``(engine, dsn)`` its ``@Assert``
-    statements also run there: each violated one is an error quoting a few
-    counterexamples, and a database that cannot be reached is a warning."""
+    The check is structural and offline, as before a layer is connected.
+    With ``assertions``, a connected layer's ``@Assert`` statements also run
+    on its database — the one its ``layer.toml`` names: each violated one is
+    an error quoting a few counterexamples, and a database that cannot be
+    reached is a warning. ``loads``, ``(table, path)`` pairs of data files,
+    run them in memory on those files instead."""
     errors: list[str] = []
     warnings: list[str] = []
-    engine, dsn = database or (None, None)
     for p in read_predicates(layer).values():
-        try:
-            problems, notes = synalog.check(
-                p.text, engine=engine, import_root=[str(layer)], assertions=database is not None, dsn=dsn
-            )
-        except ValueError as exc:
-            problems, notes = [str(exc).strip().splitlines()[-1]], []
+        problems, notes = _check_file(layer, p.text, assertions, loads)
         errors.extend(f"{p.relative}: {problem}" for problem in problems)
         warnings.extend(f"{p.relative}: {note}" for note in notes)
     return errors + _check_project_file(layer), warnings
+
+
+def _check_file(layer: Path, text: str, assertions: bool, loads=()) -> tuple[list[str], list[str]]:
+    roots = [str(layer)]
+    try:
+        problems, notes = synalog.check(text, import_root=roots, assertions=assertions and not loads, project=layer)
+    except ValueError as exc:
+        return [str(exc).strip().splitlines()[-1]], []
+    if assertions and loads and not problems:
+        problems = violated_assertions(text, "duckdb", roots, loads=loads)
+    return problems, notes
+
+
+def find_definition(target: str, layers: Path) -> tuple[Path, Predicate]:
+    """The layer folder and the definition ``target`` names: a file's path
+    (``sales/rules/Revenue.l``, as ``search`` prints it, from the layers
+    folder or the current directory), ``<layer>/<Name>``, or ``<Name>`` when
+    the current directory is a layer."""
+    parts = Path(target.removesuffix(".l")).parts
+    candidates = []
+    if len(parts) == 1:
+        candidates.append((Path.cwd(), parts[0]))
+    else:
+        layer = Path(*parts[:-2]) if parts[-2] in KINDS else Path(*parts[:-1])
+        candidates += [(Path.cwd() / layer, parts[-1]), (layers / layer, parts[-1])]
+    for folder, name in candidates:
+        if is_layer(folder):
+            predicate = read_predicates(folder).get(name)
+            if predicate is None:
+                raise ValueError(f"{folder.name} has no definition {name}: find one with 'semantic-layers search'.")
+            return folder.resolve(), predicate
+    raise ValueError(
+        f"No layer holds {target}: give <layer>/<Name> (e.g. sales/Revenue), the path search prints, "
+        "or <Name> inside a layer's folder."
+    )
+
+
+def run(
+    layer: Path, predicate: Predicate, limit: int | None = None, offset: int | None = None, loads=()
+) -> tuple[list[str], list[tuple]]:
+    """Run a definition on its layer's database — in memory on ``loads``
+    when given — after checking it: its program, and its assertions on that
+    data. Raises ``ValueError`` with every problem when it does not check."""
+    if not loads and not SemanticLayer(layer.name, layer).connected:
+        raise ValueError(
+            f"{layer.name} is not connected: run 'semantic-layers connect <engine> key=value ...' in {layer}, "
+            "or run it on data files with --load TABLE=PATH"
+        )
+    problems, _ = _check_file(layer, predicate.text, assertions=True, loads=loads)
+    if problems:
+        raise ValueError("\n".join(f"{predicate.relative}: {problem}" for problem in problems))
+    return synalog.execute(
+        predicate.text,
+        predicate.name,
+        engine="duckdb" if loads else None,
+        project=layer,
+        import_root=[str(layer)],
+        limit=limit,
+        offset=offset,
+        loads=loads,
+    )
 
 
 def verify(layer: Path) -> list[str]:
@@ -208,22 +266,22 @@ def verify(layer: Path) -> list[str]:
 
 
 def _check_project_file(layer: Path) -> list[str]:
-    """Every layer has a ``synalog.toml`` whose ``[project]`` describes it; its
+    """Every layer has a ``layer.toml`` whose ``[project]`` describes it; its
     name, when it gives one, is the layer's folder name."""
-    path = layer / "synalog.toml"
+    path = layer / "layer.toml"
     if not path.is_file():
-        return ["synalog.toml is missing: a layer says what it is in its [project] (name, description)"]
+        return ["layer.toml is missing: a layer says what it is in its [project] (name, description)"]
     try:
         data = tomllib.loads(path.read_text())
     except tomllib.TOMLDecodeError as exc:
-        return [f"synalog.toml: {exc}"]
+        return [f"layer.toml: {exc}"]
     about = data.get("project") if isinstance(data.get("project"), dict) else {}
     problems = []
     if not str(about.get("description") or "").strip():
-        problems.append("synalog.toml: [project] has no description — say what the layer is about")
+        problems.append("layer.toml: [project] has no description — say what the layer is about")
     named, folder = about.get("name"), layer.resolve().name
     if named and named != folder:
-        problems.append(f"synalog.toml: names the layer '{named}', but its folder is '{folder}' — they must match")
+        problems.append(f"layer.toml: names the layer '{named}', but its folder is '{folder}' — they must match")
     return problems
 
 

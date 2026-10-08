@@ -47,7 +47,7 @@ def test_connected_layer_keeps_its_tables_and_connection(source, project):
     add(str(source), scope(project), ["sales"], force=True)
     assert "description: Mine." in (folder / "tables" / "Orders.l").read_text()
     assert not (folder / "tables" / "Customers.l").exists()
-    assert tomllib.loads((folder / "synalog.toml").read_text())["connection"]["host"] == "h"
+    assert tomllib.loads((folder / "layer.toml").read_text())["connection"]["host"] == "h"
     assert (folder / ".env").read_text() == 'SYNALOG_PSQL_PASSWORD="p"\n'
     assert (folder / "rules" / "ActiveCustomer.l").exists()
 
@@ -139,13 +139,13 @@ def test_the_docs_show_the_section_agents_get(tmp_path):
 
 def test_an_installed_layer_has_a_synalog_toml(source, project):
     add(str(source), scope(project))
-    data = tomllib.loads((layer(project) / "support" / "synalog.toml").read_text())
+    data = tomllib.loads((layer(project) / "support" / "layer.toml").read_text())
     assert data["project"]["name"] == "support" and "connection" not in data
 
 
 def test_a_single_layer_source_is_named_by_its_project(tmp_path, project):
     single = write(tmp_path / "some-repo", SUPPORT)
-    (single / "synalog.toml").write_text('[project]\nname = "support"\ndescription = "Tickets."\n')
+    (single / "layer.toml").write_text('[project]\nname = "support"\ndescription = "Tickets."\n')
     assert add(str(single), scope(project))["installed"] == ["support"]
     assert installed(scope(project))[0]["description"] == "Tickets."
 
@@ -153,8 +153,8 @@ def test_a_single_layer_source_is_named_by_its_project(tmp_path, project):
 def test_an_undescribed_layer_is_not_installed(tmp_path, project):
     source = write(
         tmp_path / "bare",
-        {"rules/X.l": '---\nname: X\ndescription: One.\n---\n@OrderBy(X, "a");\nX(a: 1);\n', "synalog.toml": ""},
+        {"rules/X.l": '---\nname: X\ndescription: One.\n---\n@OrderBy(X, "a");\nX(a: 1);\n', "layer.toml": ""},
     )
-    (source / "synalog.toml").unlink()
+    (source / "layer.toml").unlink()
     with pytest.raises(InstallError, match="no description"):
         add(str(source), scope(project))

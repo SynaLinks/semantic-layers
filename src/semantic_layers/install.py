@@ -176,7 +176,7 @@ def add(
 
 def _stage(offered: SemanticLayer, mine: SemanticLayer | None, folder: Path) -> Path:
     """The layer as it would be installed: the source's folder — its
-    ``synalog.toml`` included, the database it was written for — with the
+    ``layer.toml`` included, the database it was written for — with the
     user's tables and connection when the layer is already connected."""
     shutil.copytree(offered.path, folder, ignore=shutil.ignore_patterns(".git", *_LOCAL_FILES))
     if mine is not None and mine.connected:
@@ -248,9 +248,9 @@ def _agents_section(scope: Scope) -> str:
         "`description`).\n\n"
         "- **Answer from them.** Before answering a question about the data, search\n"
         "  the definitions that fit (`uvx semantic-layers search '<regex from the\n"
-        "  question>'`), read them, and run them from their layer's folder\n"
-        "  (`uvx synalog rules/<Name>.l run <Name>`: the folder's `synalog.toml`\n"
-        "  names the database). Never re-derive a definition or write ad-hoc SQL.\n"
+        "  question>'`), read them, and run them (`uvx semantic-layers run\n"
+        "  <layer>/<Name>`: the layer's `layer.toml` names the database). Never\n"
+        "  re-derive a definition or write ad-hoc SQL.\n"
         "- **Write what is missing.** An entity or relationship goes in\n"
         "  `concepts/<Name>.l`, a computation in `rules/<Name>.l`, inside the layer\n"
         "  whose tables it uses: front matter with `name` (the predicate that runs)\n"

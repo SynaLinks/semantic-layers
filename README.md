@@ -104,7 +104,7 @@ my-layer/
 ├── tables/           # The data: one file per table, generated from the database
 ├── concepts/         # What the data is about: entities, relationships, clean views
 ├── rules/            # What you want to know: counts, rates, rankings, trends
-├── synalog.toml      # The database it runs on (secrets stay in .env)
+├── layer.toml        # The layer description and database it runs on (secrets stay in .env)
 └── .env              # The password or token (local, never committed)
 ```
 
@@ -165,7 +165,7 @@ sales/rules/RevenueByCountry.l     Delivered revenue per customer country, large
 reads it, and runs it on the database:
 
 ```
-$ uvx synalog rules/ActiveCustomer.l run ActiveCustomer
+$ uvx semantic-layers run sales/ActiveCustomer
 +-------------+
 | customer_id |
 +-------------+
@@ -215,15 +215,20 @@ search for counterexamples to SQL and runs it on the database, like any
 predicate. The assertion holds when the search returns no row:
 
 ```
-$ uvx synalog rules/ActiveCustomer.l verify
-✓ ActiveCustomer.is_customer holds
-✓ ActiveCustomer.has_delivery holds
+$ uvx semantic-layers check sales
+Everything verifies.
 ```
 
 Had the rule forgotten the delivered-order condition, `has_delivery` would be
-violated, and synalog would name the customer that breaks it. `run` checks a
-definition's assertions before it prints anything, and refuses one that is
-violated.
+violated, and `check` would name the customer that breaks it:
+
+```
+sales/rules/ActiveCustomer.l: Assertion 'ActiveCustomer.has_delivery' is violated: ∀ c, ActiveCustomer c → ∃ o a, DeliveredOrder o c a
+  counterexamples (c): (12)
+```
+
+`run` checks a definition's assertions before it prints anything, and
+refuses one that is violated.
 
 This matters most for definitions an agent writes. A rule and its assertion
 state the same intent in two notations, so a mistake made in one is unlikely
@@ -276,7 +281,7 @@ your sales.
 To write your own layer, start a layer project:
 
 ```shell
-uvx semantic-layers init sales --description "Orders and customers"   # tables/, concepts/, rules/, synalog.toml, README, git
+uvx semantic-layers init sales -d "Orders and customers"   # tables/, concepts/, rules/, layer.toml, README, git (asks when not given)
 cd sales
 uvx semantic-layers connect psql host=db.example.com database=sales user=analyst password=...
 ```
@@ -357,7 +362,7 @@ Each is shown as layer files (front matter, imports, `@OrderBy`) in the
 - **Any coding agent**: `semantic-layers add` installs layers into
   `.agents/layers/` and tells the agent how to use them (a section of
   `AGENTS.md`, and of `CLAUDE.md` for Claude Code), so every coding agent
-  searches and runs them with the synalog CLI.
+  searches and runs them with `semantic-layers search` and `run`.
 - **[The `semantic-layers` Agent Skill](skills/semantic-layers/)**: teaches a
   coding agent the whole loop (search, read, run, answer, and write the
   definitions that are missing) with the synalog it needs, modelling
@@ -371,7 +376,7 @@ Each is shown as layer files (front matter, imports, `@OrderBy`) in the
 DuckDB, SQLite, PostgreSQL, Trino, Presto, Databricks and BigQuery: every
 engine [synalog supports](https://synalinks.github.io/synalog/engines/), with
 the drivers it needs. One definition compiles to each engine's dialect. A
-layer's `synalog.toml` names its engine; `semantic-layers connect --help`
+layer's `layer.toml` names its engine; `semantic-layers connect --help`
 lists each engine's connection fields, and the secret ones go to the layer's
 git-ignored `.env`.
 

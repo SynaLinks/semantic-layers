@@ -1,7 +1,7 @@
 """``semantic-layers init``: set up a semantic layer project.
 
 A layer project is a layer folder ready to be filled and published: the
-three folders, a ``synalog.toml`` for the database it runs on, the
+three folders, a ``layer.toml`` for the database it runs on, the
 ``.gitignore`` that keeps the secrets (``.env``) out of git, a README for whoever
 installs it, and a git repository — pushed, it is a one-layer repository
 that ``semantic-layers add owner/repo`` installs.
@@ -40,33 +40,41 @@ definitions about one database, as verified, executable
 ```shell
 uvx semantic-layers add <owner>/{name}
 cd .agents/layers/{name}
-uvx semantic-layers connect                      # the database in its synalog.toml
+uvx semantic-layers connect                      # the database in its layer.toml
 uvx semantic-layers connect <engine> key=value ...  # or another one
 ```
 
 ## Develop
 
 ```shell
-uvx semantic-layers connect <engine> key=value ...     # synalog.toml, .env, then tables/ from the database
-uvx synalog rules/<Name>.l run <Name>                   # run a definition
+uvx semantic-layers connect <engine> key=value ...     # layer.toml, .env, then tables/ from the database
+uvx semantic-layers run <Name>                          # run a definition
 uvx semantic-layers check .                                      # verify every definition
 ```
 """
 
 
-def init(target: Path, name: str | None = None, description: str = "") -> dict:
-    """Set up the layer project ``target`` (created if missing). Never
-    overwrites a file that exists. Returns what was ``created``."""
-    name = name or target.resolve().name
-    if not description.strip():
-        raise ValueError("a layer needs a description: what it is about, for whoever installs it.")
+def check_name(name: str) -> None:
+    """Raise ``ValueError`` unless ``name`` is a layer name."""
     if not _NAME.match(name):
         raise ValueError(
             f"'{name}' is not a layer name: use lowercase letters, numbers and hyphens "
             "(e.g. sales, customer-retention)."
         )
+
+
+def init(target: Path, name: str | None = None, description: str = "", force: bool = False) -> dict:
+    """Set up the layer project ``target`` (created if missing). A folder that
+    exists and is not empty is refused unless ``force``; even then, no file
+    that exists is overwritten. Returns what was ``created``."""
+    name = name or target.resolve().name
+    if not description.strip():
+        raise ValueError("a layer needs a description: what it is about, for whoever installs it.")
+    check_name(name)
     if target.exists() and not target.is_dir():
         raise ValueError(f"{target} is a file.")
+    if target.is_dir() and any(target.iterdir()) and not force:
+        raise ValueError(f"{target} exists and is not empty: pass --force to set up the layer in it.")
     created: list[str] = []
     target.mkdir(parents=True, exist_ok=True)
     for folder in FOLDERS.values():

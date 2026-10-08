@@ -58,10 +58,10 @@ def _as_connect_writes(text: str) -> str:
 
 def write(root: Path, files: dict[str, str]) -> Path:
     """Write ``files`` under ``root``. A layer (files under tables/, concepts/
-    or rules/) gets the synalog.toml every layer has, unless one is given,
+    or rules/) gets the layer.toml every layer has, unless one is given,
     and its table files the description and @OrderBy `connect` writes."""
-    if any(k.split("/")[0] in ("tables", "concepts", "rules") for k in files) and "synalog.toml" not in files:
-        files = {**files, "synalog.toml": f'[project]\nname = "{root.name}"\ndescription = "A test layer."\n'}
+    if any(k.split("/")[0] in ("tables", "concepts", "rules") for k in files) and "layer.toml" not in files:
+        files = {**files, "layer.toml": f'[project]\nname = "{root.name}"\ndescription = "A test layer."\n'}
     files = {k: _as_connect_writes(v) if k.startswith("tables/") else v for k, v in files.items()}
     for relative, text in files.items():
         path = root / relative

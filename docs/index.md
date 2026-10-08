@@ -16,7 +16,7 @@ sales/
 ├── tables/           # The data: one file per table, generated from the database
 ├── concepts/         # What the data is about: entities, relationships, clean views
 ├── rules/            # What you want to know: counts, rates, rankings, trends
-├── synalog.toml      # What the layer is, and the database it runs on
+├── layer.toml        # What the layer is, and the database it runs on
 └── .env              # The password or token (local, never committed)
 ```
 
@@ -85,7 +85,7 @@ context.
   `semantic-layers` skill teaches searching, running and writing definitions.
 - **Your own agent**: [Adding layer support](agent-support.md) walks through
   discovery, search, execution and verification, step by step.
-- **The command line**: `uvx synalog rules/Revenue.l run Revenue` runs any
+- **The command line**: `uvx semantic-layers run sales/Revenue` runs any
   definition from its layer's folder.
 
 ## Open development

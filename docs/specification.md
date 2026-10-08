@@ -12,7 +12,7 @@ layer-name/
 ├── tables/           # The data: one .l file per database table
 ├── concepts/         # Entities, relationships and clean views, built on tables
 ├── rules/            # Insights, built on concepts
-├── synalog.toml      # Required: its name, description and database (committed)
+├── layer.toml        # Required: its name, description and database (committed)
 ├── .env              # Optional: that database's secrets (never committed)
 ├── .gitignore        # Optional: keeps the credentials out of git
 └── README.md         # Optional: what the layer is for, for people
@@ -262,7 +262,7 @@ database's.
 
 ## Connection
 
-A layer's `synalog.toml`, at its root and committed with it, says what the
+A layer's `layer.toml`, at its root and committed with it, says what the
 layer is and which database it runs on.
 
 ```toml
@@ -284,7 +284,7 @@ user = "analyst"
 | `[connection] engine` | To run | `psql`, `trino`, `presto`, `databricks` or `bigquery`. |
 | `[connection]` other keys | Per engine | The engine's non-secret fields (`host`, `port`, `database`, `user`, `schema`, ...): `semantic-layers connect --help` lists them. Never a secret. |
 
-- `[connection]` is synalog's [project file](https://github.com/SynaLinks/synalog#projects-synalogtoml):
+- `[connection]` is synalog's [project file](https://github.com/SynaLinks/synalog#projects-layertoml):
   the engine and its fields, the secrets in the git-ignored `.env`, found by
   synalog run anywhere in the layer. `semantic-layers connect` writes both
   through synalog.
@@ -337,15 +337,15 @@ folder:
 
 ```shell
 cd my-layer
-uvx semantic-layers check .                               # the whole layer
-uvx synalog rules/ActiveCustomer.l print ActiveCustomer   # one definition, its SQL
+uvx semantic-layers check .                  # the whole layer
+uvx semantic-layers run ActiveCustomer       # one definition: checked, then run
 ```
 
 The check has two levels:
 
 | Level | Checks | Runs |
 |---|---|---|
-| **Structure** | The front matter is valid YAML, with a `name` the file defines and orders, and a `description`; the definition parses, its imports resolve, and the program is sound — safety, arity, stratification, recursion, unknown references; `synalog.toml` describes the layer | Always: `add`, `check`, `connect` |
+| **Structure** | The front matter is valid YAML, with a `name` the file defines and orders, and a `description`; the definition parses, its imports resolve, and the program is sound — safety, arity, stratification, recursion, unknown references; `layer.toml` describes the layer | Always: `add`, `check`, `connect` |
 | **Data** | Every `@Assert` holds on the layer's database: each violated one is reported with a few counterexamples | When the layer is connected: `check` (unless `--offline`) and `connect` |
 
 A layer is installed only if its structure checks. Its assertions run once

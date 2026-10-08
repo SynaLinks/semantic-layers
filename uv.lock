@@ -131,7 +131,7 @@ name = "psycopg"
 version = "3.3.6"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
-    { name = "typing-extensions", marker = "python_full_version < '3.13'" },
+    { name = "typing-extensions", marker = "(python_full_version < '3.13' and python_full_version >= '3.10') or (python_full_version < '3.13' and platform_python_implementation != 'CPython')" },
     { name = "tzdata", marker = "sys_platform == 'win32'" },
 ]
 sdist = { url = "https://files.pythonhosted.org/packages/76/26/3ea4ca5eaea1c0debcdf7ee7c1613fbe721dc27a03c461c0817ffd8a0601/psycopg-3.3.6.tar.gz", hash = "sha256:c081f2250df751a943036e42db6df4571c66cd0aabe8291a7a506512b12007d2", size = 168171, upload-time = "2026-09-18T13:22:55.152Z" }
@@ -232,12 +232,12 @@ version = "9.1.1"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "colorama", marker = "sys_platform == 'win32'" },
-    { name = "exceptiongroup", marker = "python_full_version < '3.11'" },
+    { name = "exceptiongroup", marker = "(python_full_version < '3.11' and python_full_version >= '3.10') or (python_full_version < '3.11' and platform_python_implementation != 'CPython')" },
     { name = "iniconfig" },
     { name = "packaging" },
     { name = "pluggy" },
     { name = "pygments" },
-    { name = "tomli", marker = "python_full_version < '3.11'" },
+    { name = "tomli", marker = "(python_full_version < '3.11' and python_full_version >= '3.10') or (python_full_version < '3.11' and platform_python_implementation != 'CPython')" },
 ]
 sdist = { url = "https://files.pythonhosted.org/packages/e4/47/b9efed96c114afcfa3c9d3fe98a76a1d14c74a9e266d397cf6eb64be5e01/pytest-9.1.1.tar.gz", hash = "sha256:1088fbde8f2b49d95a549a195707afa7a76a3ce9bcadc26b6d71f0ffda5fe313", size = 1636369, upload-time = "2026-06-19T10:58:32.857Z" }
 wheels = [
@@ -351,9 +351,11 @@ name = "semantic-layers"
 version = "0.1.0"
 source = { editable = "." }
 dependencies = [
+    { name = "click" },
     { name = "pyyaml" },
+    { name = "rich" },
     { name = "synalog" },
-    { name = "tomli", marker = "python_full_version < '3.11'" },
+    { name = "tomli", marker = "(python_full_version < '3.11' and python_full_version >= '3.10') or (python_full_version < '3.11' and platform_python_implementation != 'CPython')" },
 ]
 
 [package.optional-dependencies]
@@ -369,9 +371,11 @@ dev = [
 
 [package.metadata]
 requires-dist = [
+    { name = "click", specifier = ">=8.1" },
     { name = "psycopg", extras = ["binary"], marker = "extra == 'psql'", specifier = ">=3" },
     { name = "pyyaml", specifier = ">=6" },
-    { name = "synalog", specifier = ">=2.0.0" },
+    { name = "rich", specifier = ">=13" },
+    { name = "synalog", specifier = ">=2.1.0" },
     { name = "tomli", marker = "python_full_version < '3.11'", specifier = ">=1.1" },
 ]
 provides-extras = ["psql"]
@@ -384,7 +388,7 @@ dev = [
 
 [[package]]
 name = "synalog"
-version = "2.0.0"
+version = "2.1.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "click" },
@@ -392,39 +396,39 @@ dependencies = [
     { name = "psycopg" },
     { name = "psycopg", extra = ["binary"], marker = "platform_machine in 'x86_64 AMD64 arm64 aarch64' and platform_python_implementation == 'CPython'" },
     { name = "rich" },
-    { name = "tomli", marker = "python_full_version < '3.11'" },
+    { name = "tomli", marker = "(python_full_version < '3.11' and python_full_version >= '3.10') or (python_full_version < '3.11' and platform_python_implementation != 'CPython')" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/68/f3/96e0f0d2c4726597c7465c3d75116b24f8585e2de04748168596251b62e1/synalog-2.0.0.tar.gz", hash = "sha256:419ae1ee5059b62db0416ba4a076352c5cec0b51e7610f93e950e9ec01c04bc5", size = 1077148, upload-time = "2026-10-07T19:58:35.756Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/5c/0d/4508739ca8f3b09092b96cca10b203bebb83d40bd8188f479b01d1e69bc6/synalog-2.1.0.tar.gz", hash = "sha256:96f5e823cd18bed0509c8ee1c3066f18b89ef1bc5fae8bb9e87df3957880aa5c", size = 1077942, upload-time = "2026-10-08T09:07:57.941Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/59/ce/799969b1ba83916b7d213798840ade8f8d42a4058fc63a7e7f386f781d0b/synalog-2.0.0-cp310-abi3-macosx_10_12_x86_64.whl", hash = "sha256:f88c82ea3d500d750dc37d6b568a654723c8443f6ef2dcc93f2d1c1fe91f6b78", size = 1379036, upload-time = "2026-10-07T19:57:45.66Z" },
-    { url = "https://files.pythonhosted.org/packages/d6/3c/dd0d1ce8f34b18565d26cb87bd7670fd462c897a67de013678d566544c23/synalog-2.0.0-cp310-abi3-macosx_11_0_arm64.whl", hash = "sha256:cb0e77d7a6091fc43365a1511fadb6e0aa2972424ead4d066a4d0c3d91de669e", size = 1282316, upload-time = "2026-10-07T19:57:47.423Z" },
-    { url = "https://files.pythonhosted.org/packages/90/ef/e4427e7b81c569344b10bb12916cd183d0181f3585b1b767c8485fc793e2/synalog-2.0.0-cp310-abi3-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:e420ad391f9be7be72b4fb75b8a5bc4bc389389d4d9cb76a586698c86934e47f", size = 1372888, upload-time = "2026-10-07T19:57:49.334Z" },
-    { url = "https://files.pythonhosted.org/packages/ce/12/2ce26a4d40cc743ade3d24b8c0d3bed528579ee5b8f6c57505201498a83d/synalog-2.0.0-cp310-abi3-manylinux_2_17_armv7l.manylinux2014_armv7l.whl", hash = "sha256:4b3f81b536c60b42000d53b143aa2bb1fdd5782b3f09a382740f287510379f3c", size = 1437207, upload-time = "2026-10-07T19:57:51.003Z" },
-    { url = "https://files.pythonhosted.org/packages/2b/f3/8376e31a0a69978e58b945920938d671af1701e27b8ee8c0c337f7603b90/synalog-2.0.0-cp310-abi3-manylinux_2_17_ppc64le.manylinux2014_ppc64le.whl", hash = "sha256:62ff6fa54762967600821698c2d033504cedc90f06feac1575c639d5fff2534b", size = 1602409, upload-time = "2026-10-07T19:57:52.849Z" },
-    { url = "https://files.pythonhosted.org/packages/23/25/9c87e1172484a99e8160b23f3a0dee6a2e95710b0fcc13af5066f298ae15/synalog-2.0.0-cp310-abi3-manylinux_2_17_s390x.manylinux2014_s390x.whl", hash = "sha256:491309263d515576765b13f1fbdc53b6a312c88f0a7d244d3ef31d05203b32d1", size = 1453392, upload-time = "2026-10-07T19:57:55.061Z" },
-    { url = "https://files.pythonhosted.org/packages/e8/67/b941fb4504ed81abeb57016f31bad7382ef63b1eef574d8ffbb91ff5350a/synalog-2.0.0-cp310-abi3-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:14fbecbce134167d3a6df5540abc580d601fa3056fc7d0d6d7fda07dc73fb9da", size = 1468852, upload-time = "2026-10-07T19:57:56.695Z" },
-    { url = "https://files.pythonhosted.org/packages/88/60/aaef89cb444184bbe024c0be2aafdbc62ad85886538f02093a81eedf84d5/synalog-2.0.0-cp310-abi3-manylinux_2_5_i686.manylinux1_i686.whl", hash = "sha256:8ed4e44cd5cddbded76d2ec20b063173f35a9ee9b9140dff87c9c815bc5e0d7d", size = 1591063, upload-time = "2026-10-07T19:57:58.694Z" },
-    { url = "https://files.pythonhosted.org/packages/a1/fb/73b3de033fe0c3fa6954cec7bc2bf3b8a23c7ed9ddb51637f6340bf59d89/synalog-2.0.0-cp310-abi3-musllinux_1_2_aarch64.whl", hash = "sha256:466d8205f376660ba142fe950a6e5a3cfaf7a32aee910bad3829915892b8f0aa", size = 1551453, upload-time = "2026-10-07T19:58:00.596Z" },
-    { url = "https://files.pythonhosted.org/packages/a3/9c/a43953d62fa5cb8bcd5d5316818b003d03b26fab9b1659471a13eae102c4/synalog-2.0.0-cp310-abi3-musllinux_1_2_armv7l.whl", hash = "sha256:c7df30f278332b7f6e5d3151f74618ef305d73127017c370617bb71b1eacee43", size = 1712299, upload-time = "2026-10-07T19:58:02.771Z" },
-    { url = "https://files.pythonhosted.org/packages/65/d7/ae7973b565f3f4a264803945100271e823fb4e9f8ab5a3077bee8563b73a/synalog-2.0.0-cp310-abi3-musllinux_1_2_i686.whl", hash = "sha256:6fa15bb6af1b5e00126478343b3ea42e7d669f2d8894f39fcbe6cc16b49f45ff", size = 1727331, upload-time = "2026-10-07T19:58:04.396Z" },
-    { url = "https://files.pythonhosted.org/packages/0c/61/57941cb8f92821a0562742760c9ec8028f98b7fa9f74b2ab0df945bb1b83/synalog-2.0.0-cp310-abi3-musllinux_1_2_x86_64.whl", hash = "sha256:c6bb7efd1b6cb9ff68d57bb5120bf1c3cb68d9dbe41dfc6d1eb4f275012b29b3", size = 1684122, upload-time = "2026-10-07T19:58:06.026Z" },
-    { url = "https://files.pythonhosted.org/packages/96/9a/5a99a89267a473d2b416c4bca5c840e0de489085602cdf3b381b6b0dce9a/synalog-2.0.0-cp310-abi3-win32.whl", hash = "sha256:dcfd7a4f9e134cf73a779a5e31e962c2a3a89cd726404bfa4bf751aae1027312", size = 1193964, upload-time = "2026-10-07T19:58:07.675Z" },
-    { url = "https://files.pythonhosted.org/packages/99/dc/682e083e9504363f6fb69acf073276060b89af0df6781804f9f0e4114275/synalog-2.0.0-cp310-abi3-win_amd64.whl", hash = "sha256:798d3d9e20ace577cfa2aa82dae28477e80911e078d719fa5c99ea8f168fc5f8", size = 1279665, upload-time = "2026-10-07T19:58:09.335Z" },
-    { url = "https://files.pythonhosted.org/packages/60/71/52cfe19d00b1d7523e66abbce28d7a95d87e6202b39c72b4abfce7c64db4/synalog-2.0.0-cp310-abi3-win_arm64.whl", hash = "sha256:c7b4c30096849f5fad228cde4c05d2adffffd2d6ac78dac4b1de164f26f0510a", size = 1185225, upload-time = "2026-10-07T19:58:11.075Z" },
-    { url = "https://files.pythonhosted.org/packages/ae/34/0e174ba842518fe23af8730b63d820aad69c5f2401e170d0823e5138e500/synalog-2.0.0-cp314-cp314t-macosx_10_12_x86_64.whl", hash = "sha256:e5870caa121320d77fafae0a31d191fd9e632d9dbcd0a79fe8cb4a4bdabb12b7", size = 1378697, upload-time = "2026-10-07T19:58:12.682Z" },
-    { url = "https://files.pythonhosted.org/packages/87/97/5fc49f476f2f838011b892725188345f5a50f94bd68619f7a4a9fb14042b/synalog-2.0.0-cp314-cp314t-macosx_11_0_arm64.whl", hash = "sha256:0bf8648f3d4e0295c938fb051d909d8f64277eb19eab80adf07c223d752422c3", size = 1276367, upload-time = "2026-10-07T19:58:14.328Z" },
-    { url = "https://files.pythonhosted.org/packages/6e/03/d355be9184f086936d908237705590cc834e24500531dfae31da1089d1b2/synalog-2.0.0-cp314-cp314t-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:1c01c9e42fea1a613874ec278d08ac5880f4a2295289046ddfab5fc85e482b80", size = 1367171, upload-time = "2026-10-07T19:58:16.09Z" },
-    { url = "https://files.pythonhosted.org/packages/96/b8/7805785a886dc5ef417bd61dfe25d160f4e85afdc7a7e1a89c68b26ff6db/synalog-2.0.0-cp314-cp314t-manylinux_2_17_armv7l.manylinux2014_armv7l.whl", hash = "sha256:19b0be132aaf9946425bcc72adfe09941b3d306fea976df8f6557805b240e4ca", size = 1431742, upload-time = "2026-10-07T19:58:17.656Z" },
-    { url = "https://files.pythonhosted.org/packages/53/4c/e024811a2c6eb1cfcf9d28636d063da3f1eff0588a9d1777f9127b7af338/synalog-2.0.0-cp314-cp314t-manylinux_2_17_ppc64le.manylinux2014_ppc64le.whl", hash = "sha256:ccf97666f00612431f29fc6889ec13d602adc869c895645785efaa2a828be5da", size = 1602527, upload-time = "2026-10-07T19:58:19.205Z" },
-    { url = "https://files.pythonhosted.org/packages/ac/a9/e4ef0e4d76b90f2ee5218d653d6922e526a23850aaf112a70746a71039af/synalog-2.0.0-cp314-cp314t-manylinux_2_17_s390x.manylinux2014_s390x.whl", hash = "sha256:8035493614b0f02d09354e67edf85cbd4a8e55d8d9cb6596d5f5e5409c93ea75", size = 1450127, upload-time = "2026-10-07T19:58:20.833Z" },
-    { url = "https://files.pythonhosted.org/packages/28/ad/ce3deda44521d0672671c10e7b6eccde781f401b3e24b30232e34f427535/synalog-2.0.0-cp314-cp314t-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:3a08a7baf6964c3a9c199929e2a358a8a1b29d4a658b5ad6d57c876a65b1c60a", size = 1454886, upload-time = "2026-10-07T19:58:22.512Z" },
-    { url = "https://files.pythonhosted.org/packages/4c/78/a7111365d5a426e2e6c5719a3714769c52ca5c03e9fda2415697efee6ea3/synalog-2.0.0-cp314-cp314t-manylinux_2_5_i686.manylinux1_i686.whl", hash = "sha256:17d1de7abab32ad6117cace90ff959bc24844edbb0cda2d928c8b0190d80e10a", size = 1587408, upload-time = "2026-10-07T19:58:24.185Z" },
-    { url = "https://files.pythonhosted.org/packages/90/7c/e080ce29e4b151d7d4e2a75c7d611609fbac2d54466c7764f63bf19d646f/synalog-2.0.0-cp314-cp314t-musllinux_1_2_aarch64.whl", hash = "sha256:afb36704c0931986d3156f0bdaa0bdb2bab4dd912ad0317b5a5b6570cf85f90a", size = 1545184, upload-time = "2026-10-07T19:58:25.93Z" },
-    { url = "https://files.pythonhosted.org/packages/ea/8f/f6ac1e1fd68b2adda5fa3cdebfb47b47f7af4d6747d044a324320c2a39af/synalog-2.0.0-cp314-cp314t-musllinux_1_2_armv7l.whl", hash = "sha256:9f6b61fb436f1bb2d9e01f7334d823cec176db335285a728ce9c612248333956", size = 1704616, upload-time = "2026-10-07T19:58:27.535Z" },
-    { url = "https://files.pythonhosted.org/packages/85/cf/d03e5ca3efc513475496d5f86a480a8175eb62b958e9d580a686747834cd/synalog-2.0.0-cp314-cp314t-musllinux_1_2_i686.whl", hash = "sha256:d624e8567b70fcf0839daae2e54ffa04eb59cc724a61ba7d3065d50fd291c96f", size = 1722163, upload-time = "2026-10-07T19:58:29.189Z" },
-    { url = "https://files.pythonhosted.org/packages/cf/59/0be96e59b319aa42042a8c34ed9905b2fd28e19788a20a90eb8d6f8928fc/synalog-2.0.0-cp314-cp314t-musllinux_1_2_x86_64.whl", hash = "sha256:650beaaabcaea08bec4664c7759e9102f0502c0b35985e919e05e176cf507459", size = 1672357, upload-time = "2026-10-07T19:58:30.864Z" },
-    { url = "https://files.pythonhosted.org/packages/c8/98/1cebbee421164f7ad906bb16a19fbf20c72384853f3c94f76888ec79e5fd/synalog-2.0.0-cp314-cp314t-win32.whl", hash = "sha256:6833c9a501e9cac2164e336013ab8457afb937aa5bb3897ca10a707fcc701413", size = 1188135, upload-time = "2026-10-07T19:58:32.526Z" },
-    { url = "https://files.pythonhosted.org/packages/9d/ad/a16dfc517e426f5e7f211e9f9fe3ca29a373273991551d72f0f17eb0508b/synalog-2.0.0-cp314-cp314t-win_amd64.whl", hash = "sha256:90eb2af90e4d325509ddbbf16fdd05ddf622107c132e6606cf3072209baa554f", size = 1276784, upload-time = "2026-10-07T19:58:34.228Z" },
+    { url = "https://files.pythonhosted.org/packages/0f/f8/daef843d3ab8061e3c7222425f13ed07f76f5ad1f926ea6b454e2a288aa1/synalog-2.1.0-cp310-abi3-macosx_10_12_x86_64.whl", hash = "sha256:6b19c01138617614a77d75676c12f911c13c2a6d979df81fc3328121e42c4bd1", size = 1377560, upload-time = "2026-10-08T09:07:13.129Z" },
+    { url = "https://files.pythonhosted.org/packages/7c/2b/5c76aa2de4f1239ac81b39ac74f9c1d8177a0336b37132ab0bb3fdc22c15/synalog-2.1.0-cp310-abi3-macosx_11_0_arm64.whl", hash = "sha256:6b331db0b41f8d0e26692d39a0348b2c149690d5d31930a1711c54d02dd85758", size = 1280837, upload-time = "2026-10-08T09:07:14.621Z" },
+    { url = "https://files.pythonhosted.org/packages/c9/6f/cfb20b8ae4da382dfccbb1c84d84ef637d576422fd295678d48b5e7a8583/synalog-2.1.0-cp310-abi3-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:230b7d53909edcc9af4bead172602185b41e676029692903e35db2199b7e11b2", size = 1371203, upload-time = "2026-10-08T09:07:16.131Z" },
+    { url = "https://files.pythonhosted.org/packages/3e/2b/206e96545f7f117b110a7c7744428a32c3e94bd94b87ad50208c81137111/synalog-2.1.0-cp310-abi3-manylinux_2_17_armv7l.manylinux2014_armv7l.whl", hash = "sha256:c98761d9e97ba557b4e574afc2021e30b3e04f484b24335c4bb0575e976ce120", size = 1436341, upload-time = "2026-10-08T09:07:17.506Z" },
+    { url = "https://files.pythonhosted.org/packages/a1/d0/d52e74d8759fe24ae1eb5b671e14ce4d1c8dd2533271fab42ceafeaffae8/synalog-2.1.0-cp310-abi3-manylinux_2_17_ppc64le.manylinux2014_ppc64le.whl", hash = "sha256:fb866f62b664437694a494eae71ad71aecf5195db36028a6e5f2641480d7bf5d", size = 1600981, upload-time = "2026-10-08T09:07:19.103Z" },
+    { url = "https://files.pythonhosted.org/packages/e5/74/3f95a6c33ca8bf34ee6d8feb9b4a12309db99d1bc5d315967f6b79e1ce74/synalog-2.1.0-cp310-abi3-manylinux_2_17_s390x.manylinux2014_s390x.whl", hash = "sha256:20a56edbcca973c0b9d94c64b10d8b0c824b9f18884fd277e94d186d1299c569", size = 1451532, upload-time = "2026-10-08T09:07:20.602Z" },
+    { url = "https://files.pythonhosted.org/packages/e0/7d/700f6fbf0ede4cf9f907c9f7083821045150e15d4934806349820c359a8d/synalog-2.1.0-cp310-abi3-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:a4f6884a047b21fa09fff9a233fe67d6dd207a9244a9b93b575c70d7d63fe7a4", size = 1467427, upload-time = "2026-10-08T09:07:22.291Z" },
+    { url = "https://files.pythonhosted.org/packages/5e/7c/fd2211f5f3aebdd65e239df0fe2d91c958d54eee0a35f61b2347a9e06bc1/synalog-2.1.0-cp310-abi3-manylinux_2_5_i686.manylinux1_i686.whl", hash = "sha256:dc696adf88fc6ef015e0947a5eba7c0b3023eda9cc8bcfd87700ab06ca815e29", size = 1589286, upload-time = "2026-10-08T09:07:23.886Z" },
+    { url = "https://files.pythonhosted.org/packages/74/5a/cca93fcb7d83e430e0cf167cc15c2aae925850c76fdccebcceecde5f7885/synalog-2.1.0-cp310-abi3-musllinux_1_2_aarch64.whl", hash = "sha256:25ec24902eac3c577676886639530d5ac4fc58f665363fc69ed254f8916b57d8", size = 1549199, upload-time = "2026-10-08T09:07:25.215Z" },
+    { url = "https://files.pythonhosted.org/packages/60/28/42ecfe6f4139f9189f496ee27fa27f379c4c558d7b20e6a6be75e0327d6f/synalog-2.1.0-cp310-abi3-musllinux_1_2_armv7l.whl", hash = "sha256:075fc81186baedeac36e5f2d6626e5879088e27ee8b8086b8a01f80e2c0e9493", size = 1711602, upload-time = "2026-10-08T09:07:26.658Z" },
+    { url = "https://files.pythonhosted.org/packages/1c/4b/a4d3359034ccd48d806d416aafc008e2734b8aec1bcb25e7dcdc41ae8c13/synalog-2.1.0-cp310-abi3-musllinux_1_2_i686.whl", hash = "sha256:827556912d24912687cd8a976aba44a15ab695ca94559b02ccd6552be549a082", size = 1725844, upload-time = "2026-10-08T09:07:28.547Z" },
+    { url = "https://files.pythonhosted.org/packages/07/3e/7859d2b21234527812aacaf17b2aca48b7de813694916a80da26637a7fe6/synalog-2.1.0-cp310-abi3-musllinux_1_2_x86_64.whl", hash = "sha256:b683a83e5447d4c60724f1b168d8fa6461f276d63a8d69f3fa37c3df0dd158fd", size = 1682994, upload-time = "2026-10-08T09:07:30.01Z" },
+    { url = "https://files.pythonhosted.org/packages/c4/76/96f019ea9e5f93c3196db5a6d1726571aefc19701b3e47fc44648ed5ca0e/synalog-2.1.0-cp310-abi3-win32.whl", hash = "sha256:39e19df91ddfb57c02e2b7a07707cad092d5712c46975e8133186b87b62e6d69", size = 1192403, upload-time = "2026-10-08T09:07:31.542Z" },
+    { url = "https://files.pythonhosted.org/packages/7c/1e/20657b078674539829c6fc6bb41bc6adc5f37945548c5a40fed1d71a832e/synalog-2.1.0-cp310-abi3-win_amd64.whl", hash = "sha256:46639c27979d0c591c3e120195ad5f919bdd8c0df0fe84300471b755d5c98737", size = 1278227, upload-time = "2026-10-08T09:07:33.028Z" },
+    { url = "https://files.pythonhosted.org/packages/f0/8f/77dc1ade7a1b9def9a4f802222a65487c9dd1701e5f4c57e244a7ccb5f28/synalog-2.1.0-cp310-abi3-win_arm64.whl", hash = "sha256:deee1a8af062e00040d62209e7fa3bfd8377badfaf01ac062cdd066396e2414a", size = 1183662, upload-time = "2026-10-08T09:07:34.497Z" },
+    { url = "https://files.pythonhosted.org/packages/a7/a6/421193737238515f346ef3f38ef6a61dcb00a3e0a55d8d8b8f3a613da016/synalog-2.1.0-cp314-cp314t-macosx_10_12_x86_64.whl", hash = "sha256:7707afb10695b75db48065b9cf5d952fd5e86736a0fd3bc9a3cfc2091d17e5d0", size = 1377243, upload-time = "2026-10-08T09:07:36.565Z" },
+    { url = "https://files.pythonhosted.org/packages/ef/21/ab5a3bca94efe6e01e62829853b9ebf59585b3a35c76e82941fa5242f2c7/synalog-2.1.0-cp314-cp314t-macosx_11_0_arm64.whl", hash = "sha256:768fb428e6e50daa2a6ec3968964e3455d3e87e7e9eb8d94bcc3cebcb7b39239", size = 1274901, upload-time = "2026-10-08T09:07:38.003Z" },
+    { url = "https://files.pythonhosted.org/packages/be/fc/a2ad5eca57beb83c60386ec9e82113c23f04fe616ec5b82ac1988c0838ce/synalog-2.1.0-cp314-cp314t-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:9b96e129e2f36174747c9a6892ab438e75cd4dd3447f36a70dd9f346cece61e7", size = 1365932, upload-time = "2026-10-08T09:07:39.573Z" },
+    { url = "https://files.pythonhosted.org/packages/b4/32/97eb5f7b52ced8134896a961bfa340c81813eefe71910382527614e0d3e4/synalog-2.1.0-cp314-cp314t-manylinux_2_17_armv7l.manylinux2014_armv7l.whl", hash = "sha256:fd62f2f2c81680d086a3e2369c54848afa08d4d72457de1bf2d5b59c1b5ba012", size = 1430496, upload-time = "2026-10-08T09:07:41.01Z" },
+    { url = "https://files.pythonhosted.org/packages/76/90/90d8292672af509d8d5e652c4ab8f7a3abc23711f25ac434a5bb58fbc428/synalog-2.1.0-cp314-cp314t-manylinux_2_17_ppc64le.manylinux2014_ppc64le.whl", hash = "sha256:d6b0d880fb86be7cd67f7ffc6a5ba5e4517dd1ed6fb6accd798e269542937c30", size = 1600731, upload-time = "2026-10-08T09:07:42.368Z" },
+    { url = "https://files.pythonhosted.org/packages/3f/02/d9c37c99b643f7d76b400cb3864418dcb1acca12842dfd6001535c8769ce/synalog-2.1.0-cp314-cp314t-manylinux_2_17_s390x.manylinux2014_s390x.whl", hash = "sha256:9e16efe9f3d7b3614bbd83dac595169494dc086983d8ef4e5ad1ab5e92f15f36", size = 1448545, upload-time = "2026-10-08T09:07:43.94Z" },
+    { url = "https://files.pythonhosted.org/packages/d0/71/eb825cdd21053749e48a9eedbf28fa529550bd3cae21e40afb1d023b666d/synalog-2.1.0-cp314-cp314t-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:896d4d307bf033a8c436fc5e94643ecbf3b1c6aec892b3698929c9a7f3f54f48", size = 1453452, upload-time = "2026-10-08T09:07:45.384Z" },
+    { url = "https://files.pythonhosted.org/packages/ad/77/457e10cc65e34ed709f90474c23084580114dab42bc66158275fd63f941f/synalog-2.1.0-cp314-cp314t-manylinux_2_5_i686.manylinux1_i686.whl", hash = "sha256:d8e364eeb2859b7dc60ad0fe1fd224c9217aa5b71b1616749e3c21c71011f322", size = 1585198, upload-time = "2026-10-08T09:07:47.4Z" },
+    { url = "https://files.pythonhosted.org/packages/04/6e/53642bc16351b4a6af3d4543502674b572c477a7a60d0c71f9115d71cd58/synalog-2.1.0-cp314-cp314t-musllinux_1_2_aarch64.whl", hash = "sha256:062072a7b0a5a47577b4662abbf39c67d959ba54f62d0d2aab2a52f34d56a880", size = 1543235, upload-time = "2026-10-08T09:07:48.821Z" },
+    { url = "https://files.pythonhosted.org/packages/71/28/91a6ca5d5443759a95fc99510db543e4a1be4b3f8be099c11b8a8dc71fe5/synalog-2.1.0-cp314-cp314t-musllinux_1_2_armv7l.whl", hash = "sha256:ab95b25a35e0c69d18fde422cb5557a327e23e33120dd81dad71e99d0bbeaa00", size = 1704718, upload-time = "2026-10-08T09:07:50.572Z" },
+    { url = "https://files.pythonhosted.org/packages/e1/dd/66c4a731ef93d48500641289ea4a5e031103a9749509e6bb0ba24d2b9507/synalog-2.1.0-cp314-cp314t-musllinux_1_2_i686.whl", hash = "sha256:aa485097381f7ac6ec1069f1682aa3658fe2623cc40ee79f9ecc0bd01d6d4a5e", size = 1720286, upload-time = "2026-10-08T09:07:52.021Z" },
+    { url = "https://files.pythonhosted.org/packages/27/de/df56465d1d0ae1c6577e869c0fd85bf5a6a5cf338b7ccf7efc1487b265d8/synalog-2.1.0-cp314-cp314t-musllinux_1_2_x86_64.whl", hash = "sha256:52cc6a65d82145562e2373b279723291ac2aa30e6e998e4d2c9c5da953d53c53", size = 1670883, upload-time = "2026-10-08T09:07:53.564Z" },
+    { url = "https://files.pythonhosted.org/packages/27/78/52ec97aba314a0dc77de618a332f33a2c38aafb1959cc47f47325e012b4a/synalog-2.1.0-cp314-cp314t-win32.whl", hash = "sha256:d1460e17dc7c3401b0e66071ab22edf4fc786d612c155148289b7090bc59ba0e", size = 1186667, upload-time = "2026-10-08T09:07:55.066Z" },
+    { url = "https://files.pythonhosted.org/packages/c8/ae/891448da52f048820f1597e78599f6b4fa0c6f1ae96c9367141e23483024/synalog-2.1.0-cp314-cp314t-win_amd64.whl", hash = "sha256:7af88b637ec56a4b88d6d255ccef0ee71db4e91f39bc9517b95d69df4e338513", size = 1275325, upload-time = "2026-10-08T09:07:56.469Z" },
 ]
 
 [[package]]

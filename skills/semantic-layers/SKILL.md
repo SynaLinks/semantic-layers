@@ -1,6 +1,6 @@
 ---
 name: semantic-layers
-description: Answer questions about a project's data from its semantic layers, and write the business definitions they lack. Use whenever a question involves the data — counts, rates, rankings, trends, "active customer", "revenue" — or when asked to define, model or fix a business concept. A semantic layer is a folder of synalog .l files (tables/, concepts/, rules/) under .agents/layers/, with a synalog.toml naming its database.
+description: Answer questions about a project's data from its semantic layers, and write the business definitions they lack. Use whenever a question involves the data — counts, rates, rankings, trends, "active customer", "revenue" — or when asked to define, model or fix a business concept. A semantic layer is a folder of synalog .l files (tables/, concepts/, rules/) under .agents/layers/, with a layer.toml naming its database.
 ---
 
 # Semantic layers
@@ -13,7 +13,7 @@ from the definitions — you never re-derive one, and you never write ad-hoc SQL
 ```
 .agents/layers/
   sales/
-    synalog.toml   [project] name + description; [connection] the database
+    layer.toml     [project] name + description; [connection] the database
     tables/        one file per database table — generated, never edited by hand
     concepts/      what the data is about: entities, relationships, clean views
     rules/         what people want to know: counts, rates, rankings, trends
@@ -46,20 +46,22 @@ imports only its own files, and layers cannot be joined in one definition.
    means what the question means: a "customer" who ordered once is not an
    "active customer".
 
-3. **Run** it from its layer's folder. The folder's `synalog.toml` names the
-   engine and the database; the password comes from `.env` by itself:
+3. **Run** it. The layer's `layer.toml` names the engine and the database;
+   the password comes from its `.env` by itself. `run` takes the path search
+   printed, or `<layer>/<Name>`, and refuses a definition whose assertions
+   the data violates:
 
    ```shell
-   cd .agents/layers/sales
-   uvx synalog rules/RevenueByCountry.l run RevenueByCountry --limit 50
-   uvx synalog rules/RevenueByCountry.l run RevenueByCountry --csv   # to read the values
+   uvx semantic-layers run sales/rules/RevenueByCountry.l --limit 50
+   uvx semantic-layers run sales/RevenueByCountry --csv      # to read the values
+   uvx semantic-layers run sales/RevenueByCountry --offset 50 --limit 50   # the next page
    ```
 
 4. **Answer** from the rows, naming the definition you ran
    (`sales.RevenueByCountry`) and the values it returned. Never round a
    definition into prose of your own.
 
-If the layer's `synalog.toml` has no `[connection]`, it is not connected yet:
+If the layer's `layer.toml` has no `[connection]`, it is not connected yet:
 tell the user to run, in that folder,
 `uvx semantic-layers connect <engine> key=value ...`
 (see [Connecting](#connecting-a-layer)).
@@ -121,7 +123,7 @@ Then check it, run it, and only then answer from it:
 ```shell
 cd .agents/layers/sales
 uvx semantic-layers check .                                   # every file of the layer
-uvx synalog rules/RepeatBuyer.l run RepeatBuyer --limit 20     # does it return what you expect?
+uvx semantic-layers run RepeatBuyer --limit 20                 # does it return what you expect?
 ```
 
 `check` reports every problem at once, one line per file. In a connected
@@ -141,15 +143,15 @@ are kept).
 
 ## Connecting a layer
 
-`connect` runs inside a layer's folder — the one with its `synalog.toml`:
+`connect` runs inside a layer's folder — the one with its `layer.toml`:
 
 ```shell
 cd .agents/layers/sales
 uvx semantic-layers connect psql host=db.example.com database=sales user=analyst password=...
-uvx semantic-layers connect          # again, from the connection already in synalog.toml
+uvx semantic-layers connect          # again, from the connection already in layer.toml
 ```
 
-It writes the connection into `synalog.toml` (`[connection]`), the secret
+It writes the connection into `layer.toml` (`[connection]`), the secret
 fields into `.env` (git-ignored), then generates `tables/` from the
 database and checks every definition against it. `uvx semantic-layers connect --help`
 lists each engine's fields. The user
@@ -184,7 +186,7 @@ without a database, on the CSV files in its `data/`:
 
 ```shell
 cd examples/supply-chain
-uvx synalog rules/CriticalSuppliers.l run CriticalSuppliers \
+uvx semantic-layers run CriticalSuppliers \
   --load suppliers=data/suppliers.csv --load parts=data/parts.csv \
   --load bill_of_materials=data/bill_of_materials.csv
 ```

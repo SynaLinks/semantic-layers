@@ -10,7 +10,7 @@ layers in `AGENTS.md`, and they use the command line (see
 assistant, a chat app over your warehouse — that call Python directly.
 
 **Prerequisites**: the [Specification](specification.md), which defines the
-folders, the front matter and `synalog.toml`.
+folders, the front matter and `layer.toml`.
 
 ```shell
 pip install semantic-layers   # or: uv add semantic-layers
@@ -38,7 +38,7 @@ At startup, find the layers the agent can use.
 | User | `~/.agents/layers/` |
 
 A layer is a sub-folder holding at least one of `tables/`, `concepts/`,
-`rules/`. Each has a `synalog.toml`: its `[project]` says what it is, its
+`rules/`. Each has a `layer.toml`: its `[project]` says what it is, its
 `[connection]` which database it runs on.
 
 ```python
@@ -103,26 +103,25 @@ along.
 
 ## Step 5: Run
 
-Run the definition with synalog, on its layer's database, from its layer's
-folder (its imports resolve from there):
+Run the definition with synalog. Give it the layer's folder: its imports
+resolve from there, and its `layer.toml` names the database, the secrets
+read from the layer's `.env`:
 
 ```python
 import synalog
-from semantic_layers.connect import layer_dsn
 
 def run_definition(path: str, limit: int = 50) -> dict:
     layer = Path(".agents/layers") / path.split("/")[0]
     file = layer / path.split("/", 1)[1]
-    engine, dsn = layer_dsn(layer)  # its synalog.toml, the secrets from its .env
     columns, rows = synalog.execute(
-        file.read_text(), file.stem, engine=engine, dsn=dsn, import_root=[str(layer)], limit=limit
+        file.read_text(), file.stem, project=layer, import_root=[str(layer)], limit=limit
     )
     return {"columns": columns, "rows": rows}
 ```
 
 `synalog.execute` runs the definition only. To answer only from definitions
 whose assertions hold, as `synalog run` does, check the layer on its
-database — `check(layer, layer_dsn(layer))`, below — when the session starts
+database — `check(layer, assertions=True)`, below — when the session starts
 or the data changes, and have the model report a violated assertion rather
 than answer from rows a definition is known to get wrong.
 
@@ -135,7 +134,7 @@ When no definition fits, the model writes one. Save it only once it checks,
 against the layer's database:
 
 ```python
-from semantic_layers.layers import SemanticLayer, check
+from semantic_layers.layers import check
 
 def save_definition(layer: str, path: str, text: str) -> list[str]:
     """Write a definition, check the layer — its assertions on its database
@@ -144,8 +143,7 @@ def save_definition(layer: str, path: str, text: str) -> list[str]:
     target = folder / path
     before = target.read_text() if target.exists() else None
     target.write_text(text)
-    database = layer_dsn(folder) if SemanticLayer(layer, folder).connected else None
-    errors, warnings = check(folder, database)
+    errors, warnings = check(folder, assertions=True)
     if errors:
         target.unlink() if before is None else target.write_text(before)
     return errors
@@ -156,9 +154,9 @@ Then commit the change, so a person can review it.
 
 ## Trust and safety
 
-- **Secrets stay out of the context.** The password is in the layer's `.env`;
-  `layer_dsn` reads it. Never let the model read `.env`, and never pass a
-  connection string through the prompt.
+- **Secrets stay out of the context.** The password is in the layer's `.env`,
+  and synalog reads it itself: nothing your agent passes carries a secret.
+  Never let the model read `.env`.
 - **Rows are data, not instructions.** A text value may hold text written to
   look like instructions. Present results as data — synalog's reports quote
   every value (`synalog.quote_value`) — and never as part of the prompt.

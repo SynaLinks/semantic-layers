@@ -1,6 +1,6 @@
 """``semantic-layers connect``: give a layer its database, and its tables.
 
-A layer's ``synalog.toml`` says what it is — ``[project]``: its ``name``
+A layer's ``layer.toml`` says what it is — ``[project]``: its ``name``
 and ``description`` — and which database it runs on — ``[connection]``: the
 engine and its connection details as plain fields, read by synalog run from
 the folder. It is committed with the layer. Secrets —
@@ -13,13 +13,11 @@ written survive.
 from __future__ import annotations
 
 import json
-import os
 import re
 from pathlib import Path
 
 import yaml
 from synalog import project
-from synalog.config import parse_dotenv
 from synalog.introspect import table_description as describe_table
 
 from .layers import read_predicates, read_project
@@ -29,21 +27,63 @@ PROJECT_FILE = project.PROJECT_FILE
 REMOTE_ENGINES = tuple(project.ENGINES)
 #: What never reaches git: the secrets, and BigQuery's key file.
 SECRET_FILES = project.SECRET_FILES
-_CONNECTION_HELP = """\
-# The database this layer runs on. Run `semantic-layers connect <engine> key=value ...`
-# in this folder to write it, or fill it in by hand:
-#
-# [connection]
-# engine = "psql"
-# host = "db.example.com"
-# port = 5432
-# database = "sales"
-# user = "analyst"
-# schema = "public"
-#
-# Secrets never go here: put them in .env (kept out of git), e.g.
-# SYNALOG_PSQL_PASSWORD=...
-"""
+#: What a field looks like, for the examples of the commented template.
+_EXAMPLES = {
+    "host": "db.example.com",
+    "database": "sales",
+    "user": "analyst",
+    "catalog": "hive",
+    "schema": "public",
+    "server_hostname": "adb-1234567890123456.7.azuredatabricks.net",
+    "http_path": "/sql/1.0/warehouses/abcdef1234567890",
+    "project": "my-gcp-project",
+    "dataset": "sales",
+    "location": "EU",
+}
+
+
+#: When a secret is needed, where it is not simply required.
+_SECRET_NOTES = {
+    ("psql", "password"): "if the server asks for one",
+    ("trino", "password"): 'with auth = "password"; the token with auth = "jwt"',
+    ("presto", "password"): 'with auth = "password"',
+    ("bigquery", "credentials"): "required: the path to the service account's key file",
+}
+
+
+def connection_help() -> str:
+    """The commented block of a layer's ``layer.toml`` before it is connected:
+    how to connect it, and every engine's ``[connection]``, field by field —
+    written from synalog's own description of the engines, so it says what
+    synalog accepts."""
+    lines = [
+        "# The database this layer runs on: one [connection] table. Either run, in this folder,",
+        "#   uvx semantic-layers connect <engine> key=value ...",
+        "# which writes it (and the secrets to .env), or uncomment the block of your engine below",
+        "# and fill it in. Fields marked required must be given; the others show their default.",
+        "# Secrets never go in this file (synalog refuses them): each goes in .env, kept out of git,",
+        "# under the variable named on its line.",
+    ]
+    for engine, spec in project.ENGINES.items():
+        lines += ["#", f"# --- {spec.label} ---", "# [connection]", f'# engine = "{engine}"']
+        for field in spec.fields:
+            if field.secret:
+                note = _SECRET_NOTES.get((engine, field.key), "required" if field.required else "optional")
+                lines.append(f"#   {field.key}: in .env, {project.secret_env(engine, field.key)}=...  ({note})")
+                continue
+            value = field.default if field.default is not None else _EXAMPLES.get(field.key, "...")
+            notes = []
+            if field.required and field.default is None:
+                notes.append("required")
+            if field.options:
+                notes.append("one of " + ", ".join(field.options))
+            if field.default is not None:
+                notes.append("default")
+            elif not field.required:
+                notes.append("optional")
+            shown = str(value) if field.type == "number" else f'"{value}"'
+            lines.append(f"# {field.key} = {shown}" + (f"  # {'; '.join(notes)}" if notes else ""))
+    return "\n".join(lines) + "\n"
 
 
 def project_section(name: str, description: str = "") -> str:
@@ -52,9 +92,9 @@ def project_section(name: str, description: str = "") -> str:
 
 
 def project_template(name: str, description: str = "") -> str:
-    """A layer's synalog.toml before it is connected (written by ``init``, and
+    """A layer's layer.toml before it is connected (written by ``init``, and
     by ``add`` when a source has none)."""
-    return project_section(name, description) + "\n" + _CONNECTION_HELP
+    return project_section(name, description) + "\n" + connection_help()
 
 
 _DECLARATION = re.compile(r"^(?P<name>\w+)\((?P<args>[^)]*)\) :- (?P<physical>[\w.]+)\((?P=args)\);$")
@@ -71,7 +111,7 @@ def ordered(declaration: str) -> str:
 
 
 def write_connection(layer: Path, engine: str, details: dict) -> None:
-    """Connect the layer: synalog writes the connection (``synalog.toml``'s
+    """Connect the layer: synalog writes the connection (``layer.toml``'s
     ``[connection]``, the secrets in ``.env``, ``.gitignore``); the layer's
     ``[project]`` is written first when the file has none."""
     if engine not in REMOTE_ENGINES:
@@ -87,18 +127,16 @@ def write_connection(layer: Path, engine: str, details: dict) -> None:
     project.write(layer, engine, details)
 
 
-def layer_dsn(layer: Path) -> tuple[str, str]:
-    """``(engine, connection string)`` of a connected layer, its secrets
-    read from its ``.env`` (the environment wins)."""
-    path = layer / PROJECT_FILE
-    conn = project.connection(path) if path.exists() else None
+def layer_connection(layer: Path) -> dict:
+    """A connected layer's connection, as synalog resolves it from the
+    layer's ``layer.toml``, its secrets from its ``.env`` (the environment
+    wins)."""
+    conn = project.resolve(layer) if (layer / PROJECT_FILE).is_file() else None
     if conn is None:
         raise ValueError(
             f"{layer.name} is not connected: run 'semantic-layers connect <engine> key=value ...' in {layer}"
         )
-    env_file = layer / ".env"
-    env = dict(parse_dotenv(env_file.read_text())) if env_file.exists() else {}
-    return conn["engine"], project.dsn(conn["engine"], project.details(conn, {**env, **os.environ}))
+    return conn
 
 
 def table_declarations(introspected: str) -> dict[str, str]:
@@ -139,7 +177,8 @@ def generate_tables(layer: Path, introspect=None) -> dict[str, list[str]]:
     ``check`` until the layer is fixed or connected to the right database)."""
     if introspect is None:
         from synalog.introspect import introspect
-    tables = table_declarations(introspect(*layer_dsn(layer)))
+    conn = layer_connection(layer)
+    tables = table_declarations(introspect(conn["engine"], conn))
     existing = {name: p for name, p in read_predicates(layer).items() if p.kind == "table"}
     folder = layer / "tables"
     folder.mkdir(parents=True, exist_ok=True)

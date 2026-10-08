@@ -26,7 +26,7 @@ Semantic Layers are built on [synalog](https://github.com/SynaLinks/synalog), by
 [Synalinks](https://github.com/SynaLinks). Full documentation:
 **<https://synalinks.github.io/semantic-layers/>**
 
-## The problem: every agent re-derives your business
+## The Problem
 
 Ask three agents for your number of "active customers" and you get three SQL
 queries, each plausible, each different:
@@ -48,9 +48,21 @@ in its own words, **every time**: a filter dropped, a join that duplicates
 rows, a refund counted as a sale. And what one session learns — a correction,
 a new metric — is gone at the next.
 
+The questions that matter most are often shaped like a graph: *which
+suppliers does this product depend on, through its whole bill of materials?*
+*Who reports, directly or not, to this manager?* *How is this account
+connected to that one?* SQL makes them hard to get right — a recursive query
+per engine, a traversal that stops one level short, a cycle that never ends.
+The usual answer is a knowledge graph in a graph database: an ETL pipeline
+to copy the tables, a second store to keep in sync and secure, a second query
+language — and agents that reason over a copy already out of date.
+
 A semantic layer holds the definition itself, as code the agent **runs**:
 checked before it runs, asserted against the data, and the same result from
-every agent, every time.
+every agent, every time. Entities and relationships are definitions too: the
+knowledge graph is built over the tables you already have, traversed by
+recursive rules compiled to SQL and run where the data lives — no data
+moved, no graph database to maintain.
 
 ## What are Semantic Layers?
 

@@ -166,11 +166,13 @@ reads it, and runs it on the database:
 
 ```
 $ uvx semantic-layers run sales/ActiveCustomer
-customer_id
------------
-10
-11
-2 rows of sales.ActiveCustomer
++-------------+
+| customer_id |
++-------------+
+| 10          |
+| 11          |
++-------------+
+2 rows
 ```
 
 The answer comes from those rows. The definition was executed, not

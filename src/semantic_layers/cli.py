@@ -7,6 +7,8 @@ import csv
 import sys
 from pathlib import Path
 
+from synalog.cli import out, render_table
+
 from . import __version__
 from .banner import show_banner, show_logo
 from .connect import PROJECT_FILE, generate_tables, layer_connection, write_connection
@@ -173,18 +175,6 @@ def _loads(pairs: list[str] | None) -> list[tuple[str, str]]:
     return loads
 
 
-def _table(columns: list[str], rows: list[tuple]) -> str:
-    """Rows as an aligned text table, values as they are."""
-    cells = [[("null" if v is None else str(v)) for v in row] for row in rows]
-    widths = [max([len(c)] + [len(row[i]) for row in cells]) for i, c in enumerate(columns)]
-
-    def line(values):
-        return "  ".join(v.ljust(w) for v, w in zip(values, widths, strict=True)).rstrip()
-
-    rule = "  ".join("-" * w for w in widths)
-    return "\n".join([line(columns), rule, *(line(row) for row in cells)])
-
-
 def cmd_run(args) -> int:
     layer, predicate = find_definition(args.definition, _scope(args).layers)
     loads = _loads(args.load)
@@ -199,8 +189,8 @@ def cmd_run(args) -> int:
         writer.writerow(columns)
         writer.writerows(rows)
         return 0
-    print(_table(columns, rows))
-    print(f"{len(rows)} row{'' if len(rows) == 1 else 's'} of {layer.name}.{predicate.name}")
+    # synalog's own table: the same rows look the same from either command.
+    out.print(render_table(columns, rows))
     return 0
 
 

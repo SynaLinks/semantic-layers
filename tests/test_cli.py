@@ -44,7 +44,7 @@ def test_run_finds_a_definition_however_it_is_named(tmp_path, monkeypatch, capsy
     for target in ("sales/RevenueByCountry", "sales/rules/RevenueByCountry.l"):  # the second as search prints it
         assert main(["run", target, *load]) == 0
         out = capsys.readouterr().out
-        assert out.splitlines()[2].split() == ["DE", "50"] and "2 rows of sales.RevenueByCountry" in out
+        assert "| DE      | 50      |" in out and "2 rows" in out
     assert main(["run", "sales/RevenueByCountry", "--csv", "--limit", "1", *load]) == 0
     assert capsys.readouterr().out.splitlines() == ["country,revenue", "DE,50"]
     monkeypatch.chdir(layer)

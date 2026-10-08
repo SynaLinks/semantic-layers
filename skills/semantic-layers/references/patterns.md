@@ -70,7 +70,7 @@ concept, and build every revenue rule on it.
 ```
 ---
 name: DeliveredOrder
-description: Orders that reached the customer — the ones that count as sales.
+description: Orders that reached the customer, the ones that count as sales.
 keywords: [delivered, completed, fulfilled, sale]
 ---
 import tables.Orders.Orders;

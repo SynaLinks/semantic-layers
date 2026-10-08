@@ -38,24 +38,24 @@ queries, each plausible, each different:
 | Third   | a row of `customers` whose `status` is `'active'`    |  5,140 |
 
 None of them errs on the SQL. Each guessed a meaning your business already
-settled — which orders count, which period, which column holds the truth —
+settled (which orders count, which period, which column holds the truth),
 and nothing tells you which guess you got. The same question asked tomorrow
 may get another one.
 
 Writing the meaning down does not fix it. A prompt, a wiki page, an Agent
 Skill can *describe* the right definition, but the agent still re-derives it
 in its own words, **every time**: a filter dropped, a join that duplicates
-rows, a refund counted as a sale. And what one session learns — a correction,
-a new metric — is gone at the next.
+rows, a refund counted as a sale. And what one session learns (a correction,
+a new metric) is gone at the next.
 
 The questions that matter most are often shaped like a graph: *which
 suppliers does this product depend on, through its whole bill of materials?*
 *Who reports, directly or not, to this manager?* *How is this account
-connected to that one?* SQL makes them hard to get right — a recursive query
+connected to that one?* SQL makes them hard to get right: a recursive query
 per engine, a traversal that stops one level short, a cycle that never ends.
 The usual answer is a knowledge graph in a graph database: an ETL pipeline
 to copy the tables, a second store to keep in sync and secure, a second query
-language — and agents that reason over a copy already out of date. GraphRAG
+language, and agents that reason over a copy already out of date. GraphRAG
 pipelines go further still: an LLM reads the rows to extract entities and
 relationships, at a cost per row, with edges it may invent or miss, and the
 whole extraction runs again when the data changes.
@@ -64,16 +64,16 @@ A semantic layer holds the definition itself, as code the agent **runs**:
 checked before it runs, asserted against the data, and the same result from
 every agent, every time. Entities and relationships are definitions too: the
 knowledge graph is built over the tables you already have, traversed by
-recursive rules compiled to SQL and run where the data lives — no data
+recursive rules compiled to SQL and run where the data lives: no data
 moved, no graph database to maintain. Extraction is a query, not an LLM
-pass: instant, exact, and current with the latest row.
+pass: instant, exact, and current with the latest data.
 
 ## What are Semantic Layers?
 
 [Agent Skills](https://agentskills.io) gave agents an open format for
 *procedures*: a folder of instructions an agent loads when a task calls for
 it. Semantic Layers are the same idea for *knowledge*: a folder of
-definitions — *an active customer*, *revenue*, *a late order* — and of the
+definitions (*an active customer*, *revenue*, *a late order*) and of the
 rules that reason over them, loaded when a question calls for them.
 
 Instructions suit procedures, which an agent adapts to the task at hand. They
@@ -154,7 +154,7 @@ searches the layers for a definition that fits:
 $ uvx semantic-layers search 'active|customer'
 sales/rules/ActiveCustomer.l       Customers with at least one delivered order.
 sales/concepts/Customer.l          Every customer who placed at least one order.
-sales/concepts/DeliveredOrder.l    Orders that reached the customer — the ones that count as sales.
+sales/concepts/DeliveredOrder.l    Orders that reached the customer, the ones that count as sales.
 sales/rules/RevenueByCountry.l     Delivered revenue per customer country, largest first.
 ```
 
@@ -173,7 +173,7 @@ $ uvx synalog rules/ActiveCustomer.l run ActiveCustomer
 
 The answer comes from those rows. The definition was executed, not
 paraphrased, so the next agent asked the same question gets the same
-customers — and when no definition fits, the agent writes one, building on
+customers, and when no definition fits, the agent writes one, building on
 the ones already there.
 
 ## What "formally verified" means
@@ -193,7 +193,7 @@ relationship is transitive.
 
 Assertions are new in synalog 2.0, and are not written in synalog. They are
 statements of first-order logic, written as [Lean](https://lean-lang.org/)
-propositions — the notation of the Lean theorem prover, with the same operator
+propositions: the notation of the Lean theorem prover, with the same operator
 precedence, and an ASCII spelling for every symbol (`forall`, `exists`, `->`).
 A predicate takes its arguments by position, as in Lean: with
 `DeliveredOrder(order_id:, customer_id:, amount:)`, `DeliveredOrder o c a`
@@ -224,12 +224,12 @@ violated.
 This matters most for definitions an agent writes. A rule and its assertion
 state the same intent in two notations, so a mistake made in one is unlikely
 to be repeated in the other: the assertion is the contract, stated first, and
-the rule is written — and checked — against it.
+the rule is written, and checked, against it.
 
 Two limits, stated plainly. An assertion that holds has no counterexample *in
 the data it ran on*: it is a check, not a proof, and says nothing about data
 it has not seen. And neither check says a definition is the one your business
-means — that is still yours to decide, once, in a file everyone can read.
+means: that is still yours to decide, once, in a file everyone can read.
 
 ## How do Semantic Layers work?
 
@@ -237,14 +237,14 @@ Agents load semantic layers through **progressive disclosure**, in three
 stages:
 
 1. **Discovery**: Agents search. A semantic layer grows to thousands of
-   definitions — too many to list in context — so the agent searches the
+   definitions, too many to list in context, so the agent searches the
    `name`, `keywords` and `description` of every definition with a regular
    expression built from the question
    (`semantic-layers search 'churn|retention'`), and gets back the few that
    fit.
 
-2. **Activation**: When a question matches a definition, the agent reads it —
-   and the definitions it imports — into context.
+2. **Activation**: When a question matches a definition, the agent reads it,
+   and the definitions it imports, into context.
 
 3. **Execution**: The agent runs the definition on the database and answers
    from its rows. When no definition fits, it writes one, verified before it
@@ -278,8 +278,8 @@ uvx semantic-layers connect psql host=db.example.com database=sales user=analyst
 ```
 
 Write your definitions in `concepts/` and `rules/`, check them with
-`semantic-layers check .` — their structure, and their assertions on your
-database — and push the repository: anyone can then install it with
+`semantic-layers check .` (their structure, and their assertions on your
+database) and push the repository: anyone can then install it with
 `semantic-layers add <owner>/sales`. The [Quickstart](docs/creating/quickstart.md)
 walks through a first layer on a CSV file.
 
@@ -294,17 +294,17 @@ folders. This gives agents:
   its assertions against the data; a definition that doesn't check never
   lands.
 - **A layer that grows with use**: When a question needs a definition that
-  doesn't exist, the agent writes it, building on the ones already there —
+  doesn't exist, the agent writes it, building on the ones already there,
   and every change is a git commit: who made it, what changed, a way back.
 - **Cross-project reuse**: Build a layer once, share it as a folder in a git
-  repository, and install it in any project — connected to that project's
+  repository, and install it in any project, connected to that project's
   own database.
 
 ## Powered by synalog
 
 Definitions are written in [synalog](https://github.com/SynaLinks/synalog), a
 logic programming language from the Datalog family that compiles to optimized
-SQL. A semantic layer is a folder; synalog is what makes the folder *run* —
+SQL. A semantic layer is a folder; synalog is what makes the folder *run*,
 and what lets a layer reason, not only count. This concept, from the
 [supply-chain example](skills/semantic-layers/examples/supply-chain/), follows
 a bill of materials to any depth:
@@ -326,37 +326,37 @@ Requires(assembly_id:, component_id:) distinct :-
   Requires(assembly_id:, component_id: middle), Contains(assembly_id: middle, component_id:);
 ```
 
-A rule built on it answers *which assemblies stop if this supplier fails?* —
+A rule built on it answers *which assemblies stop if this supplier fails?*,
 a question plain SQL makes hard to get right. synalog reaches the others like
 it:
 
-- **Composition** — a definition builds on others by name, through its
+- **Composition**: a definition builds on others by name, through its
   imports; every answer traces back, rule by rule, to the source tables.
-- **[Knowledge graphs](https://synalinks.github.io/synalog/knowledge-graphs/)** — entities and
+- **[Knowledge graphs](https://synalinks.github.io/synalog/knowledge-graphs/)**: entities and
   relationships modelled over the tables you already have, and
   [edges that carry when they were true](https://synalinks.github.io/synalog/knowledge-graphs/#temporal-graphs):
   no ETL, no graph database, no data moved.
-- **[Recursion](https://synalinks.github.io/synalog/language/recursion/)** — transitive closures, paths,
+- **[Recursion](https://synalinks.github.io/synalog/language/recursion/)**: transitive closures, paths,
   shortest paths, cycles, with termination guaranteed.
 - **[Negation, unions](https://synalinks.github.io/synalog/language/syntax/), [aggregation](https://synalinks.github.io/synalog/language/aggregation/)
-  and [functors](https://synalinks.github.io/synalog/language/functors/)** — what is *not* there, alternatives,
+  and [functors](https://synalinks.github.io/synalog/language/functors/)**: what is *not* there, alternatives,
   top-k, and generic rules instantiated for each input.
-- **[In milliseconds](https://synalinks.github.io/synalog/benchmark/)** — a Rust engine fast enough for an
+- **[In milliseconds](https://synalinks.github.io/synalog/benchmark/)**: a Rust engine fast enough for an
   agent to check every rule it writes.
 
-Each is shown as layer files — front matter, imports, `@OrderBy` — in the
+Each is shown as layer files (front matter, imports, `@OrderBy`) in the
 [modelling patterns](skills/semantic-layers/references/patterns.md) and the
 [example layers](layers/).
 
 ## Where can I use Semantic Layers?
 
 - **Any coding agent**: `semantic-layers add` installs layers into
-  `.agents/layers/` and tells the agent how to use them — a section of
-  `AGENTS.md`, and of `CLAUDE.md` for Claude Code — so every coding agent
+  `.agents/layers/` and tells the agent how to use them (a section of
+  `AGENTS.md`, and of `CLAUDE.md` for Claude Code), so every coding agent
   searches and runs them with the synalog CLI.
 - **[The `semantic-layers` Agent Skill](skills/semantic-layers/)**: teaches a
-  coding agent the whole loop — search, read, run, answer, and write the
-  definitions that are missing — with the synalog it needs, modelling
+  coding agent the whole loop (search, read, run, answer, and write the
+  definitions that are missing) with the synalog it needs, modelling
   patterns, every error message and a runnable example layer:
   `npx skills add SynaLinks/semantic-layers`.
 - **The [synalog](https://github.com/SynaLinks/synalog) CLI**: runs any
@@ -364,7 +364,7 @@ Each is shown as layer files — front matter, imports, `@OrderBy` — in the
 
 ## Supported engines
 
-DuckDB, SQLite, PostgreSQL, Trino, Presto, Databricks and BigQuery — every
+DuckDB, SQLite, PostgreSQL, Trino, Presto, Databricks and BigQuery: every
 engine [synalog supports](https://synalinks.github.io/synalog/engines/), with
 the drivers it needs. One definition compiles to each engine's dialect. A
 layer's `synalog.toml` names its engine; `semantic-layers connect --help`
@@ -373,25 +373,25 @@ git-ignored `.env`.
 
 ## Documentation
 
-- **[Getting started](docs/getting-started.md)** — Install a layer, connect it, ask
-- **[Quickstart](docs/creating/quickstart.md)** — Write, check and run your first layer, no database needed
-- **[Specification](docs/specification.md)** — The format, file by file
-- **[Best practices](docs/creating/best-practices.md)** — Definitions that mean one thing and stay consistent
-- **[Writing findable definitions](docs/creating/findable-definitions.md)** — Front matter that search finds, and how to test it
-- **[Evaluating layers](docs/creating/evaluating.md)** — Assertions, and testing the answers
-- **[Sharing](docs/sharing.md)** — Installing, connecting, publishing and updating layers
-- **[Coding agents](docs/agents.md)** — How coding agents are told about the layers
-- **[Adding layer support to your agent](docs/agent-support.md)** — Discovery, search, execution and verification, step by step
-- **[CLI](docs/cli.md)** — Every `semantic-layers` command
-- **[Examples](layers/)** — The `sales` and `support` example layers
-- **[Agent Skills](https://agentskills.io)** — The format semantic layers are modeled on
+- **[Getting started](docs/getting-started.md)**: Install a layer, connect it, ask
+- **[Quickstart](docs/creating/quickstart.md)**: Write, check and run your first layer, no database needed
+- **[Specification](docs/specification.md)**: The format, file by file
+- **[Best practices](docs/creating/best-practices.md)**: Definitions that mean one thing and stay consistent
+- **[Writing findable definitions](docs/creating/findable-definitions.md)**: Front matter that search finds, and how to test it
+- **[Evaluating layers](docs/creating/evaluating.md)**: Assertions, and testing the answers
+- **[Sharing](docs/sharing.md)**: Installing, connecting, publishing and updating layers
+- **[Coding agents](docs/agents.md)**: How coding agents are told about the layers
+- **[Adding layer support to your agent](docs/agent-support.md)**: Discovery, search, execution and verification, step by step
+- **[CLI](docs/cli.md)**: Every `semantic-layers` command
+- **[Examples](layers/)**: The `sales` and `support` example layers
+- **[Agent Skills](https://agentskills.io)**: The format semantic layers are modeled on
 
 ## Open development
 
 Semantic Layers were developed by [Synalinks](https://github.com/SynaLinks)
 and are released as an open format.
 
-Several questions remain open — merging upstream changes into a modified
+Several questions remain open: merging upstream changes into a modified
 layer, binding a shared layer to tables whose names or columns differ, and
 letting one layer import another's definitions. They are listed in the
 [specification](docs/specification.md#open-questions). Contributions are
@@ -400,4 +400,4 @@ and the documentation locally.
 
 ## License
 
-Apache 2.0 — see [LICENSE](LICENSE).
+Apache 2.0, see [LICENSE](LICENSE).

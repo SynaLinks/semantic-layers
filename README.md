@@ -22,17 +22,35 @@
 # Semantic Layers
 ## The Agent Skills of formally verified reasoning and knowledge work
 
-Ask three agents for "active customers" and you get three SQL queries, each
-plausible, each different. Written guidance — a prompt, a wiki page, an Agent
-Skill — can describe the right definition, but each agent still re-derives it
-in its own words, **every time**.
-
-A semantic layer holds the definition itself, as code the agent runs: checked
-before it runs, the same result from every agent.
-
 Semantic Layers are built on [synalog](https://github.com/SynaLinks/synalog), by
 [Synalinks](https://github.com/SynaLinks). Full documentation:
 **<https://synalinks.github.io/semantic-layers/>**
+
+## The problem: every agent re-derives your business
+
+Ask three agents for your number of "active customers" and you get three SQL
+queries, each plausible, each different:
+
+| Agent   | Decides an active customer is…                       | Answer |
+| ------- | ---------------------------------------------------- | -----: |
+| First   | anyone with an order in the last 90 days             |  4,812 |
+| Second  | anyone with an order, cancelled ones included        |  6,307 |
+| Third   | a row of `customers` whose `status` is `'active'`    |  5,140 |
+
+None of them errs on the SQL. Each guessed a meaning your business already
+settled — which orders count, which period, which column holds the truth —
+and nothing tells you which guess you got. The same question asked tomorrow
+may get another one.
+
+Writing the meaning down does not fix it. A prompt, a wiki page, an Agent
+Skill can *describe* the right definition, but the agent still re-derives it
+in its own words, **every time**: a filter dropped, a join that duplicates
+rows, a refund counted as a sale. And what one session learns — a correction,
+a new metric — is gone at the next.
+
+A semantic layer holds the definition itself, as code the agent **runs**:
+checked before it runs, asserted against the data, and the same result from
+every agent, every time.
 
 ## What are Semantic Layers?
 

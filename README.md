@@ -31,11 +31,15 @@ Semantic Layers are built on [synalog](https://github.com/SynaLinks/synalog), by
 Ask three agents for your number of "active customers" and you get three SQL
 queries, each plausible, each different:
 
+<div align="center">
+
 | Agent   | Decides an active customer is…                       | Answer |
 | ------- | ---------------------------------------------------- | -----: |
 | First   | anyone with an order in the last 90 days             |  4,812 |
 | Second  | anyone with an order, cancelled ones included        |  6,307 |
 | Third   | a row of `customers` whose `status` is `'active'`    |  5,140 |
+
+</div>
 
 None of them errs on the SQL. Each guessed a meaning your business already
 settled (which orders count, which period, which column holds the truth),

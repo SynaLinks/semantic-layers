@@ -104,7 +104,7 @@ my-layer/
 ├── tables/           # The data: one file per table, generated from the database
 ├── concepts/         # What the data is about: entities, relationships, clean views
 ├── rules/            # What you want to know: counts, rates, rankings, trends
-├── layer.toml        # The database it runs on (secrets stay in .env)
+├── layer.toml        # The layer description and database it runs on (secrets stay in .env)
 └── .env              # The password or token (local, never committed)
 ```
 

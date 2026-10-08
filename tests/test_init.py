@@ -65,7 +65,7 @@ def test_init_asks_for_the_description(tmp_path, monkeypatch, capsys):
     monkeypatch.chdir(tmp_path)
     monkeypatch.setattr("sys.stdin.isatty", lambda: True)
     answers = iter(["", "Orders of the shop."])  # an empty answer is asked again
-    monkeypatch.setattr("builtins.input", lambda prompt: next(answers))
+    monkeypatch.setattr("click.termui.visible_prompt_func", lambda prompt: next(answers))
     assert main(["init", "shop"]) == 0
     data = tomllib.loads((tmp_path / "shop" / "layer.toml").read_text())
     assert data["project"] == {"name": "shop", "description": "Orders of the shop."}

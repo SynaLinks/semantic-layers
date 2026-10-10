@@ -15,7 +15,7 @@ An assertion states what a definition's rows must satisfy, in first-order
 logic. synalog checks it by searching the data for a counterexample: the
 assertion holds when there is none.
 
-```prolog
+```synalog
 @Assert(RevenueByCountry,
         one_row_per_country: "∀ c r s, RevenueByCountry c r → RevenueByCountry c s → r = s",
         positive:            "∀ c, RevenueByCountry c > 0");

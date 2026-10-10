@@ -14,37 +14,37 @@ revenue, and the customers who bought.
 
 === "concepts/Customer.l"
 
-    ```prolog
+    ```synalog
     --8<-- "layers/sales/concepts/Customer.l"
     ```
 
 === "concepts/DeliveredOrder.l"
 
-    ```prolog
+    ```synalog
     --8<-- "layers/sales/concepts/DeliveredOrder.l"
     ```
 
 === "rules/ActiveCustomer.l"
 
-    ```prolog
+    ```synalog
     --8<-- "layers/sales/rules/ActiveCustomer.l"
     ```
 
 === "rules/Revenue.l"
 
-    ```prolog
+    ```synalog
     --8<-- "layers/sales/rules/Revenue.l"
     ```
 
 === "rules/RevenueByCountry.l"
 
-    ```prolog
+    ```synalog
     --8<-- "layers/sales/rules/RevenueByCountry.l"
     ```
 
 === "tables/Orders.l"
 
-    ```prolog
+    ```synalog
     --8<-- "layers/sales/tables/Orders.l"
     ```
 
@@ -55,18 +55,18 @@ another rule.
 
 === "rules/OpenTickets.l"
 
-    ```prolog
+    ```synalog
     --8<-- "layers/support/rules/OpenTickets.l"
     ```
 
 === "rules/Workload.l"
 
-    ```prolog
+    ```synalog
     --8<-- "layers/support/rules/Workload.l"
     ```
 
 === "tables/Tickets.l"
 
-    ```prolog
+    ```synalog
     --8<-- "layers/support/tables/Tickets.l"
     ```

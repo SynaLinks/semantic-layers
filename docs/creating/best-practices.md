@@ -31,7 +31,7 @@ Each file holds one definition that answers one question. A larger
 definition is built from smaller ones through imports, never by copying
 their logic:
 
-```prolog
+```synalog
 # rules/RevenueByCountry.l — built on what a sale is, not on raw orders
 import concepts.DeliveredOrder.DeliveredOrder;
 import tables.Customers.Customers;
@@ -81,7 +81,7 @@ Write the properties a definition must satisfy as `@Assert` statements — in
 first-order logic, a different notation from the rule, so a mistake in one
 is unlikely to be repeated in the other:
 
-```prolog
+```synalog
 @Assert(RevenueByCountry,
         one_row_per_country: "∀ c r s, RevenueByCountry c r → RevenueByCountry c s → r = s",
         positive:            "∀ c, RevenueByCountry c > 0");

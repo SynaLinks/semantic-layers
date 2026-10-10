@@ -14,7 +14,7 @@ from semantic_layers.layers import verify
 
 ROOT = Path(__file__).resolve().parents[1]
 SKILL = ROOT / "skills" / "semantic-layers"
-_FILE = re.compile(r"^`((?:concepts|rules|tables)/\w+\.l)`\n\n```(?:prolog)?\n(.*?)```", re.M | re.S)
+_FILE = re.compile(r"^`((?:concepts|rules|tables)/\w+\.l)`\n\n```(?:synalog)?\n(.*?)```", re.M | re.S)
 TABLES = {
     "Orders": "Orders(order_id:, customer_id:, product_id:, status:, amount:, ordered_at:) :- "
     "orders(order_id:, customer_id:, product_id:, status:, amount:, ordered_at:);",

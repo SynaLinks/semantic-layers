@@ -118,6 +118,17 @@ def test_parse_splits_front_matter_and_body():
     assert parse("X(a: 1);\n") == ({}, "X(a: 1);\n")
 
 
+def test_a_quoted_table_keeps_its_columns_and_description():
+    """A table whose real name is not a plain one is declared in backticks."""
+    from semantic_layers.connect import table_description
+    from semantic_layers.layers import Predicate
+
+    declaration = "OrderItems(id:, unit_price:) :- `public.Order Items`(Id: id, `Prix unitaire (€)`: unit_price);\n"
+    assert Predicate("OrderItems", "table", Path("OrderItems.l"), declaration).columns == ["id", "unit_price"]
+    assert table_description(declaration) == "Order items."
+    assert table_description("Orders(id:) :- `my-project.sales.orders`(id:);") == "Orders."
+
+
 def test_check_runs_the_assertions_on_the_layers_database(tmp_path, monkeypatch):
     """A connected layer's check runs its @Assert statements on its database:
     a refund counted as a sale makes a country's revenue negative."""

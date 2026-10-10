@@ -41,7 +41,7 @@ and declare the table, as `connect` would have:
 
 `tables/Orders.l`
 
-```prolog
+```synalog
 ---
 name: Orders
 description: One row per order, with its customer, status and amount.
@@ -56,7 +56,7 @@ Create the file below:
 
 `rules/RevenueByCustomer.l`
 
-```prolog
+```synalog
 ---
 name: RevenueByCustomer
 description: Revenue per customer, from delivered orders only, largest first.

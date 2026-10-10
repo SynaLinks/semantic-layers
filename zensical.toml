@@ -10,6 +10,9 @@ copyright = """
 Copyright &copy; 2026 Synalinks
 """
 
+extra_css = ["stylesheets/extra.css"]
+extra_javascript = ["javascripts/synalog-highlight.js"]
+
 nav = [
   { "Overview" = "index.md" },
   { "Why semantic layers" = "why.md" },
@@ -90,6 +93,10 @@ pygments_lang_class = true
 base_path = ["."]
 check_paths = true
 [project.markdown_extensions.pymdownx.superfences]
+# Synalog source is left as written, for javascripts/synalog-highlight.js to colour.
+custom_fences = [
+  { name = "synalog", class = "synalog", format = "pymdownx.superfences.fence_code_format" }
+]
 [project.markdown_extensions.pymdownx.tabbed]
 alternate_style = true
 combine_header_slug = true

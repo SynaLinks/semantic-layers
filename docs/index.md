@@ -22,7 +22,7 @@ sales/
 
 `rules/ActiveCustomer.l`
 
-```prolog
+```synalog
 ---
 name: ActiveCustomer
 description: Customers with at least one delivered order.

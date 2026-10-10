@@ -100,7 +100,7 @@ the definition:
 
 `rules/TeamSize.l`
 
-```prolog
+```synalog
 ---
 name: TeamSize
 description: Number of people under each manager, directly or through their reports.
@@ -168,7 +168,7 @@ builds on, then the synalog definition with its directives:
 
 `rules/ActiveCustomer.l`
 
-```prolog
+```synalog
 ---
 name: ActiveCustomer
 description: Customers with at least one delivered order.
@@ -204,7 +204,7 @@ An `@Assert` states what a definition's rows must satisfy, as named
 statements in first-order logic. It is part of the definition: written in
 its file, before or after its rules, and checked against the data.
 
-```prolog
+```synalog
 @Assert(RevenueByCountry,
         one_row_per_country: "∀ c r s, RevenueByCountry c r → RevenueByCountry c s → r = s",
         positive:            "∀ c, RevenueByCountry c > 0");
@@ -242,7 +242,7 @@ schema when the layer is connected, one per table, named schema + table
 
 `tables/PublicOrders.l`
 
-```prolog
+```synalog
 ---
 name: PublicOrders
 description: One row per order.

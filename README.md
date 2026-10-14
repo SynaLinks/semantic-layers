@@ -265,9 +265,6 @@ footprint.
 
 ## Getting started
 
-> Until `semantic-layers` is published on PyPI, run it from the repository:
-> `uvx --from git+https://github.com/SynaLinks/semantic-layers semantic-layers ...`.
-
 ```shell
 uvx semantic-layers add SynaLinks/semantic-layers --layer sales
 cd .agents/layers/sales

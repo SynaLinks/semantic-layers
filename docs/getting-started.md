@@ -12,10 +12,6 @@ let your coding agent answer from it.
   runs a layer on a CSV file instead.
 - A coding agent that reads `AGENTS.md` or `CLAUDE.md`.
 
-!!! note "Before the first PyPI release"
-    Until `semantic-layers` is published, run it from the repository:
-    `uvx --from git+https://github.com/SynaLinks/semantic-layers semantic-layers ...`.
-
 ## Install a layer
 
 Install the example `sales` layer from this repository:

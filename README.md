@@ -1,7 +1,7 @@
 <div align="center">
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="img/semantic-layers-dark.svg">
-  <img height="200" alt="Semantic Layers" src="img/semantic-layers-light.svg">
+  <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/SynaLinks/semantic-layers/main/img/semantic-layers-dark.svg">
+  <img height="200" alt="Semantic Layers" src="https://raw.githubusercontent.com/SynaLinks/semantic-layers/main/img/semantic-layers-light.svg">
 </picture>
 </div>
 
@@ -92,7 +92,7 @@ skill is read, a layer is run:
 | **The result** | Depends on the agent that reads it | **Deterministic**: the same from every agent            |
 | **Checked**    | By review                          | **Formally**: before it runs, and against the data      |
 
-The two work together: the [`semantic-layers` skill](skills/semantic-layers/)
+The two work together: the [`semantic-layers` skill](https://github.com/SynaLinks/semantic-layers/tree/main/skills/semantic-layers/)
 teaches an agent how to use a layer, and the layer holds the knowledge it
 reasons with.
 
@@ -289,7 +289,7 @@ uvx semantic-layers connect psql host=db.example.com database=sales user=analyst
 Write your definitions in `concepts/` and `rules/`, check them with
 `semantic-layers check .` (their structure, and their assertions on your
 database) and push the repository: anyone can then install it with
-`semantic-layers add <owner>/sales`. The [Quickstart](docs/creating/quickstart.md)
+`semantic-layers add <owner>/sales`. The [Quickstart](https://github.com/SynaLinks/semantic-layers/blob/main/docs/creating/quickstart.md)
 walks through a first layer on a CSV file.
 
 ## Why Semantic Layers?
@@ -315,7 +315,7 @@ Definitions are written in [synalog](https://github.com/SynaLinks/synalog), a
 logic programming language from the Datalog family that compiles to optimized
 SQL. A semantic layer is a folder; synalog is what makes the folder *run*,
 and what lets a layer reason, not only count. This concept, from the
-[supply-chain example](skills/semantic-layers/examples/supply-chain/), follows
+[supply-chain example](https://github.com/SynaLinks/semantic-layers/tree/main/skills/semantic-layers/examples/supply-chain/), follows
 a bill of materials to any depth:
 
 `concepts/Requires.l`
@@ -354,8 +354,8 @@ it:
   agent to check every rule it writes.
 
 Each is shown as layer files (front matter, imports, `@OrderBy`) in the
-[modelling patterns](skills/semantic-layers/references/patterns.md) and the
-[example layers](layers/).
+[modelling patterns](https://github.com/SynaLinks/semantic-layers/blob/main/skills/semantic-layers/references/patterns.md) and the
+[example layers](https://github.com/SynaLinks/semantic-layers/tree/main/layers/).
 
 ## Where can I use Semantic Layers?
 
@@ -363,7 +363,7 @@ Each is shown as layer files (front matter, imports, `@OrderBy`) in the
   `.agents/layers/` and tells the agent how to use them (a section of
   `AGENTS.md`, and of `CLAUDE.md` for Claude Code), so every coding agent
   searches and runs them with `semantic-layers search` and `run`.
-- **[The `semantic-layers` Agent Skill](skills/semantic-layers/)**: teaches a
+- **[The `semantic-layers` Agent Skill](https://github.com/SynaLinks/semantic-layers/tree/main/skills/semantic-layers/)**: teaches a
   coding agent the whole loop (search, read, run, answer, and write the
   definitions that are missing) with the synalog it needs, modelling
   patterns, every error message and a runnable example layer:
@@ -382,17 +382,17 @@ git-ignored `.env`.
 
 ## Documentation
 
-- **[Getting started](docs/getting-started.md)**: Install a layer, connect it, ask
-- **[Quickstart](docs/creating/quickstart.md)**: Write, check and run your first layer, no database needed
-- **[Specification](docs/specification.md)**: The format, file by file
-- **[Best practices](docs/creating/best-practices.md)**: Definitions that mean one thing and stay consistent
-- **[Writing findable definitions](docs/creating/findable-definitions.md)**: Front matter that search finds, and how to test it
-- **[Evaluating layers](docs/creating/evaluating.md)**: Assertions, and testing the answers
-- **[Sharing](docs/sharing.md)**: Installing, connecting, publishing and updating layers
-- **[Coding agents](docs/agents.md)**: How coding agents are told about the layers
-- **[Adding layer support to your agent](docs/agent-support.md)**: Discovery, search, execution and verification, step by step
-- **[CLI](docs/cli.md)**: Every `semantic-layers` command
-- **[Examples](layers/)**: The `sales` and `support` example layers
+- **[Getting started](https://github.com/SynaLinks/semantic-layers/blob/main/docs/getting-started.md)**: Install a layer, connect it, ask
+- **[Quickstart](https://github.com/SynaLinks/semantic-layers/blob/main/docs/creating/quickstart.md)**: Write, check and run your first layer, no database needed
+- **[Specification](https://github.com/SynaLinks/semantic-layers/blob/main/docs/specification.md)**: The format, file by file
+- **[Best practices](https://github.com/SynaLinks/semantic-layers/blob/main/docs/creating/best-practices.md)**: Definitions that mean one thing and stay consistent
+- **[Writing findable definitions](https://github.com/SynaLinks/semantic-layers/blob/main/docs/creating/findable-definitions.md)**: Front matter that search finds, and how to test it
+- **[Evaluating layers](https://github.com/SynaLinks/semantic-layers/blob/main/docs/creating/evaluating.md)**: Assertions, and testing the answers
+- **[Sharing](https://github.com/SynaLinks/semantic-layers/blob/main/docs/sharing.md)**: Installing, connecting, publishing and updating layers
+- **[Coding agents](https://github.com/SynaLinks/semantic-layers/blob/main/docs/agents.md)**: How coding agents are told about the layers
+- **[Adding layer support to your agent](https://github.com/SynaLinks/semantic-layers/blob/main/docs/agent-support.md)**: Discovery, search, execution and verification, step by step
+- **[CLI](https://github.com/SynaLinks/semantic-layers/blob/main/docs/cli.md)**: Every `semantic-layers` command
+- **[Examples](https://github.com/SynaLinks/semantic-layers/tree/main/layers/)**: The `sales` and `support` example layers
 - **[Agent Skills](https://agentskills.io)**: The format semantic layers are modeled on
 
 ## Open development
@@ -403,10 +403,10 @@ and are released as an open format.
 Several questions remain open: merging upstream changes into a modified
 layer, binding a shared layer to tables whose names or columns differ, and
 letting one layer import another's definitions. They are listed in the
-[specification](docs/specification.md#open-questions). Contributions are
-welcome: see [Development](docs/development.md) to run the tests, the linter
+[specification](https://github.com/SynaLinks/semantic-layers/blob/main/docs/specification.md#open-questions). Contributions are
+welcome: see [Development](https://github.com/SynaLinks/semantic-layers/blob/main/docs/development.md) to run the tests, the linter
 and the documentation locally.
 
 ## License
 
-Apache 2.0, see [LICENSE](LICENSE).
+Apache 2.0, see [LICENSE](https://github.com/SynaLinks/semantic-layers/blob/main/LICENSE).

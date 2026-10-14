@@ -5,10 +5,6 @@ repositories, installed with one command. The command, `semantic-layers`, is a
 Python tool run with [uv](https://docs.astral.sh/uv/) — nothing to install
 beyond `uv`.
 
-!!! note "Before the first PyPI release"
-    Until `semantic-layers` is published, run it from the repository:
-    `uvx --from git+https://github.com/SynaLinks/semantic-layers semantic-layers ...`.
-
 ## Installing
 
 ```shell

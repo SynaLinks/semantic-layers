@@ -40,6 +40,7 @@ jobs:
       - uses: actions/attest-build-provenance@v3
         with:
           subject-path: dist/*
-      - run: uv publish
+      # Files already on PyPI (uploaded from a laptop) are skipped, not an error.
+      - run: uv publish --check-url https://pypi.org/simple/
         env:
           UV_PUBLISH_TOKEN: ${{ secrets.PYPI_API_TOKEN }}

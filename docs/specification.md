@@ -57,7 +57,7 @@ Other keys are allowed, and ignored.
 
 **Minimal example:**
 
-```
+```synalog
 ---
 name: Customer
 description: Every customer who placed an order.
@@ -66,7 +66,7 @@ description: Every customer who placed an order.
 
 **Example with optional fields:**
 
-```
+```synalog
 ---
 name: CategoryAvgDiscount
 description: Average discount by product category, among discounted items only.

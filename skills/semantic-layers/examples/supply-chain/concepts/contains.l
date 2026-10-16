@@ -3,8 +3,8 @@ name: Contains
 description: The edge from an assembly to each component it contains, weighted by quantity.
 keywords: [bill of materials, bom]
 ---
-import concepts.Part.Part;
-import tables.BillOfMaterials.BillOfMaterials;
+import concepts.part.Part;
+import tables.bill_of_materials.BillOfMaterials;
 
 @OrderBy(Contains, "assembly_id", "component_id");
 Contains(assembly_id:, component_id:, quantity:) distinct :-

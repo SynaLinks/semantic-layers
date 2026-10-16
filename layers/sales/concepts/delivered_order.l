@@ -3,7 +3,7 @@ name: DeliveredOrder
 description: Orders that reached the customer, the ones that count as sales.
 keywords: [delivered, completed, fulfilled, sale]
 ---
-import tables.Orders.Orders;
+import tables.orders.Orders;
 
 @OrderBy(DeliveredOrder, "order_id");
 DeliveredOrder(order_id:, customer_id:, amount:) :-

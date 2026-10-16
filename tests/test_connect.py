@@ -20,7 +20,7 @@ def test_connect_generates_tables_and_keeps_descriptions(tmp_path):
     write(
         layer,
         {
-            "tables/PublicOrders.l": "---\nname: PublicOrders\ndescription: One row per order.\n---\nPublicOrders(id:) :- public.orders(id:);\n"
+            "tables/public_orders.l": "---\nname: PublicOrders\ndescription: One row per order.\n---\nPublicOrders(id:) :- public.orders(id:);\n"
         },
     )
     seen = []
@@ -47,7 +47,7 @@ def test_connect_generates_tables_and_keeps_descriptions(tmp_path):
         "schema": "public",
     }
     assert result["written"] == ["PublicCustomers", "PublicOrders"]
-    orders = (layer / "tables" / "PublicOrders.l").read_text()
+    orders = (layer / "tables" / "public_orders.l").read_text()
     assert "description: One row per order." in orders and "status:" in orders
     conn = tomllib.loads((layer / "layer.toml").read_text())["connection"]
     assert conn == {

@@ -35,7 +35,8 @@ A definition's kind is the folder it is in:
 ## `.l` file format
 
 Each definition is one [synalog](https://github.com/SynaLinks/synalog) file,
-`<folder>/<Name>.l`, named after the predicate that runs. It contains YAML
+`<folder>/<name>.l`, named after the predicate that runs in snake_case
+(`RevenueByCountry` in `rules/revenue_by_country.l`). It contains YAML
 front matter, then `import` lines, then the definition: the predicate that
 runs and any helper predicates it is built from.
 
@@ -46,7 +47,7 @@ The front matter opens with `---` on the file's first line and closes with a
 
 | Field | Required | Constraints |
 |-------|----------|-------------|
-| `name` | Yes | Must be a predicate the file defines (not an imported one), ordered by an `@OrderBy`. Should be `UpperCamelCase` and the file's name without `.l`. |
+| `name` | Yes | Must be a predicate the file defines (not an imported one), ordered by an `@OrderBy`. Should be `UpperCamelCase`; the file's name is it in snake_case, without `.l`. |
 | `description` | Yes | Non-empty text: what the definition's rows are, in plain words. Generated tables get one made from the table's name. |
 | `keywords` | No | A list of strings: other words that should find the definition. |
 | `locked` | No | A boolean. `true` for a definition that must not change. |
@@ -92,20 +93,21 @@ The required `name` field:
   import — in synalog's convention: `UpperCamelCase` (`ActiveCustomer`,
   `OrdersByStatus`)
 - Must be one of the predicates the file defines itself (not an imported one)
-- Should be the file's name, without `.l`
+- Names the file, in snake_case: `ActiveCustomer` is `active_customer.l`
+  (`check` refuses another name)
 - Must be unique within the layer
 
 Here `Manages` is a transitive, recursive intermediate rule and `TeamSize`
 the definition:
 
-`rules/TeamSize.l`
+`rules/team_size.l`
 
 ```synalog
 ---
 name: TeamSize
 description: Number of people under each manager, directly or through their reports.
 ---
-import tables.Employees.Employees;
+import tables.employees.Employees;
 
 @Recursive(Manages, 10);
 Manages(manager_id:, employee_id:) distinct :- Employees(employee_id:, manager_id:);
@@ -166,15 +168,15 @@ goes through the people who own the definition.
 After the front matter come the `import` lines, one per definition the file
 builds on, then the synalog definition with its directives:
 
-`rules/ActiveCustomer.l`
+`rules/active_customer.l`
 
 ```synalog
 ---
 name: ActiveCustomer
 description: Customers with at least one delivered order.
 ---
-import concepts.Customer.Customer;
-import tables.Orders.Orders;
+import concepts.customer.Customer;
+import tables.orders.Orders;
 
 @OrderBy(ActiveCustomer, "customer_id");
 ActiveCustomer(customer_id:) distinct :-
@@ -227,8 +229,9 @@ asserting.
 ## Imports
 
 An import names a definition by its folder, its file and its predicate:
-`import <folder>.<Name>.<Name>;`. Imports are resolved from the layer's
-folder: `import tables.Orders.Orders;` is the layer's own `tables/Orders.l`.
+`import <folder>.<name>.<Name>;` — the file in snake_case, then the
+predicate in PascalCase. Imports are resolved from the layer's
+folder: `import tables.orders.Orders;` is the layer's own `tables/orders.l`.
 
 A layer is therefore self-contained: everything its definitions import is
 inside it, its tables included. The imports are the layer's dependency graph —
@@ -240,7 +243,7 @@ Table files are not written by hand: they are generated from the database's
 schema when the layer is connected, one per table, named schema + table
 (`synalog introspect`):
 
-`tables/PublicOrders.l`
+`tables/public_orders.l`
 
 ```synalog
 ---

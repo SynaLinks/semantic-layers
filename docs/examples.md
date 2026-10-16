@@ -12,40 +12,40 @@ uvx semantic-layers add SynaLinks/semantic-layers --list
 Orders and customers: what a customer is, which orders count as sales,
 revenue, and the customers who bought.
 
-=== "concepts/Customer.l"
+=== "concepts/customer.l"
 
     ```synalog
-    --8<-- "layers/sales/concepts/Customer.l"
+    --8<-- "layers/sales/concepts/customer.l"
     ```
 
-=== "concepts/DeliveredOrder.l"
+=== "concepts/delivered_order.l"
 
     ```synalog
-    --8<-- "layers/sales/concepts/DeliveredOrder.l"
+    --8<-- "layers/sales/concepts/delivered_order.l"
     ```
 
-=== "rules/ActiveCustomer.l"
+=== "rules/active_customer.l"
 
     ```synalog
-    --8<-- "layers/sales/rules/ActiveCustomer.l"
+    --8<-- "layers/sales/rules/active_customer.l"
     ```
 
-=== "rules/Revenue.l"
+=== "rules/revenue.l"
 
     ```synalog
-    --8<-- "layers/sales/rules/Revenue.l"
+    --8<-- "layers/sales/rules/revenue.l"
     ```
 
-=== "rules/RevenueByCountry.l"
+=== "rules/revenue_by_country.l"
 
     ```synalog
-    --8<-- "layers/sales/rules/RevenueByCountry.l"
+    --8<-- "layers/sales/rules/revenue_by_country.l"
     ```
 
-=== "tables/Orders.l"
+=== "tables/orders.l"
 
     ```synalog
-    --8<-- "layers/sales/tables/Orders.l"
+    --8<-- "layers/sales/tables/orders.l"
     ```
 
 ## support
@@ -53,20 +53,20 @@ revenue, and the customers who bought.
 Support tickets: the open ones, and each agent's workload — a rule built on
 another rule.
 
-=== "rules/OpenTickets.l"
+=== "rules/open_tickets.l"
 
     ```synalog
-    --8<-- "layers/support/rules/OpenTickets.l"
+    --8<-- "layers/support/rules/open_tickets.l"
     ```
 
-=== "rules/Workload.l"
+=== "rules/workload.l"
 
     ```synalog
-    --8<-- "layers/support/rules/Workload.l"
+    --8<-- "layers/support/rules/workload.l"
     ```
 
-=== "tables/Tickets.l"
+=== "tables/tickets.l"
 
     ```synalog
-    --8<-- "layers/support/tables/Tickets.l"
+    --8<-- "layers/support/tables/tickets.l"
     ```

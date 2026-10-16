@@ -293,6 +293,26 @@ def verify_layers(folder: Path) -> list[str]:
 # -- discovery -----------------------------------------------------------------
 
 
+def available_layers(*folders: Path) -> str:
+    """The layers in ``folders``, for an agent's system prompt: each one's name
+    and what its ``layer.toml`` says it is about, in the XML that lists agent
+    skills (``<available_skills>``). Empty when the folders hold no layer.
+    A layer must describe itself (``verify`` says so too): one that does not
+    raises ``ValueError``, since an agent cannot choose a layer it knows
+    nothing about."""
+    layers = {name: layer for folder in folders for name, layer in read_layers(folder).items()}
+    if not layers:
+        return ""
+    for name, layer in layers.items():
+        if not layer.description:
+            raise ValueError(f"{name}/layer.toml: [project] has no description, say what the layer is about")
+    entries = "\n".join(
+        f"<layer>\n<name>\n{name}\n</name>\n<description>\n{layer.description}\n</description>\n</layer>"
+        for name, layer in layers.items()
+    )
+    return f"<available_layers>\n{entries}\n</available_layers>"
+
+
 def search(folder: Path, pattern: str, limit: int = 20, kinds: tuple[str, ...] = ("concept", "rule")) -> list[dict]:
     """The definitions of the layers in ``folder`` whose front matter matches ``pattern``, a
     regular expression (case-insensitive, like synalog's own search), best

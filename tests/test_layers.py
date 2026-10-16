@@ -3,12 +3,13 @@
 import shutil
 from pathlib import Path
 
+import pytest
 import synalog
 from samples import write
 from synalog import checking, runners
 
 from semantic_layers.connect import write_connection
-from semantic_layers.layers import check, verify
+from semantic_layers.layers import available_layers, check, verify
 
 
 def test_imports_stay_inside_the_layer(source):
@@ -168,3 +169,27 @@ def test_check_runs_the_assertions_on_the_layers_database(tmp_path, monkeypatch)
     assert errors[0].startswith("rules/RevenueByCountry.l: Assertion 'RevenueByCountry.positive' is violated")
     assert errors[0].endswith('counterexamples (c): ("DE")')
     assert ("psql", "db.example.com") in sessions  # through the layer's own connection
+
+
+def test_the_layers_of_a_folder_are_listed_for_a_system_prompt(source, tmp_path):
+    (source / "sales" / "layer.toml").write_text('[project]\nname = "sales"\ndescription = "Orders and customers."\n')
+    (source / "support" / "layer.toml").write_text('[project]\nname = "support"\ndescription = "Support tickets."\n')
+    (source / "notes").mkdir()  # not a layer: none of the three folders
+    (source / "README.md").write_text("Layers.\n")
+    assert available_layers(source) == (
+        "<available_layers>\n"
+        "<layer>\n<name>\nsales\n</name>\n<description>\nOrders and customers.\n</description>\n</layer>\n"
+        "<layer>\n<name>\nsupport\n</name>\n<description>\nSupport tickets.\n</description>\n</layer>\n"
+        "</available_layers>"
+    )
+    assert available_layers(tmp_path / "nowhere") == ""
+    assert available_layers() == ""
+    other = tmp_path / "other"  # several folders: the layers of each
+    (other / "billing" / "tables").mkdir(parents=True)
+    (other / "billing" / "layer.toml").write_text('[project]\nname = "billing"\ndescription = "Invoices."\n')
+    listed = available_layers(source, other)
+    assert "<name>\nsales\n</name>" in listed
+    assert "<name>\nbilling\n</name>\n<description>\nInvoices.\n</description>" in listed
+    (source / "support" / "layer.toml").write_text('[project]\nname = "support"\n')
+    with pytest.raises(ValueError, match="support/layer.toml: .project. has no description"):
+        available_layers(source)

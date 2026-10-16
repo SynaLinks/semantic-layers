@@ -56,7 +56,7 @@ symbol — is in synalog's [Assertions](https://synalinks.github.io/synalog/asse
 
 ```text
 $ uvx semantic-layers check sales
-sales/rules/RevenueByCountry.l: Assertion 'RevenueByCountry.positive' is violated: ∀ c, RevenueByCountry c > 0
+sales/rules/revenue_by_country.l: Assertion 'RevenueByCountry.positive' is violated: ∀ c, RevenueByCountry c > 0
   counterexamples (c): ("DE")
 1 problem(s).
 ```

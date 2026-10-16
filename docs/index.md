@@ -20,15 +20,15 @@ sales/
 └── .env              # The password or token (local, never committed)
 ```
 
-`rules/ActiveCustomer.l`
+`rules/active_customer.l`
 
 ```synalog
 ---
 name: ActiveCustomer
 description: Customers with at least one delivered order.
 ---
-import concepts.Customer.Customer;
-import tables.Orders.Orders;
+import concepts.customer.Customer;
+import tables.orders.Orders;
 
 @OrderBy(ActiveCustomer, "customer_id");
 ActiveCustomer(customer_id:) distinct :-

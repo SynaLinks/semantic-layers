@@ -10,7 +10,7 @@ import pytest
 import yaml
 from samples import write
 
-from semantic_layers.layers import verify
+from semantic_layers.layers import file_name, verify
 
 ROOT = Path(__file__).resolve().parents[1]
 SKILL = ROOT / "skills" / "semantic-layers"
@@ -41,7 +41,7 @@ def test_skill_examples_verify(tmp_path):
     for page in [SKILL / "SKILL.md", *sorted((SKILL / "references").glob("*.md"))]:
         files.update(_FILE.findall(page.read_text()))
     assert len(files) > 15
-    tables = {f"tables/{n}.l": f"---\nname: {n}\n---\n{d}\n" for n, d in TABLES.items()}
+    tables = {f"tables/{file_name(n)}.l": f"---\nname: {n}\n---\n{d}\n" for n, d in TABLES.items()}
     assert verify(write(tmp_path / "skill", {**tables, **files})) == []
 
 
@@ -50,7 +50,16 @@ def test_example_layer_runs():
     assert verify(layer) == []
     loads = [f"--load={t}=data/{t}.csv" for t in ("suppliers", "parts", "bill_of_materials")]
     run = subprocess.run(
-        [sys.executable, "-m", "synalog.cli", "rules/CriticalSuppliers.l", "run", "CriticalSuppliers", "--csv", *loads],
+        [
+            sys.executable,
+            "-m",
+            "synalog.cli",
+            "rules/critical_suppliers.l",
+            "run",
+            "CriticalSuppliers",
+            "--csv",
+            *loads,
+        ],
         cwd=layer,
         capture_output=True,
         text=True,

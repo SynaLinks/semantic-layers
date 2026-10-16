@@ -10,32 +10,32 @@ ORDERS = "Orders(order_id:, customer_id:, status:, amount:) :- orders(order_id:,
 CUSTOMERS = "Customers(customer_id:, country:) :- customers(customer_id:, country:);"
 
 SALES = {
-    "tables/Orders.l": f"---\nname: Orders\ndescription: One row per order.\n---\n{ORDERS}\n",
-    "tables/Customers.l": f"---\nname: Customers\n---\n{CUSTOMERS}\n",
-    "concepts/Customer.l": (
+    "tables/orders.l": f"---\nname: Orders\ndescription: One row per order.\n---\n{ORDERS}\n",
+    "tables/customers.l": f"---\nname: Customers\n---\n{CUSTOMERS}\n",
+    "concepts/customer.l": (
         "---\nname: Customer\ndescription: Every customer who ordered.\n---\n"
-        "import tables.Orders.Orders;\n\n"
+        "import tables.orders.Orders;\n\n"
         '@OrderBy(Customer, "customer_id");\n'
         "Customer(customer_id:) distinct :- Orders(customer_id:);\n"
     ),
-    "rules/ActiveCustomer.l": (
+    "rules/active_customer.l": (
         "---\nname: ActiveCustomer\ndescription: Customers with a delivered order.\n---\n"
-        "import concepts.Customer.Customer;\nimport tables.Orders.Orders;\n\n"
+        "import concepts.customer.Customer;\nimport tables.orders.Orders;\n\n"
         '@OrderBy(ActiveCustomer, "customer_id");\n'
         'ActiveCustomer(customer_id:) distinct :- Customer(customer_id:), Orders(customer_id:, status: "delivered");\n'
     ),
-    "rules/OrdersByStatus.l": (
+    "rules/orders_by_status.l": (
         "---\nname: OrdersByStatus\ndescription: Orders per status.\n---\n"
-        "import tables.Orders.Orders;\n\n"
+        "import tables.orders.Orders;\n\n"
         '@OrderBy(OrdersByStatus, "status");\n'
         "OrdersByStatus(status:, n? += 1) distinct :- Orders(status:);\n"
     ),
 }
 SUPPORT = {
-    "tables/Tickets.l": "---\nname: Tickets\n---\nTickets(ticket_id:, status:) :- tickets(ticket_id:, status:);\n",
-    "rules/OpenTickets.l": (
+    "tables/tickets.l": "---\nname: Tickets\n---\nTickets(ticket_id:, status:) :- tickets(ticket_id:, status:);\n",
+    "rules/open_tickets.l": (
         "---\nname: OpenTickets\ndescription: Tickets still open.\n---\n"
-        "import tables.Tickets.Tickets;\n\n"
+        "import tables.tickets.Tickets;\n\n"
         '@OrderBy(OpenTickets, "ticket_id");\n'
         'OpenTickets(ticket_id:) distinct :- Tickets(ticket_id:, status: "open");\n'
     ),
@@ -84,6 +84,6 @@ PG = {"host": "h", "database": "db", "user": "u", "password": "p"}
 def connected_sales(project, orders=ORDERS):
     """The sales layer as `connect` leaves it: your tables and connection."""
     folder = layer(project) / "sales"
-    write(folder, {"tables/Orders.l": f"---\nname: Orders\ndescription: Mine.\n---\n{orders}\n"})
+    write(folder, {"tables/orders.l": f"---\nname: Orders\ndescription: Mine.\n---\n{orders}\n"})
     connect.write_connection(folder, "psql", PG)
     return folder

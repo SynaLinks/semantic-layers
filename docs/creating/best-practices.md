@@ -32,9 +32,9 @@ definition is built from smaller ones through imports, never by copying
 their logic:
 
 ```synalog
-# rules/RevenueByCountry.l — built on what a sale is, not on raw orders
-import concepts.DeliveredOrder.DeliveredOrder;
-import tables.Customers.Customers;
+# rules/revenue_by_country.l — built on what a sale is, not on raw orders
+import concepts.delivered_order.DeliveredOrder;
+import tables.customers.Customers;
 ```
 
 When "delivered" changes meaning, one file changes, and every definition

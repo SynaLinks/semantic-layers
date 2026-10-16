@@ -124,7 +124,7 @@ A project's layers live in `.agents/layers/`, side by side with its skills in
 A definition is a predicate: YAML front matter (`name` and `description`, at
 minimum), what it builds on, what it must satisfy, and the rule itself.
 
-`rules/ActiveCustomer.l`
+`rules/active_customer.l`
 
 ```
 ---
@@ -132,8 +132,8 @@ name: ActiveCustomer
 description: Customers with at least one delivered order.
 keywords: [active, engaged, retained]
 ---
-import concepts.Customer.Customer;
-import concepts.DeliveredOrder.DeliveredOrder;
+import concepts.customer.Customer;
+import concepts.delivered_order.DeliveredOrder;
 
 # Assertions (new in synalog 2.0): what the result must satisfy, whatever the
 # rule below says. Each is a statement of first-order logic written as a Lean
@@ -156,10 +156,10 @@ searches the layers for a definition that fits:
 
 ```
 $ uvx semantic-layers search 'active|customer'
-sales/rules/ActiveCustomer.l       Customers with at least one delivered order.
-sales/concepts/Customer.l          Every customer who placed at least one order.
-sales/concepts/DeliveredOrder.l    Orders that reached the customer, the ones that count as sales.
-sales/rules/RevenueByCountry.l     Delivered revenue per customer country, largest first.
+sales/rules/active_customer.l       Customers with at least one delivered order.
+sales/concepts/customer.l          Every customer who placed at least one order.
+sales/concepts/delivered_order.l    Orders that reached the customer, the ones that count as sales.
+sales/rules/revenue_by_country.l     Delivered revenue per customer country, largest first.
 ```
 
 reads it, and runs it on the database:
@@ -223,7 +223,7 @@ Had the rule forgotten the delivered-order condition, `has_delivery` would be
 violated, and `check` would name the customer that breaks it:
 
 ```
-sales/rules/ActiveCustomer.l: Assertion 'ActiveCustomer.has_delivery' is violated: ∀ c, ActiveCustomer c → ∃ o a, DeliveredOrder o c a
+sales/rules/active_customer.l: Assertion 'ActiveCustomer.has_delivery' is violated: ∀ c, ActiveCustomer c → ∃ o a, DeliveredOrder o c a
   counterexamples (c): (12)
 ```
 
@@ -315,7 +315,7 @@ and what lets a layer reason, not only count. This concept, from the
 [supply-chain example](https://github.com/SynaLinks/semantic-layers/tree/main/skills/semantic-layers/examples/supply-chain/), follows
 a bill of materials to any depth:
 
-`concepts/Requires.l`
+`concepts/requires.l`
 
 ```
 ---
@@ -323,7 +323,7 @@ name: Requires
 description: An assembly requires a component, directly or inside a sub-assembly, at any depth.
 keywords: [depends, requires]
 ---
-import concepts.Contains.Contains;
+import concepts.contains.Contains;
 
 @Recursive(Requires, 20);
 @OrderBy(Requires, "assembly_id", "component_id");

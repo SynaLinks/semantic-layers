@@ -54,7 +54,7 @@ uvx semantic-layers run sales/RevenueByCountry
 
 1. **Discovery**: the agent searched the layer with a pattern built from the
    question — `uvx semantic-layers search 'revenue|country'` — and got back
-   `sales/rules/RevenueByCountry.l` and its description.
+   `sales/rules/revenue_by_country.l` and its description.
 2. **Activation**: it read that file, and the files it imports, to check it
    means what the question means.
 3. **Execution**: it ran the definition on your database and answered from

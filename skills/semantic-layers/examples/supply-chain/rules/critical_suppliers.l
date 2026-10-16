@@ -3,8 +3,8 @@ name: CriticalSuppliers
 description: The three suppliers whose failure would stop the most assemblies.
 keywords: [critical, risk, ranking, top]
 ---
-import concepts.Supplier.Supplier;
-import rules.SupplierExposure.SupplierExposure;
+import concepts.supplier.Supplier;
+import rules.supplier_exposure.SupplierExposure;
 
 @OrderBy(CriticalSuppliers, "assemblies", "DESC", "supplier_id");
 @Limit(CriticalSuppliers, 3);

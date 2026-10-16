@@ -1,7 +1,7 @@
 # Reading errors
 
 `uvx semantic-layers check .` (in a layer's folder) lists every problem of the
-layer at once, one line per file (`rules/X.l: …`): fix them all in one pass,
+layer at once, one line per file (`rules/x.l: …`): fix them all in one pass,
 then check again. Nothing is saved or installed while a problem remains.
 
 ## The layer's own

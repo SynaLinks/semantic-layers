@@ -22,7 +22,7 @@ from .banner import PURPLE, for_people, show_banner, show_logo
 from .connect import PROJECT_FILE, generate_tables, layer_connection, write_connection
 from .init import check_name, init
 from .install import InstallError, Scope, add, available, installed, update
-from .layers import check, find_definition, is_layer, read_layers, run, search
+from .layers import check, file_name, find_definition, is_layer, read_layers, run, search
 
 #: Never wrapped: an agent reads the lines whole, and a path stays one word.
 out = Console(soft_wrap=True, highlight=False)
@@ -201,7 +201,7 @@ def connect_command(engine, fields) -> int:
         )
     )
     for name in result["written"]:
-        out.print(f"  tables/{name}.l", style="dim", markup=False)
+        out.print(f"  tables/{file_name(name)}.l", style="dim", markup=False)
     if result["gone"]:
         out.print(
             "Not in this database (kept, fix or delete them): " + ", ".join(result["gone"]),
@@ -325,7 +325,7 @@ def run_command(definition, limit, offset, as_csv, load, layers, is_global) -> i
 
     \b
         semantic-layers run sales/RevenueByCountry --limit 20
-        semantic-layers run sales/rules/RevenueByCountry.l --csv
+        semantic-layers run sales/rules/revenue_by_country.l --csv
     """
     layer, predicate = find_definition(definition, _scope(layers, is_global).layers)
     loads = _loads(load)

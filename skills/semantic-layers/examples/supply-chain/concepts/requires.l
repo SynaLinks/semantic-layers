@@ -3,7 +3,7 @@ name: Requires
 description: An assembly requires a component, directly or inside a sub-assembly, at any depth.
 keywords: [depends, requires]
 ---
-import concepts.Contains.Contains;
+import concepts.contains.Contains;
 
 @Recursive(Requires, 20);
 @OrderBy(Requires, "assembly_id", "component_id");

@@ -41,7 +41,7 @@ def _sales_with_data(tmp_path, amounts=(30, 50)):
 def test_run_finds_a_definition_however_it_is_named(tmp_path, monkeypatch, capsys):
     layer, load = _sales_with_data(tmp_path)
     monkeypatch.chdir(tmp_path)
-    for target in ("sales/RevenueByCountry", "sales/rules/RevenueByCountry.l"):  # the second as search prints it
+    for target in ("sales/RevenueByCountry", "sales/rules/revenue_by_country.l"):  # the second as search prints it
         assert main(["run", target, *load]) == 0
         out = capsys.readouterr().out
         assert "| DE      | 50      |" in out and "2 rows" in out

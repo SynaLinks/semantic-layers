@@ -10,34 +10,34 @@ from samples import write
 from semantic_layers.layers import verify
 
 ROOT = Path(__file__).resolve().parents[1]
-#: "`concepts/X.l`", a blank line, then the file in a code block.
+#: "`concepts/x.l`", a blank line, then the file in a code block.
 _FILE = re.compile(r"^`((?:concepts|rules|tables)/\w+\.l)`\n\n```(?:synalog)?\n(.*?)```", re.M | re.S)
 #: What the examples build on without showing it.
 SUPPORT = {
-    "tables/Suppliers.l": "Suppliers(supplier_id:, name:, country:) :- suppliers(supplier_id:, name:, country:);",
-    "tables/Parts.l": "Parts(part_id:, name:, supplier_id:) :- parts(part_id:, name:, supplier_id:);",
-    "tables/BillOfMaterials.l": (
+    "tables/suppliers.l": "Suppliers(supplier_id:, name:, country:) :- suppliers(supplier_id:, name:, country:);",
+    "tables/parts.l": "Parts(part_id:, name:, supplier_id:) :- parts(part_id:, name:, supplier_id:);",
+    "tables/bill_of_materials.l": (
         "BillOfMaterials(assembly_id:, component_id:, quantity:) :- bill_of_materials(assembly_id:, component_id:, quantity:);"
     ),
-    "tables/Assignments.l": "Assignments(person_id:, team_id:, changed_at:) :- assignments(person_id:, team_id:, changed_at:);",
-    "tables/Routes.l": "Routes(origin:, destination:, cost:) :- routes(origin:, destination:, cost:);",
-    "tables/Customers.l": "Customers(customer_id:, email:, phone:, tier:) :- customers(customer_id:, email:, phone:, tier:);",
-    "tables/Orders.l": (
+    "tables/assignments.l": "Assignments(person_id:, team_id:, changed_at:) :- assignments(person_id:, team_id:, changed_at:);",
+    "tables/routes.l": "Routes(origin:, destination:, cost:) :- routes(origin:, destination:, cost:);",
+    "tables/customers.l": "Customers(customer_id:, email:, phone:, tier:) :- customers(customer_id:, email:, phone:, tier:);",
+    "tables/orders.l": (
         "Orders(order_id:, customer_id:, product_id:, amount:, status:) :- "
         "orders(order_id:, customer_id:, product_id:, amount:, status:);"
     ),
-    "tables/Employees.l": "Employees(employee_id:, manager_id:) :- employees(employee_id:, manager_id:);",
-    "concepts/Customer.l": (
-        "import tables.Orders.Orders;\n\n"
+    "tables/employees.l": "Employees(employee_id:, manager_id:) :- employees(employee_id:, manager_id:);",
+    "concepts/customer.l": (
+        "import tables.orders.Orders;\n\n"
         '@OrderBy(Customer, "customer_id");\nCustomer(customer_id:) distinct :- Orders(customer_id:);'
     ),
-    "concepts/DeliveredOrder.l": (
-        "import tables.Orders.Orders;\n\n"
+    "concepts/delivered_order.l": (
+        "import tables.orders.Orders;\n\n"
         '@OrderBy(DeliveredOrder, "order_id");\n'
         'DeliveredOrder(order_id:, customer_id:, amount:) :- Orders(order_id:, customer_id:, amount:, status: "delivered");'
     ),
-    "concepts/Contains.l": (
-        "import tables.BillOfMaterials.BillOfMaterials;\n\n"
+    "concepts/contains.l": (
+        "import tables.bill_of_materials.BillOfMaterials;\n\n"
         '@OrderBy(Contains, "assembly_id", "component_id");\n'
         "Contains(assembly_id:, component_id:) :- BillOfMaterials(assembly_id:, component_id:);"
     ),
@@ -50,7 +50,8 @@ def test_examples_verify(page, tmp_path):
     files = dict(_FILE.findall((ROOT / page).read_text()))
     assert files, f"no example file found in {page}"
     support = {
-        path: f"---\nname: {Path(path).stem}\ndescription: Support.\n---\n{text}\n" for path, text in SUPPORT.items()
+        path: f"---\nname: {Path(path).stem.title().replace('_', '')}\ndescription: Support.\n---\n{text}\n"
+        for path, text in SUPPORT.items()
     }
     layer = write(tmp_path / "examples", {**support, **files})
     assert verify(layer) == []

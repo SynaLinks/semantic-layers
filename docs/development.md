@@ -73,5 +73,5 @@ One-time setup on the GitHub repository: an Environment named `pypi`
 ```
 
 The pages are `docs/*.md`, the navigation is `zensical.toml`. Example files
-are included from `layers/` (`--8<-- "layers/sales/rules/Revenue.l"`), so the
+are included from `layers/` (`--8<-- "layers/sales/rules/revenue.l"`), so the
 documentation shows the files the tests verify.

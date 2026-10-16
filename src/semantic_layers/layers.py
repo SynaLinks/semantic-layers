@@ -5,10 +5,11 @@ three folders: ``tables/``, ``concepts/``, ``rules/``. Each predicate is one
 ``.l`` file in them: YAML front matter (read with synalog, which also checks
 it), ``import`` lines for the predicates it builds on, then its synalog. The
 front matter's ``name`` is the predicate that runs — one the file defines,
-beside any helpers — and, by convention, the file's name; its kind is the
+beside any helpers — in PascalCase; the file is named after it in snake_case
+(``RevenueByCountry`` in ``rules/revenue_by_country.l``); its kind is the
 folder; the layer's name is its folder's.
 
-A layer is self-contained: synalog resolves ``import tables.Orders.Orders;``
+A layer is self-contained: synalog resolves ``import tables.orders.Orders;``
 from the layer's folder, so everything a layer imports is inside it — its
 tables included. Installed layers sit side by side in a layers folder
 (``.agents/layers/``).
@@ -35,7 +36,15 @@ FOLDERS = {"table": "tables", "concept": "concepts", "rule": "rules"}
 KINDS = {folder: kind for kind, folder in FOLDERS.items()}
 
 _IMPORT = re.compile(r"^import\s+(tables|concepts|rules)\.(\w+)\.(\w+)\s*;", re.MULTILINE)
+_WORD_BOUNDARY = re.compile(r"(?<=[a-z0-9])(?=[A-Z])|(?<=[A-Z])(?=[A-Z][a-z])")
 _DECLARATION = re.compile(r"^\s*(?P<name>\w+)\((?P<args>[^)]*)\)\s*:-\s*(?P<physical>[\w.]+|`[^`]+`)\(", re.MULTILINE)
+
+
+def file_name(predicate: str) -> str:
+    """The file a predicate is defined in, without ``.l``: its name in
+    snake_case (``RevenueByCountry`` → ``revenue_by_country``, ``SKUCount`` →
+    ``sku_count``)."""
+    return _WORD_BOUNDARY.sub("_", predicate).lower()
 
 
 @dataclass
@@ -50,7 +59,7 @@ class Predicate:
 
     @property
     def relative(self) -> str:
-        return f"{FOLDERS[self.kind]}/{self.name}.l"
+        return f"{FOLDERS[self.kind]}/{self.path.name}"
 
     @property
     def description(self) -> str:
@@ -146,12 +155,15 @@ def front_matter(text: str) -> dict:
 
 
 def read_predicates(layer: Path) -> dict[str, Predicate]:
-    """Every predicate of the layer folder ``layer``, by name (empty if absent)."""
+    """Every predicate of the layer folder ``layer``, by name — its front
+    matter's, else the file's (empty if absent)."""
     found: dict[str, Predicate] = {}
     for folder, kind in KINDS.items():
         for path in sorted((layer / folder).glob("*.l")):
             text = path.read_text()
-            found[path.stem] = Predicate(path.stem, kind, path, text, front_matter(text))
+            meta = front_matter(text)
+            name = str(meta.get("name") or path.stem)
+            found[name] = Predicate(name, kind, path, text, meta)
     return found
 
 
@@ -194,6 +206,8 @@ def check(layer: Path, assertions: bool = False, loads=()) -> tuple[list[str], l
     warnings: list[str] = []
     for p in read_predicates(layer).values():
         problems, notes = _check_file(layer, p.text, assertions, loads)
+        if not problems and p.path.stem != file_name(p.name):
+            problems.append(f"defines {p.name}: name the file {file_name(p.name)}.l")
         errors.extend(f"{p.relative}: {problem}" for problem in problems)
         warnings.extend(f"{p.relative}: {note}" for note in notes)
     return errors + _check_project_file(layer), warnings
@@ -212,7 +226,7 @@ def _check_file(layer: Path, text: str, assertions: bool, loads=()) -> tuple[lis
 
 def find_definition(target: str, layers: Path) -> tuple[Path, Predicate]:
     """The layer folder and the definition ``target`` names: a file's path
-    (``sales/rules/Revenue.l``, as ``search`` prints it, from the layers
+    (``sales/rules/revenue.l``, as ``search`` prints it, from the layers
     folder or the current directory), ``<layer>/<Name>``, or ``<Name>`` when
     the current directory is a layer."""
     parts = Path(target.removesuffix(".l")).parts
@@ -224,7 +238,8 @@ def find_definition(target: str, layers: Path) -> tuple[Path, Predicate]:
         candidates += [(Path.cwd() / layer, parts[-1]), (layers / layer, parts[-1])]
     for folder, name in candidates:
         if is_layer(folder):
-            predicate = read_predicates(folder).get(name)
+            found = read_predicates(folder)
+            predicate = found.get(name) or next((p for p in found.values() if p.path.stem == name), None)
             if predicate is None:
                 raise ValueError(f"{folder.name} has no definition {name}: find one with 'semantic-layers search'.")
             return folder.resolve(), predicate

@@ -9,45 +9,64 @@ from samples import write
 from synalog import checking, runners
 
 from semantic_layers.connect import write_connection
-from semantic_layers.layers import available_layers, check, verify
+from semantic_layers.layers import available_layers, check, file_name, find_definition, verify
 
 
 def test_imports_stay_inside_the_layer(source):
-    (source / "support" / "rules" / "Mixed.l").write_text(
-        "---\nname: Mixed\n---\nimport tables.Orders.Orders;\n\nMixed(order_id:) :- Orders(order_id:);\n"
+    (source / "support" / "rules" / "mixed.l").write_text(
+        "---\nname: Mixed\n---\nimport tables.orders.Orders;\n\nMixed(order_id:) :- Orders(order_id:);\n"
     )
-    assert any("Mixed" in error for error in verify(source / "support"))
+    assert any("mixed.l" in error for error in verify(source / "support"))
     assert verify(source / "sales") == []
 
 
 def test_name_is_the_predicate_that_runs(source):
     rules = source / "sales" / "rules"
     helper = (
-        "import tables.Orders.Orders;\n\n"
+        "import tables.orders.Orders;\n\n"
         'Delivered(order_id:, customer_id:) :- Orders(order_id:, customer_id:, status: "delivered");\n'
         '@OrderBy(RepeatBuyer, "customer_id");\n'
         "RepeatBuyer(customer_id:, n? += 1) distinct :- Delivered(customer_id:);\n"
     )
-    (rules / "RepeatBuyer.l").write_text(
+    (rules / "repeat_buyer.l").write_text(
         "---\nname: RepeatBuyer\ndescription: Delivered orders per customer.\n---\n" + helper
     )
     assert verify(source / "sales") == []
-    (rules / "RepeatBuyer.l").write_text("---\nname: Nope\n---\n" + helper)
+    (rules / "repeat_buyer.l").write_text("---\nname: Nope\n---\n" + helper)
     assert verify(source / "sales") == [
-        "rules/RepeatBuyer.l: [ Error ] Front matter names 'Nope', which this file does not define (Delivered, RepeatBuyer)."
+        "rules/repeat_buyer.l: [ Error ] Front matter names 'Nope', which this file does not define (Delivered, RepeatBuyer)."
     ]
-    (rules / "RepeatBuyer.l").write_text("---\ndescription: x\n---\n" + helper)
+    (rules / "repeat_buyer.l").write_text("---\ndescription: x\n---\n" + helper)
     assert "has no name" in verify(source / "sales")[0]
+
+
+def test_files_are_named_after_their_predicate_in_snake_case(source):
+    assert [file_name(n) for n in ("Revenue", "RevenueByCountry", "SKUCount", "OrdersV2")] == [
+        "revenue",
+        "revenue_by_country",
+        "sku_count",
+        "orders_v2",
+    ]
+    rules = source / "sales" / "rules"
+    (rules / "orders_by_status.l").rename(rules / "OrdersByStatus.l")
+    assert verify(source / "sales") == [
+        "rules/OrdersByStatus.l: defines OrdersByStatus: name the file orders_by_status.l"
+    ]
+
+
+def test_a_definition_is_found_by_its_name_or_its_path(source):
+    for target in ("sales/OrdersByStatus", "sales/rules/orders_by_status.l"):
+        assert find_definition(target, source)[1].name == "OrdersByStatus"
 
 
 def test_recursive_intermediate_rule(tmp_path):
     layer = write(
         tmp_path / "hr",
         {
-            "tables/Employees.l": "---\nname: Employees\n---\nEmployees(employee_id:, manager_id:) :- employees(employee_id:, manager_id:);\n",
-            "rules/TeamSize.l": (
+            "tables/employees.l": "---\nname: Employees\n---\nEmployees(employee_id:, manager_id:) :- employees(employee_id:, manager_id:);\n",
+            "rules/team_size.l": (
                 "---\nname: TeamSize\ndescription: People under each manager.\n---\n"
-                "import tables.Employees.Employees;\n\n"
+                "import tables.employees.Employees;\n\n"
                 "@Recursive(Manages, 10);\n"
                 "Manages(manager_id:, employee_id:) distinct :- Employees(employee_id:, manager_id:);\n"
                 "Manages(manager_id:, employee_id:) distinct :-\n"
@@ -58,17 +77,17 @@ def test_recursive_intermediate_rule(tmp_path):
         },
     )
     assert verify(layer) == []
-    path = layer / "rules" / "TeamSize.l"
+    path = layer / "rules" / "team_size.l"
     path.write_text(path.read_text().replace("name: TeamSize", "name: Team"))
     assert verify(layer) == [
-        "rules/TeamSize.l: [ Error ] Front matter names 'Team', which this file does not define (Manages, TeamSize)."
+        "rules/team_size.l: [ Error ] Front matter names 'Team', which this file does not define (Manages, TeamSize)."
     ]
 
 
 def test_invalid_front_matter_is_reported_not_raised(tmp_path):
-    layer = write(tmp_path / "shop", {"rules/X.l": "---\nname: X\ndescription: A thing: broken.\n---\nX(a: 1);\n"})
+    layer = write(tmp_path / "shop", {"rules/x.l": "---\nname: X\ndescription: A thing: broken.\n---\nX(a: 1);\n"})
     assert verify(layer) == [
-        "rules/X.l: [ Error ] Invalid front matter YAML: mapping values are not allowed in this context."
+        "rules/x.l: [ Error ] Invalid front matter YAML: mapping values are not allowed in this context."
     ]
 
 
@@ -76,9 +95,9 @@ def test_a_functor_defines_its_predicate(tmp_path):
     layer = write(
         tmp_path / "shop",
         {
-            "tables/Orders.l": "---\nname: Orders\n---\nOrders(customer_id:, amount:) :- orders(customer_id:, amount:);\n",
-            "rules/BigRevenue.l": (
-                "---\nname: BigRevenue\ndescription: Revenue of the big orders.\n---\nimport tables.Orders.Orders;\n\n"
+            "tables/orders.l": "---\nname: Orders\n---\nOrders(customer_id:, amount:) :- orders(customer_id:, amount:);\n",
+            "rules/big_revenue.l": (
+                "---\nname: BigRevenue\ndescription: Revenue of the big orders.\n---\nimport tables.orders.Orders;\n\n"
                 "Segment(customer_id:) distinct :- Orders(customer_id:);\n"
                 "Big(customer_id:) distinct :- Orders(customer_id:, amount:), amount > 100;\n"
                 "SegmentRevenue(revenue? += amount) distinct :- Segment(customer_id:), Orders(customer_id:, amount:);\n"
@@ -92,7 +111,7 @@ def test_a_functor_defines_its_predicate(tmp_path):
 
 def test_the_project_name_must_be_the_folder_name(tmp_path):
     layer = write(
-        tmp_path / "shop", {"rules/X.l": '---\nname: X\ndescription: One.\n---\n@OrderBy(X, "a");\nX(a: 1);\n'}
+        tmp_path / "shop", {"rules/x.l": '---\nname: X\ndescription: One.\n---\n@OrderBy(X, "a");\nX(a: 1);\n'}
     )
     (layer / "layer.toml").write_text('[project]\nname = "store"\ndescription = "A shop."\n')
     assert verify(layer) == ["layer.toml: names the layer 'store', but its folder is 'shop' — they must match"]
@@ -102,7 +121,7 @@ def test_the_project_name_must_be_the_folder_name(tmp_path):
 
 def test_a_layer_must_describe_itself(tmp_path):
     layer = write(
-        tmp_path / "shop", {"rules/X.l": '---\nname: X\ndescription: One.\n---\n@OrderBy(X, "a");\nX(a: 1);\n'}
+        tmp_path / "shop", {"rules/x.l": '---\nname: X\ndescription: One.\n---\n@OrderBy(X, "a");\nX(a: 1);\n'}
     )
     (layer / "layer.toml").write_text('[project]\nname = "shop"\n')
     assert verify(layer) == ["layer.toml: [project] has no description — say what the layer is about"]
@@ -113,9 +132,9 @@ def test_a_layer_must_describe_itself(tmp_path):
 def test_parse_splits_front_matter_and_body():
     from semantic_layers.layers import parse
 
-    meta, body = parse("---\nname: X\ndescription: An x.\n---\nimport tables.T.T;\n\nX(a:) :- T(a:);\n")
+    meta, body = parse("---\nname: X\ndescription: An x.\n---\nimport tables.t.T;\n\nX(a:) :- T(a:);\n")
     assert meta == {"name": "X", "description": "An x."}
-    assert body == "import tables.T.T;\n\nX(a:) :- T(a:);\n"
+    assert body == "import tables.t.T;\n\nX(a:) :- T(a:);\n"
     assert parse("X(a: 1);\n") == ({}, "X(a: 1);\n")
 
 
@@ -125,7 +144,7 @@ def test_a_quoted_table_keeps_its_columns_and_description():
     from semantic_layers.layers import Predicate
 
     declaration = "OrderItems(id:, unit_price:) :- `public.Order Items`(Id: id, `Prix unitaire (€)`: unit_price);\n"
-    assert Predicate("OrderItems", "table", Path("OrderItems.l"), declaration).columns == ["id", "unit_price"]
+    assert Predicate("OrderItems", "table", Path("order_items.l"), declaration).columns == ["id", "unit_price"]
     assert table_description(declaration) == "Order items."
     assert table_description("Orders(id:) :- `my-project.sales.orders`(id:);") == "Orders."
 
@@ -166,7 +185,7 @@ def test_check_runs_the_assertions_on_the_layers_database(tmp_path, monkeypatch)
     errors, warnings = check(layer, assertions=True)
     assert warnings == []
     assert len(errors) == 1
-    assert errors[0].startswith("rules/RevenueByCountry.l: Assertion 'RevenueByCountry.positive' is violated")
+    assert errors[0].startswith("rules/revenue_by_country.l: Assertion 'RevenueByCountry.positive' is violated")
     assert errors[0].endswith('counterexamples (c): ("DE")')
     assert ("psql", "db.example.com") in sessions  # through the layer's own connection
 

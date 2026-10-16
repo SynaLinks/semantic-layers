@@ -12,9 +12,10 @@ folder per layer, each with `tables/`, `concepts/` and `rules/` — one synalog
   <layer>/<Name>`: the layer's `layer.toml` names the database). Never
   re-derive a definition or write ad-hoc SQL.
 - **Write what is missing.** An entity or relationship goes in
-  `concepts/<Name>.l`, a computation in `rules/<Name>.l`, inside the layer
-  whose tables it uses: front matter with `name` (the predicate that runs)
-  and `description`, one `import <folder>.<Name>.<Name>;` per predicate it
+  `concepts/<name>.l`, a computation in `rules/<name>.l` (`<name>` is the
+  predicate's `<Name>` in snake_case), inside the layer whose tables it
+  uses: front matter with `name` (the predicate that runs) and
+  `description`, one `import <folder>.<name>.<Name>;` per predicate it
   uses, an `@OrderBy` (and `@Limit` for a ranking), then the rule.
 - **Check before saving**: `uvx semantic-layers check <layer>`.
 <!-- semantic-layers:end -->

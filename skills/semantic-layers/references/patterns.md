@@ -12,7 +12,7 @@ changed_at)` — they all verify together.
 Extract each entity as a `distinct` projection of its table, keyed by its
 identifier first. Rules then build on the entity, not on the raw table.
 
-`concepts/Customer.l`
+`concepts/customer.l`
 
 ```
 ---
@@ -20,13 +20,13 @@ name: Customer
 description: A customer, with their country and tier.
 keywords: [customer, client, account]
 ---
-import tables.Customers.Customers;
+import tables.customers.Customers;
 
 @OrderBy(Customer, "customer_id");
 Customer(customer_id:, country:, tier:) distinct :- Customers(customer_id:, country:, tier:);
 ```
 
-`concepts/Product.l`
+`concepts/product.l`
 
 ```
 ---
@@ -34,7 +34,7 @@ name: Product
 description: A product of the catalog, with its category.
 keywords: [product, item, sku]
 ---
-import tables.Products.Products;
+import tables.products.Products;
 
 @OrderBy(Product, "product_id");
 Product(product_id:, name:, category:) distinct :- Products(product_id:, name:, category:);
@@ -46,7 +46,7 @@ Product(product_id:, name:, category:) distinct :- Products(product_id:, name:, 
 distinct values first: the vocabulary becomes searchable, and every rule
 agrees on it.
 
-`concepts/OrderStatus.l`
+`concepts/order_status.l`
 
 ```
 ---
@@ -54,7 +54,7 @@ name: OrderStatus
 description: The statuses an order can have.
 keywords: [status, state, stage]
 ---
-import tables.Orders.Orders;
+import tables.orders.Orders;
 
 @OrderBy(OrderStatus, "status");
 OrderStatus(status:) distinct :- Orders(status:);
@@ -65,7 +65,7 @@ OrderStatus(status:) distinct :- Orders(status:);
 When "an order" really means "a delivered order", write that once, as a
 concept, and build every revenue rule on it.
 
-`concepts/DeliveredOrder.l`
+`concepts/delivered_order.l`
 
 ```
 ---
@@ -73,7 +73,7 @@ name: DeliveredOrder
 description: Orders that reached the customer, the ones that count as sales.
 keywords: [delivered, completed, fulfilled, sale]
 ---
-import tables.Orders.Orders;
+import tables.orders.Orders;
 
 @OrderBy(DeliveredOrder, "order_id");
 DeliveredOrder(order_id:, customer_id:, product_id:, amount:, ordered_at:) :-
@@ -85,7 +85,7 @@ DeliveredOrder(order_id:, customer_id:, product_id:, amount:, ordered_at:) :-
 An edge joins two nodes. Going through the node concepts — not the raw
 tables — means a node filter applies to every edge.
 
-`concepts/Bought.l`
+`concepts/bought.l`
 
 ```
 ---
@@ -93,9 +93,9 @@ name: Bought
 description: The edge from a customer to each product they received.
 keywords: [bought, purchased, customer product]
 ---
-import concepts.Customer.Customer;
-import concepts.Product.Product;
-import concepts.DeliveredOrder.DeliveredOrder;
+import concepts.customer.Customer;
+import concepts.product.Product;
+import concepts.delivered_order.DeliveredOrder;
 
 @OrderBy(Bought, "customer_id", "product_id");
 Bought(customer_id:, product_id:) distinct :-
@@ -107,7 +107,7 @@ Bought(customer_id:, product_id:) distinct :-
 Two hops: customers who bought the same product. A symmetric edge, built by
 joining the edge with itself.
 
-`rules/SharedProduct.l`
+`rules/shared_product.l`
 
 ```
 ---
@@ -115,7 +115,7 @@ name: SharedProduct
 description: Pairs of customers who bought at least one same product.
 keywords: [similar customers, co-purchase, lookalike]
 ---
-import concepts.Bought.Bought;
+import concepts.bought.Bought;
 
 @OrderBy(SharedProduct, "customer_a", "customer_b");
 SharedProduct(customer_a:, customer_b:) distinct :-
@@ -128,7 +128,7 @@ SharedProduct(customer_a:, customer_b:) distinct :-
 A base case, a recursive case, `@Recursive` with a depth. The relation is a
 concept: other definitions traverse it.
 
-`concepts/ReportsTo.l`
+`concepts/reports_to.l`
 
 ```
 ---
@@ -136,7 +136,7 @@ name: ReportsTo
 description: An employee reports to a manager, directly or through other managers.
 keywords: [hierarchy, org chart, reporting line, manager]
 ---
-import tables.Employees.Employees;
+import tables.employees.Employees;
 
 @Recursive(ReportsTo, 20);
 @OrderBy(ReportsTo, "employee_id", "manager_id");
@@ -145,7 +145,7 @@ ReportsTo(employee_id:, manager_id:) distinct :-
   ReportsTo(employee_id:, manager_id: middle), Employees(employee_id: middle, manager_id:);
 ```
 
-`rules/TeamSize.l`
+`rules/team_size.l`
 
 ```
 ---
@@ -153,7 +153,7 @@ name: TeamSize
 description: How many people work under each manager, directly or not.
 keywords: [team size, headcount, span of control]
 ---
-import concepts.ReportsTo.ReportsTo;
+import concepts.reports_to.ReportsTo;
 
 @OrderBy(TeamSize, "people", "DESC");
 TeamSize(manager_id:, people? += 1) distinct :- ReportsTo(manager_id:);
@@ -164,7 +164,7 @@ TeamSize(manager_id:, people? += 1) distinct :- ReportsTo(manager_id:);
 Enumerate the path costs recursively (a helper), then keep the minimum per
 destination.
 
-`rules/CheapestRoute.l`
+`rules/cheapest_route.l`
 
 ```
 ---
@@ -172,7 +172,7 @@ name: CheapestRoute
 description: The cheapest cost from the warehouse to each destination.
 keywords: [shortest path, cheapest, route, shipping cost]
 ---
-import tables.Routes.Routes;
+import tables.routes.Routes;
 
 @Recursive(RouteCost, 10);
 RouteCost(destination:, cost:) :- Routes(origin: "warehouse", destination:, cost:);
@@ -190,7 +190,7 @@ Source systems usually log changes only. Close each period with the next
 change, and the latest one with negation; then "now" and "on a date" are
 filters on a half-open interval `[valid_from, valid_to)`.
 
-`concepts/MemberOf.l`
+`concepts/member_of.l`
 
 ```
 ---
@@ -198,7 +198,7 @@ name: MemberOf
 description: A person belongs to a team from valid_from until valid_to (9999-12-31 while it lasts).
 keywords: [team, membership, history, assignment]
 ---
-import tables.Assignments.Assignments;
+import tables.assignments.Assignments;
 
 NextChange(person_id:, changed_at:, next? Min= later) distinct :-
   Assignments(person_id:, changed_at:), Assignments(person_id:, changed_at: later),
@@ -213,7 +213,7 @@ MemberOf(person_id:, team_id:, valid_from:, valid_to:) distinct :-
   ~NextChange(person_id:, changed_at: valid_from), valid_to == "9999-12-31";
 ```
 
-`rules/MemberToday.l`
+`rules/member_today.l`
 
 ```
 ---
@@ -221,7 +221,7 @@ name: MemberToday
 description: Who is in which team today.
 keywords: [current team, now, today]
 ---
-import concepts.MemberOf.MemberOf;
+import concepts.member_of.MemberOf;
 
 @OrderBy(MemberToday, "person_id");
 MemberToday(person_id:, team_id:) distinct :-
@@ -233,7 +233,7 @@ Two periods `[s1, e1)` and `[s2, e2)` overlap when `s1 < e2 && s2 < e1`.
 
 ## Absence: negation
 
-`rules/Dormant.l`
+`rules/dormant.l`
 
 ```
 ---
@@ -241,8 +241,8 @@ name: Dormant
 description: Customers who never received an order.
 keywords: [dormant, inactive, never ordered, lapsed]
 ---
-import concepts.Customer.Customer;
-import concepts.DeliveredOrder.DeliveredOrder;
+import concepts.customer.Customer;
+import concepts.delivered_order.DeliveredOrder;
 
 @OrderBy(Dormant, "customer_id");
 Dormant(customer_id:) :- Customer(customer_id:), ~DeliveredOrder(customer_id:);
@@ -250,7 +250,7 @@ Dormant(customer_id:) :- Customer(customer_id:), ~DeliveredOrder(customer_id:);
 
 ## Rankings: the top N, and the top k per group
 
-`rules/TopCustomers.l`
+`rules/top_customers.l`
 
 ```
 ---
@@ -258,14 +258,14 @@ name: TopCustomers
 description: The ten customers who spent the most.
 keywords: [top, best, biggest, ranking]
 ---
-import concepts.DeliveredOrder.DeliveredOrder;
+import concepts.delivered_order.DeliveredOrder;
 
 @OrderBy(TopCustomers, "spent", "DESC");
 @Limit(TopCustomers, 10);
 TopCustomers(customer_id:, spent? += amount) distinct :- DeliveredOrder(customer_id:, amount:);
 ```
 
-`rules/TopProductsByCountry.l`
+`rules/top_products_by_country.l`
 
 ```
 ---
@@ -273,8 +273,8 @@ name: TopProductsByCountry
 description: The three best-selling products of each country.
 keywords: [best sellers, top products, country]
 ---
-import concepts.Customer.Customer;
-import concepts.DeliveredOrder.DeliveredOrder;
+import concepts.customer.Customer;
+import concepts.delivered_order.DeliveredOrder;
 
 TopThree(x) = ArgMaxK(x, 3);
 
@@ -287,7 +287,7 @@ TopProductsByCountry(country:, products? TopThree= product_id -> sold) distinct 
 
 ## Rates and trends
 
-`rules/CancellationRate.l`
+`rules/cancellation_rate.l`
 
 ```
 ---
@@ -295,7 +295,7 @@ name: CancellationRate
 description: The share of orders that were cancelled, between 0 and 1.
 keywords: [cancellation, churn, rate, ratio]
 ---
-import tables.Orders.Orders;
+import tables.orders.Orders;
 
 Counts(cancelled? += (if status == "cancelled" then 1 else 0), total? += 1) distinct :- Orders(status:);
 
@@ -303,7 +303,7 @@ Counts(cancelled? += (if status == "cancelled" then 1 else 0), total? += 1) dist
 CancellationRate(rate:) :- Counts(cancelled:, total:), rate == ToFloat64(cancelled) / ToFloat64(total);
 ```
 
-`rules/MonthlyRevenue.l`
+`rules/monthly_revenue.l`
 
 ```
 ---
@@ -311,7 +311,7 @@ name: MonthlyRevenue
 description: Delivered revenue per month.
 keywords: [revenue, monthly, trend, over time]
 ---
-import concepts.DeliveredOrder.DeliveredOrder;
+import concepts.delivered_order.DeliveredOrder;
 
 @OrderBy(MonthlyRevenue, "month");
 MonthlyRevenue(month:, revenue? += amount) distinct :-
@@ -325,7 +325,7 @@ instead of filtering `Orders` again. For the same computation over different
 inputs, write the generic rule once, with a default input, and instantiate it
 with a functor wherever it is needed:
 
-`rules/SegmentRevenue.l`
+`rules/segment_revenue.l`
 
 ```
 ---
@@ -333,8 +333,8 @@ name: SegmentRevenue
 description: Delivered revenue of a segment of customers; every customer unless a functor swaps the segment.
 keywords: [segment, revenue, cohort]
 ---
-import concepts.Customer.Customer;
-import concepts.DeliveredOrder.DeliveredOrder;
+import concepts.customer.Customer;
+import concepts.delivered_order.DeliveredOrder;
 
 Segment(customer_id:) distinct :- Customer(customer_id:);
 
@@ -342,7 +342,7 @@ Segment(customer_id:) distinct :- Customer(customer_id:);
 SegmentRevenue(revenue? += amount) distinct :- Segment(customer_id:), DeliveredOrder(customer_id:, amount:);
 ```
 
-`rules/EnterpriseRevenue.l`
+`rules/enterprise_revenue.l`
 
 ```
 ---
@@ -350,8 +350,8 @@ name: EnterpriseRevenue
 description: Delivered revenue of enterprise customers.
 keywords: [enterprise, segment, revenue]
 ---
-import concepts.Customer.Customer;
-import rules.SegmentRevenue.SegmentRevenue;
+import concepts.customer.Customer;
+import rules.segment_revenue.SegmentRevenue;
 
 Enterprise(customer_id:) distinct :- Customer(customer_id:, tier: "enterprise");
 

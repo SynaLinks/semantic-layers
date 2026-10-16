@@ -3,8 +3,8 @@ name: ActiveCustomer
 description: Customers with at least one delivered order.
 keywords: [active, engaged, retained]
 ---
-import concepts.Customer.Customer;
-import concepts.DeliveredOrder.DeliveredOrder;
+import concepts.customer.Customer;
+import concepts.delivered_order.DeliveredOrder;
 
 @OrderBy(ActiveCustomer, "customer_id");
 ActiveCustomer(customer_id:) distinct :-

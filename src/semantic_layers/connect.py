@@ -20,7 +20,7 @@ import yaml
 from synalog import project
 from synalog.introspect import table_description as describe_table
 
-from .layers import read_predicates, read_project
+from .layers import file_name, read_predicates, read_project
 
 PROJECT_FILE = project.PROJECT_FILE
 #: Engines synalog connects to; duckdb and sqlite run in memory.
@@ -183,6 +183,9 @@ def generate_tables(layer: Path, introspect=None) -> dict[str, list[str]]:
     folder = layer / "tables"
     folder.mkdir(parents=True, exist_ok=True)
     for name, declaration in tables.items():
-        previous = existing.get(name).meta if name in existing else None
-        (folder / f"{name}.l").write_text(render_table(name, declaration, previous))
+        path = folder / f"{file_name(name)}.l"
+        previous = existing.get(name)
+        if previous and previous.path != path:
+            previous.path.unlink()  # named before the snake_case convention
+        path.write_text(render_table(name, declaration, previous.meta if previous else None))
     return {"written": sorted(tables), "gone": sorted(set(existing) - set(tables))}

@@ -39,7 +39,7 @@ order_id,customer_id,status,amount
 
 and declare the table, as `connect` would have:
 
-`tables/Orders.l`
+`tables/orders.l`
 
 ```synalog
 ---
@@ -54,7 +54,7 @@ Orders(order_id:, customer_id:, status:, amount:) :- orders(order_id:, customer_
 
 Create the file below:
 
-`rules/RevenueByCustomer.l`
+`rules/revenue_by_customer.l`
 
 ```synalog
 ---
@@ -62,7 +62,7 @@ name: RevenueByCustomer
 description: Revenue per customer, from delivered orders only, largest first.
 keywords: [revenue, sales, turnover, customer, spend]
 ---
-import tables.Orders.Orders;
+import tables.orders.Orders;
 
 @Assert(RevenueByCustomer,
         one_row_per_customer: "∀ c r s, RevenueByCustomer c r → RevenueByCustomer c s → r = s",
@@ -74,7 +74,7 @@ RevenueByCustomer(customer_id:, revenue? += amount) distinct :-
 
 Here is what each part does:
 
-- **`name`** — the predicate the file defines and agents run; the file's name.
+- **`name`** — the predicate the file defines and agents run; the file is named after it in snake_case.
 - **`description`** — what the rows are, in the words people ask with: it is
   what search matches, with the **`keywords`**.
 - **`import`** — every definition the file builds on, by folder and name.
@@ -152,7 +152,7 @@ uvx semantic-layers search 'turnover|sales'
 ```
 
 ```text
-shop/rules/RevenueByCustomer.l                   Revenue per customer, from delivered orders only, largest first.
+shop/rules/revenue_by_customer.l                   Revenue per customer, from delivered orders only, largest first.
 ```
 
 Connect it to your database (`uvx semantic-layers connect <engine> ...`, in

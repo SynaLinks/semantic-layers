@@ -24,7 +24,8 @@ from the definitions — you never re-derive one, and you never write ad-hoc SQL
 
 Each `.l` file is one definition: YAML front matter (`name`, `description`,
 `keywords`), the `import` lines of the definitions it builds on, then synalog.
-The predicate it defines has the file's name. A layer is self-contained: it
+The file is named after the predicate it defines, in snake_case
+(`RevenueByCountry` in `rules/revenue_by_country.l`). A layer is self-contained: it
 imports only its own files, and layers cannot be joined in one definition.
 
 ## Answering a question
@@ -37,7 +38,7 @@ imports only its own files, and layers cannot be joined in one definition.
    uvx semantic-layers search 'order' --tables      # include the tables
    ```
 
-   Each result is a file path (`sales/rules/Revenue.l`) and its description.
+   Each result is a file path (`sales/rules/revenue.l`) and its description.
    No result? Widen the pattern (a synonym, the entity rather than the
    measure) before concluding nothing fits. Searching is cheap; listing a
    whole layer is not — layers grow to thousands of definitions.
@@ -52,7 +53,7 @@ imports only its own files, and layers cannot be joined in one definition.
    the data violates:
 
    ```shell
-   uvx semantic-layers run sales/rules/RevenueByCountry.l --limit 50
+   uvx semantic-layers run sales/rules/revenue_by_country.l --limit 50
    uvx semantic-layers run sales/RevenueByCountry --csv      # to read the values
    uvx semantic-layers run sales/RevenueByCountry --offset 50 --limit 50   # the next page
    ```
@@ -72,12 +73,12 @@ When no definition fits, write one — inside the layer whose tables it uses,
 building on the definitions already there. It becomes part of the layer: the
 next question reuses it.
 
-- An entity, a relationship or a clean view → `concepts/<Name>.l`.
-- A computation — count, sum, rate, ranking, trend, a yes/no test → `rules/<Name>.l`.
+- An entity, a relationship or a clean view → `concepts/<name>.l`.
+- A computation — count, sum, rate, ranking, trend, a yes/no test → `rules/<name>.l`.
 - `<Name>` is PascalCase, plain, no suffix: `ActiveCustomer`, not
   `ActiveCustomerRule` or `active_customers`.
 
-`rules/RepeatBuyer.l`
+`rules/repeat_buyer.l`
 
 ```
 ---
@@ -85,7 +86,7 @@ name: RepeatBuyer
 description: Customers with at least two delivered orders.
 keywords: [repeat, loyal, returning, retention]
 ---
-import concepts.DeliveredOrder.DeliveredOrder;
+import concepts.delivered_order.DeliveredOrder;
 
 # A helper: delivered orders per customer.
 DeliveredCount(customer_id:, orders? += 1) distinct :- DeliveredOrder(customer_id:);
@@ -96,15 +97,16 @@ RepeatBuyer(customer_id:, orders:) :- DeliveredCount(customer_id:, orders:), ord
 
 The rules of the format — `semantic-layers check` enforces them:
 
-- **`name`** is the predicate that runs, and the file's name. A file may also
+- **`name`** is the predicate that runs, in PascalCase; the file's name is
+  it in snake_case (`ActiveCustomer` → `active_customer.l`). A file may also
   define helper predicates its definition needs (a recursive relation, a
   staging step); `name` says which one runs. A helper worth reusing gets a
   file of its own.
 - **`description`** — required, `check` refuses a file without one — says
   what the rows are, in the words a user would search for. **`keywords`**
   list other words that should find it.
-- **Imports**: one `import <folder>.<Name>.<Name>;` per predicate the file
-  uses — `import concepts.Customer.Customer;`, `import tables.Orders.Orders;`.
+- **Imports**: one `import <folder>.<name>.<Name>;` per predicate the file
+  uses — `import concepts.customer.Customer;`, `import tables.orders.Orders;`.
   Every import must be used. Import concepts and rules rather than going
   back to the raw tables: that is how the layer stays consistent.
 - **`@OrderBy`** on the predicate `name` names — `check` refuses a file
@@ -135,7 +137,7 @@ message. A definition that does not check must not be left in the layer.
 ## Changing a definition
 
 Read it and everything it imports first. Other definitions may build on it:
-find them with `grep -rl 'import <folder>.<Name>.<Name>' .agents/layers/<layer>`,
+find them with `grep -rl 'import <folder>.<name>.<Name>' .agents/layers/<layer>`,
 and check the whole layer after the change. A file with `locked: true` in its
 front matter must not change — say so instead. Never edit `tables/`: those
 files are regenerated from the database (their `description` and `keywords`

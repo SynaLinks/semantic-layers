@@ -19,8 +19,8 @@ uvx semantic-layers search 'cancel(led|lation)|churn|attrition'
 ```
 
 ```text
-sales/rules/ChurnedCustomer.l        Customers whose last delivered order is more than 180 days old.
-sales/concepts/CancelledOrder.l      Orders cancelled before shipping, by the customer or the shop.
+sales/rules/churned_customer.l        Customers whose last delivered order is more than 180 days old.
+sales/concepts/cancelled_order.l      Orders cancelled before shipping, by the customer or the shop.
 ```
 
 - The match is **case-insensitive**, anywhere in the text.

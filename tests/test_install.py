@@ -20,8 +20,8 @@ from semantic_layers.layers import verify_layers
 def test_add_everything(source, project):
     result = add(str(source), scope(project))
     assert result["installed"] == ["sales", "support"]
-    assert (layer(project) / "sales" / "rules" / "ActiveCustomer.l").read_text() == SALES["rules/ActiveCustomer.l"]
-    assert (layer(project) / "support" / "tables" / "Tickets.l").exists()
+    assert (layer(project) / "sales" / "rules" / "active_customer.l").read_text() == SALES["rules/active_customer.l"]
+    assert (layer(project) / "support" / "tables" / "tickets.l").exists()
     assert verify_layers(layer(project)) == []
     lock = json.loads((project / "semantic-layers-lock.json").read_text())
     assert set(lock["layers"]) == {"sales", "support"} and lock["layers"]["sales"]["source"] == str(source)
@@ -39,17 +39,17 @@ def test_add_one_layer_folder(source, project):
 
 def test_a_source_can_be_one_layer(source, project):
     add(str(source / "sales"), scope(project))
-    assert (layer(project) / "sales" / "concepts" / "Customer.l").exists()
+    assert (layer(project) / "sales" / "concepts" / "customer.l").exists()
 
 
 def test_connected_layer_keeps_its_tables_and_connection(source, project):
     folder = connected_sales(project)
     add(str(source), scope(project), ["sales"], force=True)
-    assert "description: Mine." in (folder / "tables" / "Orders.l").read_text()
-    assert not (folder / "tables" / "Customers.l").exists()
+    assert "description: Mine." in (folder / "tables" / "orders.l").read_text()
+    assert not (folder / "tables" / "customers.l").exists()
     assert tomllib.loads((folder / "layer.toml").read_text())["connection"]["host"] == "h"
     assert (folder / ".env").read_text() == 'SYNALOG_PSQL_PASSWORD="p"\n'
-    assert (folder / "rules" / "ActiveCustomer.l").exists()
+    assert (folder / "rules" / "active_customer.l").exists()
 
 
 def test_missing_column_in_your_tables_is_refused(source, project):
@@ -61,16 +61,16 @@ def test_missing_column_in_your_tables_is_refused(source, project):
 
 
 def test_your_own_layer_is_not_replaced_without_force(source, project):
-    write(layer(project) / "sales", {"rules/OrdersByStatus.l": SALES["rules/OrdersByStatus.l"]})
+    write(layer(project) / "sales", {"rules/orders_by_status.l": SALES["rules/orders_by_status.l"]})
     with pytest.raises(InstallError, match="sales"):
         add(str(source), scope(project))
     add(str(source), scope(project), force=True)
-    assert (layer(project) / "sales" / "concepts" / "Customer.l").exists()
+    assert (layer(project) / "sales" / "concepts" / "customer.l").exists()
 
 
 def test_unverifiable_source_installs_nothing(source, project):
-    path = source / "sales" / "rules" / "OrdersByStatus.l"
-    path.write_text(SALES["rules/OrdersByStatus.l"].replace("Orders(status:)", "Nope(status:)"))
+    path = source / "sales" / "rules" / "orders_by_status.l"
+    path.write_text(SALES["rules/orders_by_status.l"].replace("Orders(status:)", "Nope(status:)"))
     with pytest.raises(InstallError, match="would not verify"):
         add(str(source), scope(project))
     assert not layer(project).exists()
@@ -79,16 +79,16 @@ def test_unverifiable_source_installs_nothing(source, project):
 
 def test_list_and_update(source, project):
     add(str(source), scope(project))
-    write(layer(project), {"mine/rules/X.l": "---\nname: X\ndescription: One.\n---\nX(a: 1);\n"})
-    sales = layer(project) / "sales" / "rules" / "ActiveCustomer.l"
-    sales.write_text(SALES["rules/ActiveCustomer.l"].replace("Customers with", "Clients with"))
+    write(layer(project), {"mine/rules/x.l": "---\nname: X\ndescription: One.\n---\nX(a: 1);\n"})
+    sales = layer(project) / "sales" / "rules" / "active_customer.l"
+    sales.write_text(SALES["rules/active_customer.l"].replace("Customers with", "Clients with"))
     states = {row["name"]: row["state"] for row in installed(scope(project))}
     assert states == {"mine": "local", "sales": "modified", "support": "ok"}
-    path = source / "support" / "rules" / "OpenTickets.l"
-    path.write_text(SUPPORT["rules/OpenTickets.l"].replace("Tickets still open.", "Every open ticket."))
+    path = source / "support" / "rules" / "open_tickets.l"
+    path.write_text(SUPPORT["rules/open_tickets.l"].replace("Tickets still open.", "Every open ticket."))
     result = update(scope(project))
     assert result == {"updated": ["support"], "kept": ["sales"]}
-    assert "Every open ticket." in (layer(project) / "support" / "rules" / "OpenTickets.l").read_text()
+    assert "Every open ticket." in (layer(project) / "support" / "rules" / "open_tickets.l").read_text()
     assert "Clients with" in sales.read_text()
 
 
@@ -153,7 +153,7 @@ def test_a_single_layer_source_is_named_by_its_project(tmp_path, project):
 def test_an_undescribed_layer_is_not_installed(tmp_path, project):
     source = write(
         tmp_path / "bare",
-        {"rules/X.l": '---\nname: X\ndescription: One.\n---\n@OrderBy(X, "a");\nX(a: 1);\n', "layer.toml": ""},
+        {"rules/x.l": '---\nname: X\ndescription: One.\n---\n@OrderBy(X, "a");\nX(a: 1);\n', "layer.toml": ""},
     )
     (source / "layer.toml").unlink()
     with pytest.raises(InstallError, match="no description"):

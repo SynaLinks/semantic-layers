@@ -48,7 +48,7 @@ def test_init_then_publish_then_add(tmp_path, project, monkeypatch, capsys):
     assert "Everything verifies." in capsys.readouterr().out
     add(str(tmp_path / "sales"), scope(project))
     installed_layer = layer(project) / "sales"
-    assert (installed_layer / "rules" / "ActiveCustomer.l").exists() and not (installed_layer / ".git").exists()
+    assert (installed_layer / "rules" / "active_customer.l").exists() and not (installed_layer / ".git").exists()
     assert verify(installed_layer) == []
 
 
